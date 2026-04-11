@@ -3,7 +3,7 @@
   "short_name": "CATCH CERT",
   "description": "기능사 퀴즈 · 랭킹",
   "start_url": "https://kocvdv38.github.io/2nanhumFCMM/",
-  "scope": "./",
+  "scope": "https://kocvdv38.github.io/2nanhumFCMM/",
   "display": "standalone",
   "background_color": "#f5f6f8",
   "theme_color": "#4a3f6b",
