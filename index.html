@@ -3,25 +3,32 @@
 <head>
     <title>퀴즈 랭킹 프로그램</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: sans-serif; text-align: center; padding: 20px; }
+        body { font-family: 'Malgun Gothic', sans-serif; text-align: center; padding: 20px; background-color: #f4f4f9; }
         .hidden { display: none; }
-        .card { border: 1px solid #ccc; padding: 20px; border-radius: 10px; max-width: 400px; margin: auto; }
-        input { margin: 5px; padding: 10px; width: 80%; }
-        button { padding: 10px 20px; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 5px; }
-        img { max-width: 100%; height: auto; margin-top: 10px; }
+        .card { border: none; padding: 30px; border-radius: 15px; max-width: 450px; margin: auto; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        input { margin: 8px; padding: 12px; width: 85%; border: 1px solid #ddd; border-radius: 5px; }
+        button { padding: 12px 25px; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 5px; font-weight: bold; margin-top: 10px; }
+        button:hover { background: #218838; }
+        img { max-width: 100%; height: auto; border-radius: 10px; margin: 15px 0; border: 1px solid #eee; }
+        .option-btn { display: block; width: 100%; margin: 8px 0; background: #f8f9fa; color: #333; border: 1px solid #ddd; text-align: left; padding: 12px; }
+        .option-btn:hover { background: #e2e6ea; }
+        #rank-list p { border-bottom: 1px solid #eee; padding: 8px; margin: 0; }
     </style>
 </head>
 <body>
 
+    <!-- 로그인 섹션 -->
     <div id="login-section" class="card">
         <h2>로그인</h2>
         <input id="login-id" placeholder="아이디"><br>
         <input id="login-pw" type="password" placeholder="비밀번호"><br>
         <button onclick="login()">로그인</button>
-        <button onclick="showRegister()" style="background:#6c757d">회원가입 가기</button>
+        <p style="font-size: 0.9em; color: gray; cursor: pointer;" onclick="showRegister()">계정이 없으신가요? 회원가입</p>
     </div>
 
+    <!-- 회원가입 섹션 -->
     <div id="register-section" class="card hidden">
         <h2>회원가입</h2>
         <input id="reg-id" placeholder="아이디"><br>
@@ -29,38 +36,55 @@
         <input id="reg-sid" placeholder="학번"><br>
         <input id="reg-name" placeholder="이름"><br>
         <input id="reg-birth" placeholder="생년월일(6자리)"><br>
-        <button onclick="register()">가입하기</button>
+        <button onclick="register()">가입 완료</button>
+        <p style="font-size: 0.9em; color: gray; cursor: pointer;" onclick="showLogin()">이미 계정이 있나요? 로그인</p>
     </div>
 
+    <!-- 퀴즈 섹션 -->
     <div id="quiz-section" class="card hidden">
         <h3 id="q-text"></h3>
-        <p id="q-view" style="color:gray"></p>
+        <p id="q-view" style="color:#666; font-style: italic;"></p>
         <div id="q-image"></div>
         <div id="options"></div>
-        <p>현재 점수: <span id="current-score">0</span></p>
+        <hr>
+        <p>현재 점수: <span id="current-score" style="color:red; font-weight:bold;">0</span></p>
     </div>
 
+    <!-- 랭킹 섹션 -->
     <div id="rank-section" class="card hidden">
         <h2>실시간 랭킹</h2>
-        <div id="rank-list"></div>
-        <button onclick="location.reload()">다시 하기</button>
+        <div id="rank-list" style="text-align: left; margin-bottom: 20px;">
+            <p>데이터를 불러오는 중...</p>
+        </div>
+        <button onclick="location.reload()">다시 처음으로</button>
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwIofpGIAzl-ik8xSB1RwS3Ol1fisSy-0bapcEugoCEm215lVx4gqt8Z5xcu-ifq0Cv/exec";
+        // 중요: 여기에 본인의 구글 웹 앱 URL을 넣으세요!
+        const SCRIPT_URL = "여기에_URL을_복사해서_넣으세요";
+        
         let currentUser = null;
         let score = 0;
         let problems = [];
         let currentIdx = 0;
 
-        // 문제 불러오기 (GitHub의 problems.json 사용)
-        fetch('problems.json').then(res => res.json()).then(data => problems = data);
+        // 1. 문제 데이터 불러오기
+        fetch('problems.json')
+            .then(res => res.json())
+            .then(data => { problems = data; })
+            .catch(err => console.error("문제를 불러오지 못했습니다.", err));
 
         function showRegister() {
             document.getElementById('login-section').classList.add('hidden');
             document.getElementById('register-section').classList.remove('hidden');
         }
 
+        function showLogin() {
+            document.getElementById('register-section').classList.add('hidden');
+            document.getElementById('login-section').classList.remove('hidden');
+        }
+
+        // 2. 회원가입
         async function register() {
             const data = {
                 action: 'register',
@@ -70,37 +94,34 @@
                 name: document.getElementById('reg-name').value,
                 birth: document.getElementById('reg-birth').value
             };
+            if(!data.id || !data.pw || !data.name) return alert("모든 항목을 입력하세요.");
+
             await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) });
-            alert("가입 완료! 로그인해주세요.");
-            location.reload();
+            alert("가입 성공! 로그인 화면으로 이동합니다.");
+            showLogin();
         }
 
-async function login() {
-    const idInput = document.getElementById('login-id').value.trim();
-    const pwInput = document.getElementById('login-pw').value.trim();
-    
-    try {
-        // 구글 시트 데이터 가져오기
-        const res = await fetch(SCRIPT_URL);
-        const users = await res.json();
-        
-        console.log("불러온 사용자 목록:", users); // 브라우저 개발자 도구(F12)에서 확인 가능
-
-        // 아이디와 비밀번호 대조
-        const user = users.find(u => u.id === idInput && u.pw === pwInput);
-        
-        if (user) {
-            currentUser = user;
-            alert(user.name + "님, 환영합니다!");
-            startQuiz();
-        } else {
-            alert("아이디 또는 비밀번호가 틀립니다.\n입력값: " + idInput + " / " + pwInput);
+        // 3. 로그인 (수정본)
+        async function login() {
+            const idInput = document.getElementById('login-id').value.trim();
+            const pwInput = document.getElementById('login-pw').value.trim();
+            
+            try {
+                const res = await fetch(SCRIPT_URL);
+                const users = await res.json();
+                const user = users.find(u => String(u.id) === idInput && String(u.pw) === pwInput);
+                
+                if (user) {
+                    currentUser = user;
+                    alert(user.name + "님 환영합니다!");
+                    startQuiz();
+                } else {
+                    alert("아이디 또는 비밀번호가 틀렸습니다.");
+                }
+            } catch (e) {
+                alert("서버와 통신 중 오류가 발생했습니다.");
+            }
         }
-    } catch (e) {
-        console.error(e);
-        alert("데이터를 불러오는 데 실패했습니다. 스크립트 URL과 배포 설정을 확인하세요.");
-    }
-}
 
         function startQuiz() {
             document.getElementById('login-section').classList.add('hidden');
@@ -114,7 +135,7 @@ async function login() {
                 return;
             }
             const p = problems[currentIdx];
-            document.getElementById('q-text').innerText = p.question;
+            document.getElementById('q-text').innerText = (currentIdx + 1) + ". " + p.question;
             document.getElementById('q-view').innerText = p.view || "";
             
             const imgDiv = document.getElementById('q-image');
@@ -124,10 +145,8 @@ async function login() {
             optDiv.innerHTML = "";
             p.options.forEach((opt, i) => {
                 const btn = document.createElement('button');
-                btn.innerText = `${i+1}. ${opt}`;
-                btn.style.display = "block";
-                btn.style.width = "100%";
-                btn.style.margin = "5px 0";
+                btn.className = "option-btn";
+                btn.innerText = (i + 1) + ") " + opt;
                 btn.onclick = () => checkAnswer(i + 1);
                 optDiv.appendChild(btn);
             });
@@ -142,20 +161,36 @@ async function login() {
             showProblem();
         }
 
+        // 4. 퀴즈 종료 및 랭킹 표시 (수정본)
         async function finishQuiz() {
             document.getElementById('quiz-section').classList.add('hidden');
             document.getElementById('rank-section').classList.remove('hidden');
             
-            // 점수 업데이트
-            await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'updateScore', id: currentUser.id, score: score }) });
-            
-            // 랭킹 표시
-            const res = await fetch(SCRIPT_URL);
-            const users = await res.json();
-            users.sort((a, b) => b.score - a.score);
-            
-            const list = document.getElementById('rank-list');
-            list.innerHTML = users.map((u, i) => `<p>${i+1}위: ${u.name} - ${u.score}점</p>`).join('');
+            const rankList = document.getElementById('rank-list');
+            rankList.innerHTML = "<p style='text-align:center;'>점수를 기록 중입니다...</p>";
+
+            try {
+                // 점수 저장
+                await fetch(SCRIPT_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify({ action: 'updateScore', id: currentUser.id, score: score }) 
+                });
+
+                // 잠시 대기
+                await new Promise(r => setTimeout(r, 1500));
+
+                // 최신 랭킹 가져오기
+                const res = await fetch(SCRIPT_URL);
+                const users = await res.json();
+                users.sort((a, b) => Number(b.score) - Number(a.score));
+                
+                rankList.innerHTML = users.slice(0, 10).map((u, i) => {
+                    const isMe = u.id === currentUser.id ? "background:#e8f4fd; font-weight:bold;" : "";
+                    return `<p style='${isMe}'>${i+1}위: ${u.name} - ${u.score}점</p>`;
+                }).join('');
+            } catch (e) {
+                rankList.innerHTML = "<p>랭킹 정보를 불러오지 못했습니다.</p>";
+            }
         }
     </script>
 </body>
