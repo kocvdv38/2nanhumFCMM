@@ -279,7 +279,8 @@ button {
     /* 문제 풀이(연습·모드·왕중왕전): 본문·이미지·보기 중앙 정렬 */
     #quiz-box #q-txt,
     #king-game-box #king-q-txt {
-        text-align: center;
+        text-align: justify;
+        text-justify: inter-word;
     }
     #quiz-box #q-img,
     #king-game-box #king-q-img {
@@ -292,11 +293,12 @@ button {
     }
     #quiz-box #q-opts,
     #king-game-box #king-q-opts {
-        text-align: center;
+        text-align: justify;
     }
     #quiz-box #q-opts .option-btn,
     #king-game-box #king-q-opts .option-btn {
-        text-align: center;
+        text-align: justify;
+        text-justify: inter-word;
     }
     .correct { background: #d4edda !important; border-color: #28a745 !important; }
     .wrong { background: #f8d7da !important; border-color: #dc3545 !important; }
@@ -420,6 +422,149 @@ button {
         color: #444;
     }
     .login-top3-muted { color: #aaa; padding: 0 3px; }
+
+    /* 로그인 화면: 모드별 TOP3 순환 */
+    .login-top3-rotator-wrap {
+        margin-top: 4px;
+    }
+    .login-top3-rotator-hint {
+        font-size: 11px;
+        color: #666;
+        margin: 0 0 8px 0;
+        text-align: center;
+    }
+    .login-top3-rotator-inner {
+        min-height: 118px;
+    }
+    .login-top3-rotator-inner .login-top3-card {
+        animation: loginTop3Fade 0.48s ease;
+    }
+    @keyframes loginTop3Fade {
+        from { opacity: 0.35; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .login-top3-rotator-dots {
+        display: flex;
+        gap: 7px;
+        justify-content: center;
+        margin-top: 10px;
+        font-size: 8px;
+        letter-spacing: 1px;
+        color: #bbb;
+        user-select: none;
+    }
+    .login-top3-rotator-dots span.is-on {
+        color: #007bff;
+    }
+
+    /* 첫 화면·모드 선택: 한줄 댓글 */
+    .board-comments {
+        margin-top: 14px;
+        padding-top: 12px;
+        border-top: 1px solid #eee;
+        text-align: left;
+    }
+    .board-comments-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+    .board-comments-title {
+        font-size: 13px;
+        font-weight: bold;
+        color: #444;
+        margin: 0;
+    }
+    .board-comments-title small {
+        font-weight: normal;
+        color: #888;
+    }
+    .board-comments-more {
+        width: 36px !important;
+        min-width: 36px;
+        margin: 0 !important;
+        padding: 6px 0 !important;
+        font-size: 18px;
+        line-height: 1;
+        border-radius: 8px;
+        background: #e9ecef;
+        color: #333;
+    }
+    .board-comments-list {
+        list-style: none;
+        margin: 0 0 10px 0;
+        padding: 0;
+        max-height: none;
+    }
+    .board-comments-item {
+        font-size: 12px;
+        padding: 8px 0;
+        border-bottom: 1px solid #f0f0f0;
+        word-break: break-word;
+    }
+    .board-comments-item:last-child { border-bottom: none; }
+    .board-comments-who { font-weight: bold; color: #007bff; margin-right: 6px; }
+    .board-comments-meta { font-size: 10px; color: #999; }
+    .board-comments-text { margin-top: 4px; color: #333; line-height: 1.4; }
+    .board-comments-empty {
+        font-size: 12px;
+        color: #888;
+        padding: 8px 0;
+        list-style: none;
+    }
+    .board-comments-form {
+        display: flex;
+        gap: 8px;
+        align-items: stretch;
+    }
+    .board-comments-form input[type="text"] {
+        flex: 1;
+        margin: 0;
+        display: inline-block;
+        width: auto;
+    }
+    .board-comments-form .btn-gray {
+        width: 72px !important;
+        min-width: 72px;
+        margin: 0;
+        flex-shrink: 0;
+        padding: 12px 8px;
+        font-size: 14px;
+    }
+    /* 첫 화면: 최근 5개 댓글 순환 */
+    #board-comments-wrap-login .board-comments-title small {
+        color: #6f42c1;
+    }
+    .board-comments-login-rotator {
+        min-height: 4.2em;
+        padding: 10px 12px;
+        background: #f8f9fb;
+        border-radius: 10px;
+        border: 1px solid #e8ecf1;
+        margin-bottom: 0;
+    }
+    .board-comments-login-slide {
+        animation: boardLoginFade 0.45s ease;
+    }
+    @keyframes boardLoginFade {
+        from { opacity: 0.35; transform: translateY(4px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .board-comments-login-dots {
+        display: flex;
+        gap: 6px;
+        justify-content: center;
+        margin-top: 10px;
+        font-size: 8px;
+        letter-spacing: 1px;
+        color: #bbb;
+        user-select: none;
+    }
+    .board-comments-login-dots span.is-on {
+        color: #6f42c1;
+    }
     .login-top3-card-body .login-top3-empty {
         text-align: center;
         padding: 8px 4px;
@@ -516,7 +661,8 @@ button {
             font-size: 1.05rem;
             word-break: keep-all;
             line-height: 1.45;
-            text-align: center;
+            text-align: justify;
+            text-justify: inter-word;
         }
         .rank-item {
             font-size: 13px;
@@ -525,6 +671,9 @@ button {
         .login-top3-grid {
             grid-template-columns: 1fr;
             gap: 8px;
+        }
+        .login-top3-rotator-inner {
+            min-height: 108px;
         }
     }
     </style>
@@ -541,6 +690,12 @@ button {
         <p onclick="toggleView(true)" style="color:#007bff; cursor:pointer; margin-top:15px;">처음이신가요? 회원가입</p>
         <div id="login-top3-preview" class="login-top3-wrap" aria-live="polite">
             <p class="login-top3-loading">순위 불러오는 중...</p>
+        </div>
+        <div class="board-comments" id="board-comments-wrap-login" aria-label="한줄 댓글">
+            <div class="board-comments-head">
+                <p class="board-comments-title">💬 한줄 댓글 <small>(최근 5개 순환)</small></p>
+            </div>
+            <div class="board-comments-login-rotator" id="board-comments-login-rotator" aria-live="polite"></div>
         </div>
         <footer class="login-footer">
             문의 및 요청: <a href="mailto:zx48xz@naver.com">zx48xz@naver.com</a><br>
@@ -608,6 +763,17 @@ button {
         <button class="btn-red" onclick="selectMode('survival')">💔 서바이벌 (목숨 3개)</button>
         <button class="btn-orange" onclick="selectMode('timeattack')">⏱️ 타임 어택 (아이템전)</button>
         <button class="btn-blue" style="background:linear-gradient(135deg,#6f42c1 0%,#007bff 100%);" onclick="selectMode('king')">⚔️ 왕중왕전 (토너먼트)</button>
+        <div class="board-comments" id="board-comments-wrap-mode" aria-label="한줄 댓글">
+            <div class="board-comments-head">
+                <p class="board-comments-title">💬 한줄 댓글 <small>(최근 10개)</small></p>
+                <button type="button" class="board-comments-more" id="board-comments-more-mode" onclick="toggleBoardCommentsExpand()" style="display:none;" title="더 보기">+</button>
+            </div>
+            <ul class="board-comments-list" id="board-comments-list-mode"></ul>
+            <div class="board-comments-form">
+                <input type="text" id="board-comment-input-mode" maxlength="200" placeholder="로그인 후 작성 가능" disabled autocomplete="off">
+                <button type="button" class="btn-gray" onclick="submitBoardComment()">등록</button>
+            </div>
+        </div>
     </div>
 
     <div id="king-celebrate-overlay" class="hidden" aria-hidden="true">
@@ -1634,6 +1800,7 @@ button {
                     document.getElementById('mode-user-line').textContent = line;
                     document.getElementById('login-box').classList.add('hidden');
                     document.getElementById('mode-box').classList.remove('hidden');
+                    updateBoardCommentsAuthUI();
                 }
                 else alert("아이디 또는 비밀번호 오류");
             });
@@ -2202,9 +2369,250 @@ button {
             return zeroBasedIndex < 3 ? icons[zeroBasedIndex] : String(zeroBasedIndex + 1);
         }
 
+        const BOARD_COMMENTS_PATH = 'boardComments';
+        const BOARD_LOGIN_ROTATE_MS = 4000;
+        const BOARD_LOGIN_MAX = 5;
+        let boardCommentsCache = [];
+        let boardCommentsExpanded = false;
+        let boardCommentsLoginRotateInt = null;
+        let boardCommentsLoginIndex = 0;
+        let boardCommentsLoginKeySig = '';
+
+        function normalizeForBadwordCheck(s) {
+            return String(s || '').toLowerCase().replace(/\s+/g, '');
+        }
+        /** 비속어·욕설 차단(부분 문자열). 우회(띄어쓰기 제거 후 검사) */
+        function containsProfanity(s) {
+            const n = normalizeForBadwordCheck(s);
+            const bad = [
+                '시발', '씨발', '씨팔', '시팔', 'ㅅㅂ', 'ㅆㅂ', 'ㅂㅅ', '병신', '븅신', '벙신', '좆', '좃', '존나', '좆나', '지랄', '씹', '느금', '니애미', '엿먹',
+                '개새', '개씨', '개좆', '개새끼',
+                'fuck', 'shit', 'bitch', 'dick', 'cock', 'piss', 'damn', 'asshole', 'bastard', 'cunt', 'slut', 'whore'
+            ];
+            for (let i = 0; i < bad.length; i++) {
+                if (n.indexOf(bad[i]) !== -1) return true;
+            }
+            return false;
+        }
+
+        function formatBoardCommentTime(ts) {
+            const n = Number(ts);
+            if (ts == null || isNaN(n)) return '';
+            const d = new Date(n);
+            if (isNaN(d.getTime())) return '';
+            return (d.getMonth() + 1) + '/' + d.getDate() + ' ' +
+                String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+        }
+
+        function updateBoardCommentsAuthUI() {
+            const loggedIn = !!(user && user.id);
+            const inp = document.getElementById('board-comment-input-mode');
+            if (!inp) return;
+            inp.disabled = !loggedIn;
+            inp.placeholder = loggedIn ? '한줄 댓글 (200자 이내)' : '로그인 후 작성 가능';
+        }
+
+        function stopBoardCommentsLoginRotation() {
+            if (boardCommentsLoginRotateInt) {
+                clearInterval(boardCommentsLoginRotateInt);
+                boardCommentsLoginRotateInt = null;
+            }
+        }
+
+        function paintBoardCommentsLoginSlide(top5) {
+            const loginEl = document.getElementById('board-comments-login-rotator');
+            if (!loginEl) return;
+            if (!top5 || top5.length === 0) {
+                loginEl.innerHTML = '<div class="board-comments-empty">아직 댓글이 없습니다.</div>';
+                return;
+            }
+            if (boardCommentsLoginIndex >= top5.length) boardCommentsLoginIndex = 0;
+            const c = top5[boardCommentsLoginIndex];
+            let dots = '';
+            for (let i = 0; i < top5.length; i++) {
+                dots += '<span class="' + (i === boardCommentsLoginIndex ? 'is-on' : '') + '">●</span>';
+            }
+            loginEl.innerHTML =
+                '<div class="board-comments-login-slide">' +
+                '<span class="board-comments-who">' + escapeHtml(c.name || c.uid || '') + '</span>' +
+                '<span class="board-comments-meta">' + escapeHtml(formatBoardCommentTime(c.ts)) + '</span>' +
+                '<div class="board-comments-text">' + escapeHtml(c.text || '') + '</div>' +
+                (top5.length > 1 ? '<div class="board-comments-login-dots" aria-hidden="true">' + dots + '</div>' : '') +
+                '</div>';
+        }
+
+        function startBoardCommentsLoginRotation(top5) {
+            stopBoardCommentsLoginRotation();
+            if (!top5 || top5.length <= 1) return;
+            boardCommentsLoginRotateInt = setInterval(function () {
+                boardCommentsLoginIndex = (boardCommentsLoginIndex + 1) % top5.length;
+                paintBoardCommentsLoginSlide(top5);
+            }, BOARD_LOGIN_ROTATE_MS);
+        }
+
+        function renderBoardComments() {
+            const sorted = [...boardCommentsCache].sort(function (a, b) {
+                return (Number(b.ts) || 0) - (Number(a.ts) || 0);
+            });
+            const top5 = sorted.slice(0, BOARD_LOGIN_MAX);
+            const sig = top5.map(function (x) { return x.key || ''; }).join(',');
+            if (sig !== boardCommentsLoginKeySig) {
+                boardCommentsLoginKeySig = sig;
+                boardCommentsLoginIndex = 0;
+            }
+
+            stopBoardCommentsLoginRotation();
+            paintBoardCommentsLoginSlide(top5);
+            startBoardCommentsLoginRotation(top5);
+
+            const maxShow = boardCommentsExpanded ? 10 : 3;
+            const slice = sorted.slice(0, maxShow);
+            let html = '';
+            if (slice.length === 0) {
+                html = '<li class="board-comments-empty">아직 댓글이 없습니다.</li>';
+            } else {
+                html = slice.map(function (c) {
+                    return '<li class="board-comments-item">' +
+                        '<span class="board-comments-who">' + escapeHtml(c.name || c.uid || '') + '</span>' +
+                        '<span class="board-comments-meta">' + escapeHtml(formatBoardCommentTime(c.ts)) + '</span>' +
+                        '<div class="board-comments-text">' + escapeHtml(c.text || '') + '</div></li>';
+                }).join('');
+            }
+            const listMode = document.getElementById('board-comments-list-mode');
+            if (listMode) listMode.innerHTML = html;
+            const showToggle = sorted.length > 3;
+            const btn = document.getElementById('board-comments-more-mode');
+            if (btn) {
+                if (!showToggle) {
+                    btn.style.display = 'none';
+                } else {
+                    btn.style.display = 'inline-flex';
+                    btn.textContent = boardCommentsExpanded ? '−' : '+';
+                    btn.setAttribute('aria-expanded', boardCommentsExpanded ? 'true' : 'false');
+                    btn.title = boardCommentsExpanded ? '접기 (3개까지)' : '더 보기 (최대 10개)';
+                }
+            }
+        }
+
+        function toggleBoardCommentsExpand() {
+            boardCommentsExpanded = !boardCommentsExpanded;
+            renderBoardComments();
+        }
+
+        function attachBoardCommentsListener() {
+            db.ref(BOARD_COMMENTS_PATH).on('value', function (snap) {
+                const rows = [];
+                snap.forEach(function (c) {
+                    const v = c.val();
+                    if (!v) return;
+                    rows.push({ key: c.key, uid: v.uid, name: v.name, text: v.text, ts: v.ts });
+                });
+                rows.sort(function (a, b) { return (Number(b.ts) || 0) - (Number(a.ts) || 0); });
+                boardCommentsCache = rows.slice(0, 10);
+                renderBoardComments();
+            });
+        }
+
+        async function trimBoardCommentsToTen() {
+            const ref = db.ref(BOARD_COMMENTS_PATH);
+            const snap = await ref.once('value');
+            const rows = [];
+            snap.forEach(function (c) {
+                rows.push({ key: c.key, ts: Number(c.val().ts) || 0 });
+            });
+            rows.sort(function (a, b) { return a.ts - b.ts; });
+            while (rows.length > 10) {
+                const rm = rows.shift();
+                await ref.child(rm.key).remove();
+            }
+        }
+
+        async function submitBoardComment() {
+            if (!user || !user.id) {
+                alert('로그인 후 댓글을 작성할 수 있습니다.');
+                return;
+            }
+            const el = document.getElementById('board-comment-input-mode');
+            if (!el) return;
+            let text = el.value.trim();
+            if (!text) return;
+            if (text.length > 200) return alert('200자 이내로 입력해 주세요.');
+            if (containsProfanity(text)) {
+                alert('비속어·부적절한 표현은 입력할 수 없습니다.');
+                return;
+            }
+            const name = user.name || user.id;
+            try {
+                const ref = db.ref(BOARD_COMMENTS_PATH);
+                await ref.push({
+                    uid: user.id,
+                    name: name,
+                    text: text,
+                    ts: firebase.database.ServerValue.TIMESTAMP
+                });
+                el.value = '';
+                await trimBoardCommentsToTen();
+            } catch (e) {
+                alert('등록에 실패했습니다. 네트워크 또는 Firebase 규칙을 확인해 주세요.');
+            }
+        }
+
+        function attachBoardCommentEnterHandlers() {
+            const el = document.getElementById('board-comment-input-mode');
+            if (!el) return;
+            el.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    submitBoardComment();
+                }
+            });
+        }
+
+        const LOGIN_TOP3_ROTATE_MS = 5000;
+        let loginTop3RotateInt = null;
+        let loginTop3ModeIndex = 0;
+        let loginTop3CardHtmlList = [];
+
+        function stopLoginTop3Rotation() {
+            if (loginTop3RotateInt) {
+                clearInterval(loginTop3RotateInt);
+                loginTop3RotateInt = null;
+            }
+        }
+
+        function paintLoginTop3Slide() {
+            const inner = document.getElementById('login-top3-rotator-inner');
+            const dotsEl = document.getElementById('login-top3-rotator-dots');
+            if (!inner || !loginTop3CardHtmlList.length) return;
+            if (loginTop3ModeIndex >= loginTop3CardHtmlList.length) loginTop3ModeIndex = 0;
+            inner.innerHTML = loginTop3CardHtmlList[loginTop3ModeIndex];
+            if (dotsEl) {
+                if (loginTop3CardHtmlList.length <= 1) {
+                    dotsEl.innerHTML = '';
+                } else {
+                    let dots = '';
+                    for (let i = 0; i < loginTop3CardHtmlList.length; i++) {
+                        dots += '<span class="' + (i === loginTop3ModeIndex ? 'is-on' : '') + '">●</span>';
+                    }
+                    dotsEl.innerHTML = dots;
+                }
+            }
+        }
+
+        function startLoginTop3Rotation() {
+            stopLoginTop3Rotation();
+            if (loginTop3CardHtmlList.length <= 1) return;
+            loginTop3RotateInt = setInterval(function () {
+                loginTop3ModeIndex = (loginTop3ModeIndex + 1) % loginTop3CardHtmlList.length;
+                paintLoginTop3Slide();
+            }, LOGIN_TOP3_ROTATE_MS);
+        }
+
         async function loadLoginTop3Preview() {
             const el = document.getElementById('login-top3-preview');
-            if(!el) return;
+            if (!el) return;
+            stopLoginTop3Rotation();
+            loginTop3CardHtmlList = [];
             el.innerHTML = '<p class="login-top3-loading">순위 불러오는 중...</p>';
             const modes = [
                 { field: 'practice_count', label: '연습왕', icon: '📚', cardClass: 'login-top3-card--practice' },
@@ -2216,32 +2624,48 @@ button {
             try {
                 const snap = await db.ref('users').once('value');
                 const arr = [];
-                snap.forEach(c => {
+                snap.forEach(function (c) {
                     const v = c.val();
-                    if(!v) return;
+                    if (!v) return;
                     arr.push({ ...v, id: v.id != null ? v.id : c.key });
                 });
-                el.innerHTML = '<div class="login-top3-grid">' + modes.map(m => {
-                    const sorted = [...arr].sort((a, b) => (Number(b[m.field]) || 0) - (Number(a[m.field]) || 0));
-                    const top = sorted.filter(u => (Number(u[m.field]) || 0) > 0).slice(0, 3);
+                loginTop3CardHtmlList = modes.map(function (m) {
+                    const sorted = [...arr].sort(function (a, b) {
+                        return (Number(b[m.field]) || 0) - (Number(a[m.field]) || 0);
+                    });
+                    const top = sorted.filter(function (u) { return (Number(u[m.field]) || 0) > 0; }).slice(0, 3);
                     const lines = top.length
-                        ? top.map((u, i) =>
-                            `<div class="login-top3-line"><span class="login-top3-rank" title="${i + 1}등">${topRankIcon(i)}</span>${escapeHtml(u.id)} <span class="login-top3-muted">·</span> ${escapeHtml(u.school || '학교 없음')}</div>`
-                          ).join('')
+                        ? top.map(function (u, i) {
+                            return '<div class="login-top3-line"><span class="login-top3-rank" title="' + (i + 1) + '등">' + topRankIcon(i) + '</span>' + escapeHtml(u.id) + ' <span class="login-top3-muted">·</span> ' + escapeHtml(u.school || '학교 없음') + '</div>';
+                        }).join('')
                         : '<div class="login-top3-empty">기록 없음</div>';
-                    return `<div class="login-top3-card ${m.cardClass}" role="region" aria-label="${escapeHtml(m.label)} 순위">` +
+                    return '<div class="login-top3-card ' + m.cardClass + '" role="region" aria-label="' + escapeHtml(m.label) + ' 순위">' +
                         '<div class="login-top3-card-head">' +
-                        `<span class="login-top3-mode-icon" aria-hidden="true">${m.icon}</span>` +
-                        `<span class="login-top3-mode-title">${escapeHtml(m.label)}</span>` +
+                        '<span class="login-top3-mode-icon" aria-hidden="true">' + m.icon + '</span>' +
+                        '<span class="login-top3-mode-title">' + escapeHtml(m.label) + ' TOP3</span>' +
                         '</div>' +
-                        `<div class="login-top3-card-body">${lines}</div>` +
+                        '<div class="login-top3-card-body">' + lines + '</div>' +
                         '</div>';
-                }).join('') + '</div>';
-            } catch(e) {
+                });
+                loginTop3ModeIndex = 0;
+                const secHint = Math.round(LOGIN_TOP3_ROTATE_MS / 1000);
+                el.innerHTML =
+                    '<div class="login-top3-rotator-wrap">' +
+                    '<p class="login-top3-rotator-hint">모드별 순위 미리보기 (' + secHint + '초마다 순환)</p>' +
+                    '<div class="login-top3-rotator-inner" id="login-top3-rotator-inner"></div>' +
+                    '<div class="login-top3-rotator-dots" id="login-top3-rotator-dots" aria-hidden="true"></div>' +
+                    '</div>';
+                paintLoginTop3Slide();
+                startLoginTop3Rotation();
+            } catch (e) {
+                loginTop3CardHtmlList = [];
                 el.innerHTML = '<p class="login-top3-err">순위를 불러오지 못했습니다.</p>';
             }
         }
 
+        attachBoardCommentsListener();
+        updateBoardCommentsAuthUI();
+        attachBoardCommentEnterHandlers();
         loadLoginTop3Preview();
     </script>
 </body>
