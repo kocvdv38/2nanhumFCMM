@@ -236,6 +236,42 @@ button {
         color: #333;
     }
     .rank-my-box strong { color: #007bff; }
+
+    /* 로그인 화면: 모드별 TOP3 미리보기 */
+    .login-top3-wrap {
+        margin-top: 14px;
+        padding-top: 12px;
+        border-top: 1px solid #eee;
+        text-align: left;
+        font-size: 11px;
+        color: #444;
+        line-height: 1.35;
+    }
+    .login-top3-block { margin-bottom: 10px; }
+    .login-top3-block:last-child { margin-bottom: 0; }
+    .login-top3-title {
+        font-weight: bold;
+        font-size: 11px;
+        color: #007bff;
+        margin-bottom: 3px;
+    }
+    .login-top3-line {
+        padding: 1px 0 1px 2px;
+        word-break: break-all;
+    }
+    .login-top3-rank {
+        display: inline-block;
+        width: 16px;
+        color: #999;
+        flex-shrink: 0;
+    }
+    .login-top3-muted { color: #aaa; padding: 0 3px; }
+    .login-top3-loading, .login-top3-err, .login-top3-empty {
+        font-size: 11px;
+        color: #888;
+        text-align: center;
+        padding: 4px 0;
+    }
     </style>
 </head>
 <body>
@@ -248,6 +284,9 @@ button {
         <button class="btn-blue" onclick="login()">로그인</button>
         <button class="btn-orange" onclick="openRank()">🏆 랭킹 보기</button>
         <p onclick="toggleView(true)" style="color:#007bff; cursor:pointer; margin-top:15px;">처음이신가요? 회원가입</p>
+        <div id="login-top3-preview" class="login-top3-wrap" aria-live="polite">
+            <p class="login-top3-loading">순위 불러오는 중...</p>
+        </div>
         <footer class="login-footer">
             문의 및 요청: <a href="mailto:zx48xz@naver.com">zx48xz@naver.com</a><br>
             © 2026. 주용호 All rights reserved.
@@ -825,6 +864,46 @@ button {
             document.getElementById('rank-box').classList.remove('hidden');
             fetchRanking('practice');
         }
+
+        function escapeHtml(s) {
+            if(s == null || s === undefined) return '';
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        async function loadLoginTop3Preview() {
+            const el = document.getElementById('login-top3-preview');
+            if(!el) return;
+            el.innerHTML = '<p class="login-top3-loading">순위 불러오는 중...</p>';
+            const modes = [
+                { field: 'practice_count', label: '연습왕' },
+                { field: 'classic_score', label: '클래식' },
+                { field: 'survival_score', label: '서바이벌' },
+                { field: 'timeattack_score', label: '타임어택' }
+            ];
+            try {
+                const snap = await db.ref('users').once('value');
+                const arr = [];
+                snap.forEach(c => {
+                    const v = c.val();
+                    if(!v) return;
+                    arr.push({ ...v, id: v.id != null ? v.id : c.key });
+                });
+                el.innerHTML = modes.map(m => {
+                    const sorted = [...arr].sort((a, b) => (Number(b[m.field]) || 0) - (Number(a[m.field]) || 0));
+                    const top = sorted.filter(u => (Number(u[m.field]) || 0) > 0).slice(0, 3);
+                    const lines = top.length
+                        ? top.map((u, i) =>
+                            `<div class="login-top3-line"><span class="login-top3-rank">${i + 1}.</span> ${escapeHtml(u.id)} <span class="login-top3-muted">·</span> ${escapeHtml(u.school || '학교 없음')}</div>`
+                          ).join('')
+                        : '<div class="login-top3-empty">기록 없음</div>';
+                    return `<div class="login-top3-block"><div class="login-top3-title">${m.label}</div>${lines}</div>`;
+                }).join('');
+            } catch(e) {
+                el.innerHTML = '<p class="login-top3-err">순위를 불러오지 못했습니다.</p>';
+            }
+        }
+
+        loadLoginTop3Preview();
     </script>
 </body>
 </html>
