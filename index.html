@@ -302,7 +302,7 @@ button {
     .wrong { background: #f8d7da !important; border-color: #dc3545 !important; }
     
     /* 랭킹 탭 */
-    .rank-tabs { display: flex; justify-content: space-around; margin-bottom: 15px; }
+    .rank-tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-bottom: 15px; }
     .rank-tab { 
         width: auto !important; /* 탭 버튼도 100% 무시 */
         font-size: 11px; padding: 10px 2px; cursor: pointer; background: #eee; border-radius: 5px; flex: 1; margin: 0 2px; border: 1px solid #ddd; color: #333;
@@ -368,6 +368,10 @@ button {
     .login-top3-card--timeattack {
         border-color: #ffd8b8;
         background: linear-gradient(180deg, #fff9f2 0%, #fcfaf8 100%);
+    }
+    .login-top3-card--king {
+        border-color: #d4c4f0;
+        background: linear-gradient(180deg, #f5f0ff 0%, #faf9fc 100%);
     }
     .login-top3-card-head {
         display: flex;
@@ -603,7 +607,7 @@ button {
         <button class="btn-purple" onclick="selectMode('classic')">🏆 클래식 도전 (전체 풀이)</button>
         <button class="btn-red" onclick="selectMode('survival')">💔 서바이벌 (목숨 3개)</button>
         <button class="btn-orange" onclick="selectMode('timeattack')">⏱️ 타임 어택 (아이템전)</button>
-        <button class="btn-blue" style="background:linear-gradient(135deg,#6f42c1 0%,#007bff 100%);" onclick="selectMode('king')">👑 왕중왕전 (토너먼트)</button>
+        <button class="btn-blue" style="background:linear-gradient(135deg,#6f42c1 0%,#007bff 100%);" onclick="selectMode('king')">⚔️ 왕중왕전 (토너먼트)</button>
     </div>
 
     <div id="king-celebrate-overlay" class="hidden" aria-hidden="true">
@@ -615,7 +619,7 @@ button {
 
     <!-- 3-0. 왕중왕전 -->
     <div id="king-entry-box" class="card hidden">
-        <h2>👑 왕중왕전</h2>
+        <h2>⚔️ 왕중왕전</h2>
         <p style="font-size:14px;color:#555;text-align:left;margin:0 0 12px 0;"><strong>방 코드 6자리</strong>는 방을 구분하는 고유 코드입니다. 참가 방법은 두 가지입니다: (1) 아래 <strong>열린 방 목록</strong>에서 입장 (2) 방장에게 받은 <strong>코드로 입장</strong>. 방을 만들면 <strong>과목명·방 코드</strong>가 대기실에 표시됩니다. 방장은 과목 선택과 첫 게임 시작만 합니다. 라운드마다 <strong>5문제 · 3분</strong>, 전원 제출 또는 시간 종료 시 <strong>상위 50%</strong>가 선정되고 축하 연출 후 <strong>3초 뒤</strong> 다음 라운드가 자동으로 진행됩니다. <strong>최종 우승자</strong>가 새 방장이 됩니다.</p>
         <label class="profile-field-label profile-field-label--first" for="king-subject-select">방 주제(과목) — 방 만들 때 1회 선택</label>
         <select id="king-subject-select">
@@ -771,6 +775,7 @@ button {
             <div id="tab-classic" class="rank-tab" onclick="fetchRanking('classic')">클래식</div>
             <div id="tab-survival" class="rank-tab" onclick="fetchRanking('survival')">서바이벌</div>
             <div id="tab-timeattack" class="rank-tab" onclick="fetchRanking('timeattack')">타임어택</div>
+            <div id="tab-king" class="rank-tab" onclick="fetchRanking('king')">⚔️ 왕중왕</div>
         </div>
         <div id="rank-my-record" class="hidden" style="margin-bottom:14px;"></div>
         <div id="rank-list"></div>
@@ -829,6 +834,8 @@ button {
         const KING_ROUND_MS = 180000;
         const KING_AUTO_NEXT_MS = 3000;
         const KING_Q_PER_ROUND = 5;
+        /** 랭킹 반영: 이 인원 이상이었던 방에서 우승한 경우만 king_score 증가 */
+        const KING_MIN_PARTICIPANTS_FOR_RANK = 5;
         const KING_SUBJECT_FILE_LIST = Object.keys(SUBJECT_LABELS);
         function kingSubjectLabel(key) {
             if (!key || key === 'all') return '전체 과목 (랜덤)';
@@ -1149,6 +1156,7 @@ button {
                 rr.innerHTML = val.lastResultsHtml || '<p>대회 종료</p>';
                 startBtn.classList.add('hidden');
             }
+            kingMaybeApplyKingRanking(val);
         }
         function kingManualStartFirstRound() {
             if (!kingRoomId || !user) return;
@@ -1195,8 +1203,31 @@ button {
             updates.roundCloseLock = null;
             updates.nextRoundLock = null;
             updates.betweenCelebrate = null;
+            if (rnd === 1) {
+                const nPart = Object.keys(val.players || {}).length;
+                updates.participantCountThisGame = nPart;
+            }
             await ref.update(updates);
             return true;
+        }
+        /** 우승자 본인만: 참가 5명 이상 세션에서 1회 king_score 반영(중복 방지 트랜잭션) */
+        function kingMaybeApplyKingRanking(val) {
+            if (!user || !kingRoomId) return;
+            if (val.status !== 'lobby' || !val.championUid || !val.lastKingRankSessionId) return;
+            if (String(val.championUid) !== String(user.id)) return;
+            const nPart = Number(val.participantCountThisGame) || 0;
+            if (nPart < KING_MIN_PARTICIPANTS_FOR_RANK) return;
+            const sid = String(val.lastKingRankSessionId);
+            const claimRef = db.ref('users/' + user.id + '/king_sessions/' + sid);
+            claimRef.transaction(function (done) {
+                if (done) return undefined;
+                return true;
+            }).then(function (result) {
+                if (!result || !result.committed) return;
+                return db.ref('users/' + user.id + '/king_score').transaction(function (s) {
+                    return (s || 0) + 1;
+                });
+            }).catch(function () {});
         }
         function kingHandleRoundState(val) {
             const me = user && val.players && val.players[user.id];
@@ -1367,18 +1398,25 @@ button {
             if (survivors.length <= 1) {
                 const winnerUid = survivors[0].uid;
                 const winName = survivors[0].name;
+                const rankSid = 'kr_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10);
+                const pCount = Number(val.participantCountThisGame) || 0;
+                const rankOk = pCount >= KING_MIN_PARTICIPANTS_FOR_RANK;
+                const rankNote = rankOk
+                    ? '<p style="font-size:12px;color:#555;margin:8px 0 0 0;">이번 게임 참가자 ' + pCount + '명 — 랭킹(왕중왕 탭)에 <strong>우승 1회</strong>로 반영됩니다.</p>'
+                    : '<p style="font-size:12px;color:#856404;margin:8px 0 0 0;">이번 게임 참가자 ' + pCount + '명(5명 미만) — 랭킹에는 <strong>반영되지 않습니다</strong>.</p>';
                 const updates = {
                     status: 'lobby',
                     round: 0,
                     hostId: winnerUid,
                     championUid: winnerUid,
+                    lastKingRankSessionId: rankSid,
                     roundEndsAt: null,
                     roundQuestions: null,
                     autoNextRoundAt: null,
                     roundCloseLock: null,
                     nextRoundLock: null,
                     betweenCelebrate: null,
-                    lastResultsHtml: html + '<p><b>최종 우승: ' + escapeHtml(winName) + '</b> (새 방장)</p>'
+                    lastResultsHtml: html + '<p><b>최종 우승: ' + escapeHtml(winName) + '</b> (새 방장)</p>' + rankNote
                 };
                 Object.keys(players).forEach(uid => {
                     updates['players/' + uid + '/status'] = 'active';
@@ -1736,7 +1774,7 @@ button {
                 const newUser = {
                     id, pw, school, name:n, student_id: s, birth:b,
                     hide_name_in_ranking: false,
-                    practice_count:0, classic_score:0, survival_score:0, timeattack_score:0
+                    practice_count:0, classic_score:0, survival_score:0, timeattack_score:0, king_score:0
                 };
                 if (emailRaw) newUser.email = emailRaw;
                 if (phoneRaw) newUser.phone = phoneRaw;
@@ -1962,6 +2000,9 @@ button {
                 const cnt = user.practice_count != null ? user.practice_count : 0;
                 const t = user.practice_time || '--:--';
                 el.innerHTML = `<div class="rank-my-box"><b>나의 기록</b> · 누적 <strong>${cnt}</strong>문제 · 시간 ${t}${extra}</div>`;
+            } else if (rankMode === 'king') {
+                const wins = user.king_score != null ? user.king_score : 0;
+                el.innerHTML = `<div class="rank-my-box"><b>나의 기록</b> · 인증 우승 <strong>${wins}</strong>회 <span style="color:#666;font-size:12px;">(한 게임당 처음 시작할 때 참가자 5명 이상인 방 우승만 집계)</span>${extra}</div>`;
             } else {
                 const sc = user[rankMode + '_score'] != null ? user[rankMode + '_score'] : 0;
                 const tm = rankMode === 'classic' ? (user.classic_time || '--:--') : (user[rankMode + '_time'] || '--:--');
@@ -2050,7 +2091,7 @@ button {
                 try { await refreshUserFromDb(); } catch(e) {}
             }
             updateRankBackButton();
-            const field = rankMode === 'practice' ? 'practice_count' : rankMode + '_score';
+            const field = rankMode === 'practice' ? 'practice_count' : (rankMode === 'king' ? 'king_score' : rankMode + '_score');
             try {
                 const snap = await db.ref('users').once('value');
                 const arr = [];
@@ -2088,8 +2129,12 @@ button {
                         : `<b>${u.name || ''} <small style="color:#999;">(${u.id})</small></b>`;
                     const valStr = rankMode === 'practice'
                         ? ('누적 ' + (u.practice_count != null ? u.practice_count : 0) + '문제')
+                        : rankMode === 'king'
+                        ? ('인증 우승 ' + (u.king_score != null ? u.king_score : 0) + '회')
                         : ((u[field] != null ? u[field] : 0) + '점');
-                    const timeStr = u[rankMode + '_time'] || u['classic_time'] || '--:--';
+                    const timeStr = rankMode === 'king'
+                        ? '—'
+                        : (u[rankMode + '_time'] || u['classic_time'] || '--:--');
                     const uid = String(u.id || '');
                     const cb = showAdmin
                         ? `<label class="rank-admin-label"><input type="checkbox" class="rank-admin-cb" data-uid="${escapeAttr(uid)}" aria-label="${escapeAttr(uid)} 선택"></label>`
@@ -2165,7 +2210,8 @@ button {
                 { field: 'practice_count', label: '연습왕', icon: '📚', cardClass: 'login-top3-card--practice' },
                 { field: 'classic_score', label: '클래식', icon: '🎯', cardClass: 'login-top3-card--classic' },
                 { field: 'survival_score', label: '서바이벌', icon: '💔', cardClass: 'login-top3-card--survival' },
-                { field: 'timeattack_score', label: '타임어택', icon: '⏱️', cardClass: 'login-top3-card--timeattack' }
+                { field: 'timeattack_score', label: '타임어택', icon: '⏱️', cardClass: 'login-top3-card--timeattack' },
+                { field: 'king_score', label: '왕중왕', icon: '⚔️', cardClass: 'login-top3-card--king' }
             ];
             try {
                 const snap = await db.ref('users').once('value');
