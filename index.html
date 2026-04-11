@@ -74,15 +74,24 @@
             margin: 0;
         }
 
-        /* 3. 일반 입력창/선택창 설정: 너비 100% */
-        input, select { 
-            width: 100%; 
-            padding: 12px; 
+        /* 3. 일반 입력창/선택창 설정: 너비 100% (체크·라디오는 제외) */
+        input:not([type="checkbox"]):not([type="radio"]), select {
+            width: 100%;
+            padding: 12px;
             margin: 8px 0; /* 위아래 간격 */
-            border: 1px solid #ddd; 
-            border-radius: 8px; 
-            font-size: 15px; 
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
             display: block;
+        }
+        input[type="checkbox"],
+        input[type="radio"] {
+            width: auto;
+            max-width: none;
+            display: inline-block;
+            margin: 0 6px 0 0;
+            padding: 0;
+            vertical-align: middle;
         }
     
     /* 4. 중복확인 버튼과 아이디 입력창을 감싸는 그룹 */
@@ -2444,8 +2453,12 @@ button {
             const n = normalizeForBadwordCheck(s);
             const bad = [
                 '시발', '씨발', '씨팔', '시팔', 'ㅅㅂ', 'ㅆㅂ', 'ㅂㅅ', '병신', '븅신', '벙신', '좆', '좃', '존나', '좆나', '지랄', '씹', '느금', '니애미', '엿먹',
-                '개새', '개씨', '개좆', '개새끼',
-                'fuck', 'shit', 'bitch', 'dick', 'cock', 'piss', 'damn', 'asshole', 'bastard', 'cunt', 'slut', 'whore'
+                '개새', '개씨', '개좆', '개새끼', '시1발', '씨1발', 'ㅅ1ㅂ', 'ㅆ1ㅂ', '시바', '씨바', '씌발', '씹할', '병1신', 'ㅂ1ㅅ', '빙신', '병쉰', '병싄',
+                '좃같', '좆같', 'ㅈ같', '존1나', '존1내', '존내', '좃나', '지1랄', 'ㅈㄹ', '지럴', '씹새', '씹새끼', '씹년', '씹놈', '개같', '개같이', '개새1끼', '개새키', '개쉐이', '개쉑',
+                '꺼져', '닥쳐', '꺼져라', '입닥쳐', '니애비', '니엄마', '느금마', '니애미씨발', '애미', '애비', '엄창', '애미뒤진', '걸레', '창녀', '보지', '자지', '보짓', '자짓',
+                '딸딸이', '딸치', '야동', '섹스', '섹', '성관계', '후장', '애널', '오럴', '자위', 'ㅅㅅ', 'ㅆㅅ', 'ㅆㅆ',
+                'fuck', 'shit', 'bitch', 'dick', 'cock', 'piss', 'damn', 'asshole', 'bastard', 'cunt', 'slut', 'whore', 'fuck you', 'fucking', 'motherfucker',
+                'shitty', 'bullshit', 'bitches', 'son of bitch', 'dickhead', 'ass', 'asshole', 'assholee', 'cum', 'cumming', 'sex', 'porn', 'fuck you', 'fucking', 'motherfucker'
             ];
             for (let i = 0; i < bad.length; i++) {
                 if (n.indexOf(bad[i]) !== -1) return true;
