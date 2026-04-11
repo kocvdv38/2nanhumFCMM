@@ -226,6 +226,16 @@ button {
     .rank-1 { background: #fff9e6; border: 1px solid #ffd700; box-shadow: 0 2px 5px rgba(255,215,0,0.2); }
     .rank-school { font-size: 11px; color: #666; margin-top: 2px; }
     .rank-info { flex: 1; text-align: left; }
+    .rank-my-box {
+        background: #e7f1ff;
+        border: 1px solid #b8d4f0;
+        border-radius: 10px;
+        padding: 12px 14px;
+        text-align: left;
+        font-size: 14px;
+        color: #333;
+    }
+    .rank-my-box strong { color: #007bff; }
     </style>
 </head>
 <body>
@@ -387,6 +397,7 @@ button {
             <div id="tab-survival" class="rank-tab" onclick="fetchRanking('survival')">서바이벌</div>
             <div id="tab-timeattack" class="rank-tab" onclick="fetchRanking('timeattack')">타임어택</div>
         </div>
+        <div id="rank-my-record" class="hidden" style="margin-bottom:14px;"></div>
         <div id="rank-list"></div>
         <button class="btn-blue" onclick="location.reload()">메인으로</button>
     </div>
@@ -705,6 +716,32 @@ button {
         }
 
         // 결과 및 랭킹
+        async function refreshUserFromDb() {
+            if(!user || !user.id) return;
+            const s = await db.ref('users/' + user.id).once('value');
+            if(s.exists()) user = { ...s.val(), id: user.id };
+        }
+
+        function updateMyRecordPanel(rankMode) {
+            const el = document.getElementById('rank-my-record');
+            if(!el) return;
+            if(!user || !user.id) {
+                el.classList.add('hidden');
+                el.innerHTML = '';
+                return;
+            }
+            el.classList.remove('hidden');
+            if(rankMode === 'practice') {
+                const cnt = user.practice_count != null ? user.practice_count : 0;
+                const t = user.practice_time || '--:--';
+                el.innerHTML = `<div class="rank-my-box"><b>나의 기록</b> · 누적 <strong>${cnt}</strong>문제 · 시간 ${t}</div>`;
+            } else {
+                const sc = user[rankMode + '_score'] != null ? user[rankMode + '_score'] : 0;
+                const tm = rankMode === 'classic' ? (user.classic_time || '--:--') : (user[rankMode + '_time'] || '--:--');
+                el.innerHTML = `<div class="rank-my-box"><b>나의 기록</b> · <strong>${sc}</strong>점 · ${tm}</div>`;
+            }
+        }
+
         async function persistGameResultAndShowRanking() {
             clearInterval(timerInterval);
             document.getElementById('quiz-box').classList.add('hidden');
@@ -719,7 +756,8 @@ button {
                 if(mode === 'classic') updates[`users/${user.id}/classic_time`] = timeStr;
             }
             await db.ref().update(updates);
-            fetchRanking(mode);
+            await refreshUserFromDb();
+            await fetchRanking(mode);
         }
         async function endGame() {
             await persistGameResultAndShowRanking();
@@ -729,34 +767,57 @@ button {
             persistGameResultAndShowRanking().catch(() => alert('저장에 실패했습니다.'));
         }
 
-        function fetchRanking(rankMode) {
+        async function fetchRanking(rankMode) {
             document.querySelectorAll('.rank-tab').forEach(t => t.classList.remove('active-tab'));
             document.getElementById('tab-'+rankMode).classList.add('active-tab');
             const list = document.getElementById('rank-list');
             list.innerHTML = "로딩 중...";
+            if(user && user.id) {
+                try { await refreshUserFromDb(); } catch(e) {}
+            }
+            updateMyRecordPanel(rankMode);
             const field = rankMode === 'practice' ? 'practice_count' : rankMode + '_score';
-            db.ref('users').orderByChild(field).limitToLast(10).once('value', s => {
-                const arr = []; s.forEach(c => arr.push(c.val())); arr.reverse();
-                list.innerHTML = arr.map((u, i) => {
+            try {
+                const snap = await db.ref('users').once('value');
+                const arr = [];
+                snap.forEach(c => {
+                    const v = c.val();
+                    if(!v) return;
+                    arr.push({ ...v, id: v.id != null ? v.id : c.key });
+                });
+                arr.sort((a, b) => {
+                    const va = Number(a[field]) || 0;
+                    const vb = Number(b[field]) || 0;
+                    return vb - va;
+                });
+                const top = arr.slice(0, 10);
+                list.innerHTML = top.map((u, i) => {
                     const hideName = u.hide_name_in_ranking === true;
                     const titleLine = hideName
                         ? `<b>${u.id || ''}</b>`
                         : `<b>${u.name || ''} <small style="color:#999;">(${u.id})</small></b>`;
+                    const valStr = rankMode === 'practice'
+                        ? ('누적 ' + (u.practice_count != null ? u.practice_count : 0) + '문제')
+                        : ((u[field] != null ? u[field] : 0) + '점');
+                    const timeStr = u[rankMode + '_time'] || u['classic_time'] || '--:--';
                     return `
-                    <div class="rank-item ${i==0?'rank-1':''}">
+                    <div class="rank-item ${i===0?'rank-1':''}">
                         <b style="width:25px;">${i+1}</b>
                         <div class="rank-info">
                             ${titleLine}<br>
                             <div class="rank-school">${u.school || "학교 정보 없음"}</div>
                             <small style="color:#dc3545; font-weight:bold;">
-                                ${rankMode==='practice'?'누적 '+u.practice_count+'문제':u[field]+'점'} 
-                                (${u[rankMode+'_time'] || u['classic_time'] || '--:--'})
+                                ${valStr}
+                                (${timeStr})
                             </small>
                         </div>
                     </div>
                 `;
                 }).join('');
-            });
+                if(top.length === 0) list.innerHTML = '<p style="color:#666;">표시할 기록이 없습니다.</p>';
+            } catch(e) {
+                list.innerHTML = '<p style="color:#c00;">랭킹을 불러오지 못했습니다. 네트워크 또는 권한 설정을 확인해 주세요.</p>';
+            }
         }
         function openRank() { document.getElementById('login-box').classList.add('hidden'); document.getElementById('rank-box').classList.remove('hidden'); fetchRanking('practice'); }
         function openRankFromMode() {
