@@ -25,5 +25,14 @@
     "answer": 3,
     "explanation": "",
     "image_file": "lathe_25_01_03.png"
-  }
+  },
+  {
+    "id": 4,
+    "session": "25-01",
+    "question": "그림과 같이 부품의 일부를 도시하는 것으로 충분한 경우에는 그 필요 부분만을 표시할 수 있는 투상도는?",
+    "options": ["회전 투상도", "부분 투상도", "국부 투상도", "요점 투상도"],
+    "answer": 3,
+    "explanation": "",
+    "image_file": null
+  }  
 ]
