@@ -10,10 +10,28 @@
 /* 1. 모든 요소의 크기 계산을 테두리 포함으로 고정 */
         * { box-sizing: border-box; }
 
-        body { font-family: 'Malgun Gothic', sans-serif; text-align: center; padding: 20px; background: #f0f2f5; color: #333; }
+        html {
+            -webkit-text-size-adjust: 100%;
+        }
+        body {
+            font-family: 'Malgun Gothic', sans-serif;
+            text-align: center;
+            padding: 20px;
+            background: #f0f2f5;
+            color: #333;
+            overflow-x: hidden;
+            max-width: 100vw;
+        }
         
         /* 2. 카드의 패딩을 고정 (여백 관리의 기준) */
-        .card { background: white; padding: 30px; border-radius: 15px; max-width: 500px; margin: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: min(500px, 100%);
+            margin: auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
         .hidden { display: none; }
 
         /* 3. 일반 입력창/선택창 설정: 너비 100% */
@@ -70,9 +88,13 @@ button {
 
     /* 로그인 상자 안의 두 버튼만 나란히 배치 */
     #login-box button {
-        width: 46%;        /* 두 버튼이 들어갈 수 있게 폭 조절 */
+        width: 46%;
         display: inline-block;
-        margin: 10px 1%;   /* 버튼 사이 간격 */
+        margin: 10px 1%;
+        white-space: nowrap;
+        padding: 12px 8px;
+        font-size: 14px;
+        vertical-align: middle;
     }
 
     .login-footer {
@@ -279,6 +301,94 @@ button {
         color: #888;
         text-align: center;
         padding: 4px 0;
+    }
+
+    /* 모바일·좁은 화면 */
+    @media (max-width: 520px) {
+        body {
+            padding: 12px 10px 20px;
+        }
+        .card {
+            padding: 18px 14px;
+            border-radius: 12px;
+        }
+        #login-box h1 {
+            font-size: 1.6rem;
+            margin-bottom: 22px !important;
+        }
+        #login-box button {
+            width: 100%;
+            display: block;
+            margin: 8px 0;
+        }
+        .mode-title {
+            font-size: 1.15rem;
+            line-height: 1.3;
+            word-break: keep-all;
+        }
+        .mode-header {
+            grid-template-columns: 40px 1fr 40px;
+        }
+        .btn-profile-icon,
+        .btn-rank-icon {
+            width: 40px !important;
+            height: 40px !important;
+        }
+        .btn-profile-icon svg,
+        .btn-rank-icon svg {
+            width: 20px;
+            height: 20px;
+        }
+        .rank-tabs {
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .rank-tab {
+            flex: 1 1 calc(50% - 4px);
+            min-width: 0;
+            font-size: 11px;
+            padding: 10px 4px;
+            margin: 0;
+        }
+        #game-header {
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px 12px;
+            font-size: 11px;
+            line-height: 1.35;
+        }
+        #game-header > div {
+            min-width: 0;
+        }
+        .item-container {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .item-btn {
+            flex: 1 1 30%;
+            min-width: 88px;
+        }
+        .input-group {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .input-group input {
+            width: 100%;
+        }
+        .input-group button {
+            width: 100%;
+            padding: 12px;
+        }
+        #quiz-box h3 {
+            font-size: 1.05rem;
+            word-break: keep-all;
+            line-height: 1.45;
+        }
+        .rank-item {
+            font-size: 13px;
+            padding: 10px;
+        }
     }
     </style>
 </head>
