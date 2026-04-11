@@ -2,7 +2,7 @@
   "name": "CATCH CERT - School & Game Pro",
   "short_name": "CATCH CERT",
   "description": "기능사 퀴즈 · 랭킹",
-  "start_url": "./기능사.html",
+  "start_url": "https://kocvdv38.github.io/2nanhumFCMM/",
   "scope": "./",
   "display": "standalone",
   "background_color": "#f5f6f8",
