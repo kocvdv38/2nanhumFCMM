@@ -2,30 +2,79 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>기능사 자격증 고속 퀴즈</title>
-    <!-- Firebase 라이브러리 추가 -->
+    <!-- Firebase 라이브러리 (버전 9 호환성 모드) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
-        /* (기존 CSS와 동일) */
-        body { font-family: sans-serif; text-align: center; padding: 20px; background: #f0f2f5; }
-        .card { background: white; padding: 25px; border-radius: 12px; max-width: 500px; margin: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        body { font-family: 'Malgun Gothic', sans-serif; text-align: center; padding: 20px; background: #f0f2f5; color: #333; }
+        .card { background: white; padding: 25px; border-radius: 12px; max-width: 450px; margin: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .hidden { display: none; }
-        input { width: 85%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; }
-        button { width: 90%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin: 5px 0; }
+        input { width: 85%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; }
+        button { width: 90%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin: 5px 0; font-size: 16px; }
         button:hover { background: #0056b3; }
-        .sub-btn { background: #6c757d; }
-        .option-btn { background: #f8f9fa; color: #333; border: 1px solid #ddd; text-align: left; }
+        .sub-btn { background: #6c757d; font-size: 14px; }
+        .option-btn { background: #f8f9fa; color: #333; border: 1px solid #ddd; text-align: left; margin: 8px 0; }
+        .option-btn:hover { background: #e9ecef; }
         img { max-width: 100%; border-radius: 5px; margin: 10px 0; }
+        #rank-list { text-align: left; margin-top: 15px; }
+        #rank-list p { border-bottom: 1px solid #eee; padding: 5px; margin: 0; }
     </style>
 </head>
 <body>
 
-<!-- (1~5 로그인, 회원가입, 과목선택, 퀴즈, 랭킹 섹션은 기존 HTML과 동일하게 유지) -->
-<!-- 화면 구조는 이전 답변과 똑같이 만드시면 됩니다. 아래 자바스크립트가 핵심입니다. -->
+    <!-- 1. 로그인 섹션 -->
+    <div id="login-box" class="card">
+        <h2>로그인</h2>
+        <input type="text" id="l-id" placeholder="아이디"><br>
+        <input type="password" id="l-pw" placeholder="비밀번호"><br>
+        <button id="login-btn" onclick="login()">로그인</button>
+        <p onclick="toggleView(true)" style="color:#007bff; cursor:pointer; font-size:14px;">처음이신가요? 회원가입</p>
+    </div>
 
-<script>
-    // 1. Firebase 설정 (본인의 정보로 교체하세요)
+    <!-- 2. 회원가입 섹션 -->
+    <div id="reg-box" class="card hidden">
+        <h2>회원가입</h2>
+        <input type="text" id="r-id" placeholder="아이디">
+        <input type="password" id="r-pw" placeholder="비밀번호">
+        <input type="text" id="r-sid" placeholder="학번">
+        <input type="text" id="r-name" placeholder="이름">
+        <input type="text" id="r-birth" placeholder="생년월일(6자리)">
+        <button onclick="register()">가입완료</button>
+        <p onclick="toggleView(false)" style="color:#007bff; cursor:pointer; font-size:14px;">로그인으로 돌아가기</p>
+    </div>
+
+    <!-- 3. 과목 선택 섹션 -->
+    <div id="subject-box" class="card hidden">
+        <h2>과목을 선택하세요</h2>
+        <button class="sub-btn" onclick="loadSubject('drawing.json', '기계제도')">전산응용기계제도기능사</button>
+        <button class="sub-btn" onclick="loadSubject('lathe.json', '선반')">컴퓨터응용선반기능사</button>
+        <button class="sub-btn" onclick="loadSubject('milling.json', '밀링')">컴퓨터응용밀링기능사</button>
+        <button class="sub-btn" onclick="loadSubject('assembly.json', '기계조립')">기계조립기능사</button>
+        <button class="sub-btn" onclick="loadSubject('maintenance.json', '설비보전')">설비보전기능사</button>
+        <button class="sub-btn" onclick="loadSubject('automation.json', '자동화설비')">자동화설비기능사</button>
+        <button class="sub-btn" onclick="loadSubject('3dprint.json', '3D프린터')">3D프린터운용기능사</button>
+        <button class="sub-btn" onclick="loadSubject('welding.json', '용접')">피복아크용접기능사</button>
+    </div>
+
+    <!-- 4. 퀴즈 섹션 -->
+    <div id="quiz-box" class="card hidden">
+        <h3 id="q-txt"></h3>
+        <div id="q-img"></div>
+        <div id="q-opts"></div>
+        <p>현재 점수: <span id="cur-score" style="color:red; font-weight:bold;">0</span></p>
+    </div>
+
+    <!-- 5. 랭킹 섹션 -->
+    <div id="rank-box" class="card hidden">
+        <h2>실시간 전체 랭킹</h2>
+        <div id="rank-list"></div>
+        <button onclick="location.reload()" style="margin-top:20px;">다른 과목 풀기</button>
+    </div>
+
+    <script>
+        // 사용자님의 Firebase 설정값 적용
 const firebaseConfig = {
   apiKey: "AIzaSyBw4aKlyf8JGEXlTpvIXBsCr1XOFJ2eAzU",
   authDomain: "catchcertification-1d63d.firebaseapp.com",
@@ -36,99 +85,117 @@ const firebaseConfig = {
   measurementId: "G-W0P90QVS37"
 };
 
-    // Firebase 초기화
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+        // Firebase 초기화
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-    let problems = [], currentIdx = 0, score = 0, user = null, selectedSubject = "";
+        let problems = [], currentIdx = 0, score = 0, user = null, selectedSubject = "";
 
-    // 2. 로그인 (빛의 속도로 작동)
-    async function login() {
-        const id = document.getElementById('l-id').value.trim();
-        const pw = document.getElementById('l-pw').value.trim();
-        const btn = document.getElementById('login-btn');
-        btn.innerText = "로그인 중...";
-
-        db.ref('users/' + id).once('value', (snapshot) => {
-            const userData = snapshot.val();
-            if (userData && userData.pw === pw) {
-                user = userData;
-                document.getElementById('login-box').classList.add('hidden');
-                document.getElementById('subject-box').classList.remove('hidden');
-            } else {
-                alert("아이디 또는 비밀번호가 틀립니다.");
-            }
-            btn.innerText = "로그인";
-        });
-    }
-
-    // 3. 회원가입
-    async function register() {
-        const id = document.getElementById('r-id').value.trim();
-        const pw = document.getElementById('r-pw').value.trim();
-        const name = document.getElementById('r-name').value;
-        const sid = document.getElementById('r-sid').value;
-        const birth = document.getElementById('r-birth').value;
-
-        if(!id || !pw) return alert("필수 정보를 입력하세요.");
-
-        db.ref('users/' + id).set({
-            id: id, pw: pw, name: name, student_id: sid, birth: birth, score: 0
-        }).then(() => {
-            alert("가입 완료!");
-            location.reload();
-        });
-    }
-
-    // (loadSubject, showQuiz 등 퀴즈 진행 함수는 기존과 동일하게 유지)
-    function loadSubject(fileName, subjectName) {
-        selectedSubject = subjectName;
-        fetch(fileName).then(r => r.json()).then(data => {
-            problems = data; currentIdx = 0; score = 0;
-            document.getElementById('subject-box').classList.add('hidden');
-            document.getElementById('quiz-box').classList.remove('hidden');
-            showQuiz();
-        });
-    }
-
-    function showQuiz() {
-        if (currentIdx >= problems.length) return finish();
-        const p = problems[currentIdx];
-        document.getElementById('q-txt').innerText = p.question;
-        document.getElementById('q-img').innerHTML = p.image_file ? `<img src="images/${p.image_file}">` : "";
-        const optDiv = document.getElementById('q-opts'); optDiv.innerHTML = "";
-        p.options.forEach((o, i) => {
-            const btn = document.createElement('button');
-            btn.className = "option-btn"; btn.innerText = (i + 1) + ". " + o;
-            btn.onclick = () => {
-                if (i + 1 === p.answer) score += 10;
-                document.getElementById('cur-score').innerText = score;
-                currentIdx++; showQuiz();
-            };
-            optDiv.appendChild(btn);
-        });
-    }
-
-    // 4. 점수 저장 및 실시간 랭킹 (거의 즉시 반영)
-    async function finish() {
-        document.getElementById('quiz-box').classList.add('hidden');
-        document.getElementById('rank-box').classList.remove('hidden');
-        
-        // 기존 최고 점수보다 높을 때만 업데이트
-        if (score > (user.score || 0)) {
-            db.ref('users/' + user.id).update({ score: score });
+        function toggleView(isReg) {
+            document.getElementById('login-box').classList.toggle('hidden', isReg);
+            document.getElementById('reg-box').classList.toggle('hidden', !isReg);
         }
 
-        // 전체 랭킹 불러오기 (점수순 정렬)
-        db.ref('users').orderByChild('score').limitToLast(10).once('value', (snapshot) => {
-            const users = [];
-            snapshot.forEach((child) => { users.push(child.val()); });
-            users.reverse(); // 내림차순 정렬
+        // 로그인
+        async function login() {
+            const id = document.getElementById('l-id').value.trim();
+            const pw = document.getElementById('l-pw').value.trim();
+            const btn = document.getElementById('login-btn');
+            if(!id || !pw) return alert("아이디와 비밀번호를 입력하세요.");
 
-            const list = document.getElementById('rank-list');
-            list.innerHTML = users.map((u, i) => `<p>${i+1}위: ${u.name} - ${u.score}점</p>`).join('');
-        });
-    }
-</script>
+            btn.innerText = "로그인 중...";
+            btn.disabled = true;
+
+            db.ref('users/' + id).once('value', (snapshot) => {
+                const userData = snapshot.val();
+                if (userData && userData.pw === pw) {
+                    user = userData;
+                    document.getElementById('login-box').classList.add('hidden');
+                    document.getElementById('subject-box').classList.remove('hidden');
+                } else {
+                    alert("아이디 또는 비밀번호가 틀립니다.");
+                }
+                btn.innerText = "로그인";
+                btn.disabled = false;
+            });
+        }
+
+        // 회원가입
+        async function register() {
+            const id = document.getElementById('r-id').value.trim();
+            const pw = document.getElementById('r-pw').value.trim();
+            const name = document.getElementById('r-name').value;
+            const sid = document.getElementById('r-sid').value;
+            const birth = document.getElementById('r-birth').value;
+
+            if(!id || !pw || !name) return alert("필수 정보를 모두 입력하세요.");
+
+            db.ref('users/' + id).set({
+                id: id, pw: pw, name: name, student_id: sid, birth: birth, score: 0
+            }).then(() => {
+                alert("가입 완료! 로그인 해주세요.");
+                location.reload();
+            });
+        }
+
+        // 과목 로드
+        function loadSubject(fileName, subjectName) {
+            selectedSubject = subjectName;
+            fetch(fileName)
+                .then(r => r.json())
+                .then(data => {
+                    problems = data; currentIdx = 0; score = 0;
+                    document.getElementById('subject-box').classList.add('hidden');
+                    document.getElementById('quiz-box').classList.remove('hidden');
+                    showQuiz();
+                })
+                .catch(e => alert("문제를 불러올 수 없습니다. (" + fileName + ")"));
+        }
+
+        // 퀴즈 표시
+        function showQuiz() {
+            if (currentIdx >= problems.length) return finish();
+            const p = problems[currentIdx];
+            document.getElementById('q-txt').innerText = (currentIdx + 1) + ". " + p.question;
+            document.getElementById('q-img').innerHTML = p.image_file ? `<img src="images/${p.image_file}">` : "";
+            
+            const optDiv = document.getElementById('q-opts');
+            optDiv.innerHTML = "";
+            p.options.forEach((o, i) => {
+                const btn = document.createElement('button');
+                btn.className = "option-btn";
+                btn.innerText = (i + 1) + ") " + o;
+                btn.onclick = () => {
+                    if (i + 1 === p.answer) score += 10;
+                    document.getElementById('cur-score').innerText = score;
+                    currentIdx++;
+                    showQuiz();
+                };
+                optDiv.appendChild(btn);
+            });
+        }
+
+        // 종료 및 랭킹
+        async function finish() {
+            document.getElementById('quiz-box').classList.add('hidden');
+            document.getElementById('rank-box').classList.remove('hidden');
+            document.getElementById('rank-list').innerHTML = "<p>기록 중...</p>";
+            
+            // 최고 점수 갱신
+            if (score > (user.score || 0)) {
+                await db.ref('users/' + user.id).update({ score: score });
+            }
+
+            // 실시간 랭킹 로드 (상위 10명)
+            db.ref('users').orderByChild('score').limitToLast(10).once('value', (snapshot) => {
+                const users = [];
+                snapshot.forEach((child) => { users.push(child.val()); });
+                users.reverse(); // 내림차순
+
+                const list = document.getElementById('rank-list');
+                list.innerHTML = users.map((u, i) => `<p>${i+1}위: ${u.name} - ${u.score}점</p>`).join('');
+            });
+        }
+    </script>
 </body>
 </html>
