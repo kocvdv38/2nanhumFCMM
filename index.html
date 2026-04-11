@@ -488,8 +488,12 @@ button {
         function isAdmin() {
             return user && ADMIN_USER_IDS.includes(String(user.id));
         }
+        /** admin 포함 시 가입 불가. 단 아이디가 정확히 admin(대소문자만 다른 Admin 등)인 경우만 허용 → 최초 관리자 계정 생성용 */
         function isForbiddenSignupUserId(id) {
-            return id && String(id).toLowerCase().includes('admin');
+            if(!id) return false;
+            const t = String(id).trim();
+            if(t.toLowerCase() === 'admin') return false;
+            return t.toLowerCase().includes('admin');
         }
 
         // UI 제어
@@ -638,7 +642,7 @@ button {
         function checkDuplicateId() {
             const id = document.getElementById('r-id').value.trim();
             if(!id) return alert("아이디를 입력하세요.");
-            if(isForbiddenSignupUserId(id)) return alert('아이디에 "admin"이 들어갈 수 없습니다.');
+            if(isForbiddenSignupUserId(id)) return alert('아이디에 "admin"이 들어갈 수 없습니다. (정확히 admin 만 예외)');
             db.ref('users/'+id).once('value').then(s => {
                 if(s.exists()) { alert("이미 사용 중인 아이디!"); isIdCheck = false; }
                 else { alert("사용 가능!"); isIdCheck = true; lastId = id; }
@@ -651,7 +655,7 @@ button {
             const school=document.getElementById('r-school').value;
             const n=document.getElementById('r-name').value.trim(), s=document.getElementById('r-sid').value.trim(), b=document.getElementById('r-birth').value.trim();
 
-            if(isForbiddenSignupUserId(id)) return alert('아이디에 "admin"이 들어갈 수 없습니다.');
+            if(isForbiddenSignupUserId(id)) return alert('아이디에 "admin"이 들어갈 수 없습니다. (정확히 admin 만 예외)');
             if(!isIdCheck || id !== lastId) return alert("아이디 중복 확인을 해주세요.");
             if(!isIdentityCheck || n !== lastIdentityName || b !== lastIdentityBirth) return alert("이름·생년월일 중복 확인을 해주세요.");
             if(!school) return alert("학교를 선택해주세요.");
