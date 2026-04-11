@@ -75,20 +75,32 @@
             location.reload();
         }
 
-        async function login() {
-            const id = document.getElementById('login-id').value;
-            const pw = document.getElementById('login-pw').value;
-            const res = await fetch(SCRIPT_URL);
-            const users = await res.json();
-            
-            const user = users.find(u => u.id === id && u.pw === pw);
-            if (user) {
-                currentUser = user;
-                startQuiz();
-            } else {
-                alert("아이디 또는 비밀번호가 틀립니다.");
-            }
+async function login() {
+    const idInput = document.getElementById('login-id').value.trim();
+    const pwInput = document.getElementById('login-pw').value.trim();
+    
+    try {
+        // 구글 시트 데이터 가져오기
+        const res = await fetch(SCRIPT_URL);
+        const users = await res.json();
+        
+        console.log("불러온 사용자 목록:", users); // 브라우저 개발자 도구(F12)에서 확인 가능
+
+        // 아이디와 비밀번호 대조
+        const user = users.find(u => u.id === idInput && u.pw === pwInput);
+        
+        if (user) {
+            currentUser = user;
+            alert(user.name + "님, 환영합니다!");
+            startQuiz();
+        } else {
+            alert("아이디 또는 비밀번호가 틀립니다.\n입력값: " + idInput + " / " + pwInput);
         }
+    } catch (e) {
+        console.error(e);
+        alert("데이터를 불러오는 데 실패했습니다. 스크립트 URL과 배포 설정을 확인하세요.");
+    }
+}
 
         function startQuiz() {
             document.getElementById('login-section').classList.add('hidden');
