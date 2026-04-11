@@ -60,6 +60,14 @@ button {
         transition: 0.2s; 
     }
 
+    /* 로그인: 아이디·비밀번호 사이 간격만 촘촘하게 (<br> 제거와 맞춤) */
+    #login-box > input {
+        margin: 0 0 8px 0;
+    }
+    #login-box > input:last-of-type {
+        margin-bottom: 14px;
+    }
+
     /* 로그인 상자 안의 두 버튼만 나란히 배치 */
     #login-box button {
         width: 46%;        /* 두 버튼이 들어갈 수 있게 폭 조절 */
@@ -118,8 +126,8 @@ button {
     <!-- 1. 로그인 섹션 -->
     <div id="login-box" class="card">
         <h1 style="color:#007bff; margin-bottom:30px;">CATCH CERT</h1>
-        <input type="text" id="l-id" placeholder="아이디"><br>
-        <input type="password" id="l-pw" placeholder="비밀번호"><br>
+        <input type="text" id="l-id" placeholder="아이디">
+        <input type="password" id="l-pw" placeholder="비밀번호">
         <button class="btn-blue" onclick="login()">로그인</button>
         <button class="btn-orange" onclick="openRank()">🏆 랭킹 보기</button>
         <p onclick="toggleView(true)" style="color:#007bff; cursor:pointer; margin-top:15px;">처음이신가요? 회원가입</p>
@@ -128,9 +136,9 @@ button {
     <!-- 2. 회원가입 섹션 -->
     <div id="reg-box" class="card hidden">
         <h2>회원가입</h2>
-        <div style="display:flex; justify-content:center; gap:5px; width:95%; margin:auto;">
-            <input type="text" id="r-id" placeholder="아이디" oninput="resetIdCheck()" style="width:65%;">
-            <button onclick="checkDuplicateId()" style="width:25%; padding:10px; font-size:12px; background:#6c757d; color:white;">중복확인</button>
+        <div class="input-group">
+            <input type="text" id="r-id" placeholder="아이디" oninput="resetIdCheck()">
+            <button type="button" class="btn-gray" onclick="checkDuplicateId()">중복확인</button>
         </div>
         <input type="password" id="r-pw" placeholder="비밀번호">
         
@@ -169,6 +177,12 @@ button {
         </div>
         <button class="btn-blue" onclick="prepareQuiz('drawing.json')">전산응용기계제도기능사</button>
         <button class="btn-blue" onclick="prepareQuiz('lathe.json')">컴퓨터응용선반기능사</button>
+        <button class="sub-btn" onclick="prepareQuiz('milling.json')">컴퓨터응용밀링기능사</button>
+        <button class="sub-btn" onclick="prepareQuiz('assembly.json')">기계조립기능사</button>
+        <button class="sub-btn" onclick="prepareQuiz('maintenance.json')">설비보전기능사</button>
+        <button class="sub-btn" onclick="prepareQuiz('automation.json')">자동화설비기능사</button>
+        <button class="sub-btn" onclick="prepareQuiz('3dprint.json')">3D프린터운용기능사</button>
+        <button class="sub-btn" onclick="prepareQuiz('welding.json')">피복아크용접기능사</button>
     </div>
 
     <!-- 5. 퀴즈 화면 -->
