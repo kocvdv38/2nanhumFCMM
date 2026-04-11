@@ -74,6 +74,87 @@ button {
         display: inline-block;
         margin: 10px 1%;   /* 버튼 사이 간격 */
     }
+
+    .login-footer {
+        margin-top: 22px;
+        padding-top: 14px;
+        border-top: 1px solid #eee;
+        font-size: 11px;
+        line-height: 1.5;
+        color: #888;
+    }
+    .login-footer a {
+        color: #666;
+        text-decoration: none;
+    }
+    .login-footer a:hover {
+        text-decoration: underline;
+    }
+
+    #profile-box .profile-field-label {
+        display: block;
+        text-align: left;
+        font-size: 13px;
+        color: #666;
+        margin: 12px 0 4px 0;
+    }
+    #profile-box .profile-field-label--first {
+        margin-top: 0;
+    }
+    #profile-box #p-name[readonly] {
+        background: #f5f6f7;
+        cursor: default;
+        color: #444;
+    }
+
+    .sid-format-hint {
+        font-size: 12px;
+        color: #777;
+        text-align: left;
+        margin: 4px 0 10px 0;
+        line-height: 1.45;
+    }
+
+    /* 모드 선택: 제목 가운데 + 오른쪽 개인정보 아이콘 */
+    .mode-header {
+        display: grid;
+        grid-template-columns: 44px 1fr 44px;
+        align-items: center;
+        margin-bottom: 6px;
+    }
+    .mode-header-spacer { grid-column: 1; }
+    .mode-title {
+        grid-column: 2;
+        margin: 0;
+        font-size: 1.5em;
+        text-align: center;
+    }
+    .btn-profile-icon {
+        grid-column: 3;
+        justify-self: end;
+        width: 44px !important;
+        height: 44px;
+        padding: 0 !important;
+        margin: 0 !important;
+        border-radius: 50%;
+        background: #f1f3f5 !important;
+        color: #495057 !important;
+        border: 1px solid #dee2e6 !important;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .btn-profile-icon:hover {
+        background: #e9ecef !important;
+        color: #007bff !important;
+        border-color: #007bff !important;
+    }
+    .btn-profile-icon svg {
+        width: 22px;
+        height: 22px;
+        display: block;
+    }
     
     .btn-blue { background: #007bff; } 
     .btn-green { background: #28a745; }
@@ -131,6 +212,10 @@ button {
         <button class="btn-blue" onclick="login()">로그인</button>
         <button class="btn-orange" onclick="openRank()">🏆 랭킹 보기</button>
         <p onclick="toggleView(true)" style="color:#007bff; cursor:pointer; margin-top:15px;">처음이신가요? 회원가입</p>
+        <footer class="login-footer">
+            문의 및 요청: <a href="mailto:zx48xz@naver.com">zx48xz@naver.com</a><br>
+            © 2026. 주용호 All rights reserved.
+        </footer>
     </div>
 
     <!-- 2. 회원가입 섹션 -->
@@ -153,36 +238,82 @@ button {
             <option value="전주공업고등학교">전주공업고등학교</option>
         </select>
 
-        <input type="text" id="r-name" placeholder="이름 (한글 3~5자)">
+        <input type="text" id="r-name" placeholder="이름 (한글 3~5자)" oninput="resetIdentityCheck()">
         <input type="text" id="r-sid" placeholder="학번 (5자리)">
-        <input type="text" id="r-birth" placeholder="생년월일 (숫자 6자리)">
+        <p class="sid-format-hint">예시) 2학년 7반 1번 -&gt; 20701</p>
+        <input type="text" id="r-birth" placeholder="생년월일 (숫자 6자리)" oninput="resetIdentityCheck()">
+        <button type="button" class="btn-gray" onclick="checkDuplicateIdentity()">이름·생년월일 중복확인</button>
         <button class="btn-blue" onclick="register()">가입완료</button>
         <p onclick="toggleView(false)" style="color:#007bff; cursor:pointer;">로그인으로 돌아가기</p>
     </div>
 
     <!-- 3. 모드 선택 -->
     <div id="mode-box" class="card hidden">
-        <h2>모드 선택</h2>
+        <div class="mode-header">
+            <span class="mode-header-spacer" aria-hidden="true"></span>
+            <h2 class="mode-title">모드 선택</h2>
+            <button type="button" class="btn-profile-icon" onclick="openProfile()" aria-label="개인정보 변경" title="개인정보 변경">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+            </button>
+        </div>
+        <p id="mode-user-line" style="font-size:14px;color:#555;margin:0 0 12px 0;"></p>
         <button class="btn-green" onclick="selectMode('practice')">📖 연습하기 (공부량 랭킹)</button>
         <button class="btn-purple" onclick="selectMode('classic')">🏆 클래식 도전 (전체 풀이)</button>
         <button class="btn-red" onclick="selectMode('survival')">💔 서바이벌 (목숨 3개)</button>
         <button class="btn-orange" onclick="selectMode('timeattack')">⏱️ 타임 어택 (아이템전)</button>
     </div>
 
-    <!-- 4. 과목 및 회차 선택 -->
+    <!-- 3-1. 개인정보 변경 -->
+    <div id="profile-box" class="card hidden">
+        <h2>개인정보 변경</h2>
+        <p style="text-align:left;font-size:14px;color:#666;margin:0 0 12px 0;">아이디: <strong id="p-id-display"></strong></p>
+        <label for="p-name" class="profile-field-label profile-field-label--first">이름 <span style="font-weight:normal;color:#999;">(변경 불가)</span></label>
+        <div class="input-group profile-name-row">
+            <input type="text" id="p-name" placeholder="이름 (한글 3~5자)" maxlength="5" autocomplete="name" readonly tabindex="-1">
+            <button type="button" class="btn-gray" id="p-name-hide-btn" onclick="toggleRankingNameHide()" title="랭킹에서 이름 숨기기">숨기기</button>
+        </div>
+        <label for="p-pw" class="profile-field-label">비밀번호</label>
+        <input type="password" id="p-pw" placeholder="새 비밀번호 (변경하지 않으면 비워두세요)" autocomplete="new-password">
+        <label for="p-school" class="profile-field-label">학교</label>
+        <select id="p-school">
+            <option value="">학교 선택</option>
+            <option value="군산기계공업고등학교">군산기계공업고등학교</option>
+            <option value="수소에너지고등학교">수소에너지고등학교</option>
+            <option value="이리공업고등학교">이리공업고등학교</option>
+            <option value="전북기계공업고등학교">전북기계공업고등학교</option>
+            <option value="전북자동차고등학교">전북자동차고등학교</option>
+            <option value="전주공업고등학교">전주공업고등학교</option>
+        </select>
+        <label for="p-sid" class="profile-field-label">학번</label>
+        <input type="text" id="p-sid" placeholder="학번 (5자리)" inputmode="numeric">
+        <p class="sid-format-hint">예시) 2학년 7반 1번 -&gt; 20701</p>
+        <button type="button" class="btn-blue" onclick="saveProfile()">저장</button>
+        <button type="button" class="btn-gray" onclick="closeProfile()">취소</button>
+    </div>
+
+    <!-- 4. 과목 및 회차 선택 (연습: 과목 → 회차 순) -->
     <div id="subject-box" class="card hidden">
         <h2 id="subject-title">과목 선택</h2>
-        <div id="session-select-div" class="hidden">
-            <select id="session-val"><option value="25-01">2025년 1회차</option><option value="24-04">2024년 4회차</option></select>
+        <div id="subject-btns">
+            <button class="btn-blue" onclick="onSubjectPick('drawing.json')">전산응용기계제도기능사</button>
+            <button class="btn-blue" onclick="onSubjectPick('lathe.json')">컴퓨터응용선반기능사</button>
+            <button class="sub-btn" onclick="onSubjectPick('milling.json')">컴퓨터응용밀링기능사</button>
+            <button class="sub-btn" onclick="onSubjectPick('assembly.json')">기계조립기능사</button>
+            <button class="sub-btn" onclick="onSubjectPick('maintenance.json')">설비보전기능사</button>
+            <button class="sub-btn" onclick="onSubjectPick('automation.json')">자동화설비기능사</button>
+            <button class="sub-btn" onclick="onSubjectPick('3dprint.json')">3D프린터운용기능사</button>
+            <button class="sub-btn" onclick="onSubjectPick('welding.json')">피복아크용접기능사</button>
         </div>
-        <button class="btn-blue" onclick="prepareQuiz('drawing.json')">전산응용기계제도기능사</button>
-        <button class="btn-blue" onclick="prepareQuiz('lathe.json')">컴퓨터응용선반기능사</button>
-        <button class="sub-btn" onclick="prepareQuiz('milling.json')">컴퓨터응용밀링기능사</button>
-        <button class="sub-btn" onclick="prepareQuiz('assembly.json')">기계조립기능사</button>
-        <button class="sub-btn" onclick="prepareQuiz('maintenance.json')">설비보전기능사</button>
-        <button class="sub-btn" onclick="prepareQuiz('automation.json')">자동화설비기능사</button>
-        <button class="sub-btn" onclick="prepareQuiz('3dprint.json')">3D프린터운용기능사</button>
-        <button class="sub-btn" onclick="prepareQuiz('welding.json')">피복아크용접기능사</button>
+        <div id="session-select-div" class="hidden">
+            <p id="session-subject-label" style="font-size:14px;color:#555;margin:0 0 10px 0;"></p>
+            <select id="session-val" aria-label="회차 선택"><option value="25-01">2025년 1회차</option><option value="24-04">2024년 4회차</option></select>
+            <button type="button" class="btn-green" onclick="startPracticeFromSelection()">이 회차로 시작</button>
+            <button type="button" class="btn-gray" onclick="backToSubjectPick()">과목 다시 선택</button>
+        </div>
+        <button type="button" class="btn-gray" onclick="backToModeSelect()" style="margin-top:12px;">← 모드 선택으로</button>
     </div>
 
     <!-- 5. 퀴즈 화면 -->
@@ -239,16 +370,62 @@ button {
         const db = firebase.database();
 
         let user=null, quizList=[], currentIdx=0, score=0, mode='';
+        let pendingQuizFile = null;
+        const SUBJECT_LABELS = {
+            'drawing.json': '전산응용기계제도기능사',
+            'lathe.json': '컴퓨터응용선반기능사',
+            'milling.json': '컴퓨터응용밀링기능사',
+            'assembly.json': '기계조립기능사',
+            'maintenance.json': '설비보전기능사',
+            'automation.json': '자동화설비기능사',
+            '3dprint.json': '3D프린터운용기능사',
+            'welding.json': '피복아크용접기능사'
+        };
         let lives=3, timeLeft=60, totalTime=0, timerInterval, isShieldActive=false, isTimeFrozen=false;
         let items = { hint: 0, shield: 0, time: 0 }, streak = 0, isIdCheck = false, lastId = "";
+        let isIdentityCheck = false, lastIdentityName = "", lastIdentityBirth = "";
 
         // UI 제어
         function toggleView(r) { document.getElementById('login-box').classList.toggle('hidden', r); document.getElementById('reg-box').classList.toggle('hidden', !r); }
         function selectMode(m) {
             mode = m;
+            pendingQuizFile = null;
             document.getElementById('mode-box').classList.add('hidden');
             document.getElementById('subject-box').classList.remove('hidden');
-            document.getElementById('session-select-div').classList.toggle('hidden', m !== 'practice');
+            document.getElementById('subject-btns').classList.remove('hidden');
+            document.getElementById('session-select-div').classList.add('hidden');
+            document.getElementById('subject-title').textContent = '과목 선택';
+        }
+
+        function onSubjectPick(file) {
+            if (mode === 'practice') {
+                pendingQuizFile = file;
+                document.getElementById('subject-btns').classList.add('hidden');
+                document.getElementById('session-select-div').classList.remove('hidden');
+                document.getElementById('subject-title').textContent = '회차 선택';
+                document.getElementById('session-subject-label').textContent =
+                    '선택한 과목: ' + (SUBJECT_LABELS[file] || file);
+            } else {
+                prepareQuiz(file);
+            }
+        }
+        function backToSubjectPick() {
+            pendingQuizFile = null;
+            document.getElementById('subject-btns').classList.remove('hidden');
+            document.getElementById('session-select-div').classList.add('hidden');
+            document.getElementById('subject-title').textContent = '과목 선택';
+        }
+        function startPracticeFromSelection() {
+            if (!pendingQuizFile) return;
+            prepareQuiz(pendingQuizFile);
+        }
+        function backToModeSelect() {
+            pendingQuizFile = null;
+            document.getElementById('subject-btns').classList.remove('hidden');
+            document.getElementById('session-select-div').classList.add('hidden');
+            document.getElementById('subject-title').textContent = '과목 선택';
+            document.getElementById('subject-box').classList.add('hidden');
+            document.getElementById('mode-box').classList.remove('hidden');
         }
 
         // 로그인
@@ -257,13 +434,98 @@ button {
             const pw = document.getElementById('l-pw').value.trim();
             db.ref('users/' + id).once('value', s => {
                 const d = s.val();
-                if(d && String(d.pw) === String(pw)) { user = d; document.getElementById('login-box').classList.add('hidden'); document.getElementById('mode-box').classList.remove('hidden'); }
+                if(d && String(d.pw) === String(pw)) {
+                    user = { ...d, id: d.id || id };
+                    const line = (user.name ? user.name + ' · ' : '') + user.id;
+                    document.getElementById('mode-user-line').textContent = line;
+                    document.getElementById('login-box').classList.add('hidden');
+                    document.getElementById('mode-box').classList.remove('hidden');
+                }
                 else alert("아이디 또는 비밀번호 오류");
             });
         }
 
+        function openProfile() {
+            document.getElementById('mode-box').classList.add('hidden');
+            document.getElementById('profile-box').classList.remove('hidden');
+            document.getElementById('p-id-display').textContent = user.id;
+            document.getElementById('p-name').value = user.name || '';
+            document.getElementById('p-pw').value = '';
+            document.getElementById('p-school').value = user.school || '';
+            document.getElementById('p-sid').value = user.student_id || '';
+            syncProfileHideButton();
+        }
+        function syncProfileHideButton() {
+            const btn = document.getElementById('p-name-hide-btn');
+            if(!btn || !user) return;
+            if(user.hide_name_in_ranking) {
+                btn.textContent = '표시';
+                btn.title = '랭킹에 이름 표시';
+            } else {
+                btn.textContent = '숨기기';
+                btn.title = '랭킹에서 이름 숨기기';
+            }
+        }
+        function toggleRankingNameHide() {
+            if(!user) return;
+            const next = !user.hide_name_in_ranking;
+            if(next) alert("랭킹에서 이름이 보이지 않습니다.");
+            else alert("랭킹에 이름이 다시 표시됩니다.");
+            db.ref('users/' + user.id).update({ hide_name_in_ranking: next }).then(() => {
+                user.hide_name_in_ranking = next;
+                syncProfileHideButton();
+            }).catch(() => alert("저장에 실패했습니다."));
+        }
+        function closeProfile() {
+            document.getElementById('profile-box').classList.add('hidden');
+            document.getElementById('mode-box').classList.remove('hidden');
+        }
+        function saveProfile() {
+            if(!user) return;
+            const newPw = document.getElementById('p-pw').value.trim();
+            const school = document.getElementById('p-school').value;
+            const sid = document.getElementById('p-sid').value.trim();
+            if(!school) return alert("학교를 선택해주세요.");
+            if(!/^[1-3][0-9]{2}(0[1-9]|1[0-9]|20)$/.test(sid)) return alert("학번: 5자리 (01~20)");
+            const payload = { school, student_id: sid };
+            if(newPw) payload.pw = newPw;
+            db.ref('users/' + user.id).update(payload).then(() => {
+                if(newPw) user.pw = newPw;
+                user.school = school;
+                user.student_id = sid;
+                document.getElementById('p-pw').value = '';
+                const line = (user.name ? user.name + ' · ' : '') + user.id;
+                document.getElementById('mode-user-line').textContent = line;
+                alert("저장되었습니다.");
+                closeProfile();
+            }).catch(() => alert("저장에 실패했습니다."));
+        }
+
         // 회원가입
         function resetIdCheck() { isIdCheck = false; }
+        function resetIdentityCheck() { isIdentityCheck = false; }
+        function checkDuplicateIdentity() {
+            const n = document.getElementById('r-name').value.trim();
+            const b = document.getElementById('r-birth').value.trim();
+            if(!/^[가-힣]{3,5}$/.test(n)) return alert("이름: 한글 3~5자를 입력한 뒤 확인하세요.");
+            if(!/^\d{6}$/.test(b)) return alert("생년월일: 숫자 6자를 입력한 뒤 확인하세요.");
+            db.ref('users').once('value', s => {
+                let conflict = false;
+                s.forEach(child => {
+                    const u = child.val();
+                    if(u && u.name === n && String(u.birth) === String(b)) conflict = true;
+                });
+                if(conflict) {
+                    alert("이미 동일한 이름과 생년월일로 가입된 계정이 있습니다.");
+                    isIdentityCheck = false;
+                } else {
+                    alert("사용 가능합니다.");
+                    isIdentityCheck = true;
+                    lastIdentityName = n;
+                    lastIdentityBirth = b;
+                }
+            });
+        }
         function checkDuplicateId() {
             const id = document.getElementById('r-id').value.trim();
             if(!id) return alert("아이디를 입력하세요.");
@@ -276,17 +538,27 @@ button {
             const id=document.getElementById('r-id').value.trim(), pw=document.getElementById('r-pw').value.trim();
             const school=document.getElementById('r-school').value;
             const n=document.getElementById('r-name').value.trim(), s=document.getElementById('r-sid').value.trim(), b=document.getElementById('r-birth').value.trim();
-            
-            if(!isIdCheck || id !== lastId) return alert("중복 확인을 해주세요.");
+
+            if(!isIdCheck || id !== lastId) return alert("아이디 중복 확인을 해주세요.");
+            if(!isIdentityCheck || n !== lastIdentityName || b !== lastIdentityBirth) return alert("이름·생년월일 중복 확인을 해주세요.");
             if(!school) return alert("학교를 선택해주세요.");
             if(!/^[가-힣]{3,5}$/.test(n)) return alert("이름: 한글 3~5자");
             if(!/^[1-3][0-9]{2}(0[1-9]|1[0-9]|20)$/.test(s)) return alert("학번: 5자리 (01~20)");
             if(!/^\d{6}$/.test(b)) return alert("생년월일: 숫자 6자");
 
-            db.ref('users/'+id).set({
-                id, pw, school, name:n, student_id:s, birth:b,
-                practice_count:0, classic_score:0, survival_score:0, timeattack_score:0
-            }).then(() => { alert("가입 성공!"); location.reload(); });
+            db.ref('users').once('value', s => {
+                let identityDup = false;
+                s.forEach(c => {
+                    const u = c.val();
+                    if(u && u.name === n && String(u.birth) === String(b) && c.key !== id) identityDup = true;
+                });
+                if(identityDup) return alert("이미 동일한 이름과 생년월일로 가입된 계정이 있습니다.");
+                db.ref('users/'+id).set({
+                    id, pw, school, name:n, student_id:s, birth:b,
+                    hide_name_in_ranking: false,
+                    practice_count:0, classic_score:0, survival_score:0, timeattack_score:0
+                }).then(() => { alert("가입 성공!"); location.reload(); });
+            });
         }
 
         // 퀴즈 준비 및 진행 (이전 답변과 로직 동일)
@@ -414,11 +686,16 @@ button {
             const field = rankMode === 'practice' ? 'practice_count' : rankMode + '_score';
             db.ref('users').orderByChild(field).limitToLast(10).once('value', s => {
                 const arr = []; s.forEach(c => arr.push(c.val())); arr.reverse();
-                list.innerHTML = arr.map((u, i) => `
+                list.innerHTML = arr.map((u, i) => {
+                    const hideName = u.hide_name_in_ranking === true;
+                    const titleLine = hideName
+                        ? `<b>${u.id || ''}</b>`
+                        : `<b>${u.name || ''} <small style="color:#999;">(${u.id})</small></b>`;
+                    return `
                     <div class="rank-item ${i==0?'rank-1':''}">
                         <b style="width:25px;">${i+1}</b>
                         <div class="rank-info">
-                            <b>${u.name} <small style="color:#999;">(${u.id})</small></b><br>
+                            ${titleLine}<br>
                             <div class="rank-school">${u.school || "학교 정보 없음"}</div>
                             <small style="color:#dc3545; font-weight:bold;">
                                 ${rankMode==='practice'?'누적 '+u.practice_count+'문제':u[field]+'점'} 
@@ -426,7 +703,8 @@ button {
                             </small>
                         </div>
                     </div>
-                `).join('');
+                `;
+                }).join('');
             });
         }
         function openRank() { document.getElementById('login-box').classList.add('hidden'); document.getElementById('rank-box').classList.remove('hidden'); fetchRanking('practice'); }
