@@ -291,9 +291,22 @@ button {
     }
     .login-top3-rank {
         display: inline-block;
-        width: 16px;
-        color: #999;
+        min-width: 1.25em;
+        margin-right: 4px;
+        text-align: center;
         flex-shrink: 0;
+    }
+    .rank-pos-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 28px;
+        padding: 0 2px;
+        flex-shrink: 0;
+        font-size: 1.1em;
+        line-height: 1.2;
+        font-weight: bold;
+        color: #444;
     }
     .login-top3-muted { color: #aaa; padding: 0 3px; }
     .login-top3-loading, .login-top3-err, .login-top3-empty {
@@ -1171,10 +1184,11 @@ button {
                     const cb = showAdmin
                         ? `<label class="rank-admin-label"><input type="checkbox" class="rank-admin-cb" data-uid="${escapeAttr(uid)}" aria-label="${escapeAttr(uid)} 선택"></label>`
                         : '';
+                    const posLabel = topRankIcon(i);
                     return `
                     <div class="rank-item ${i===0?'rank-1':''}${showAdmin ? ' rank-item--admin' : ''}">
                         ${cb}
-                        <b style="width:25px;flex-shrink:0;">${i+1}</b>
+                        <span class="rank-pos-badge" title="${i + 1}등">${posLabel}</span>
                         <div class="rank-info">
                             ${titleLine}<br>
                             <div class="rank-school">${u.school || "학교 정보 없음"}</div>
@@ -1227,6 +1241,12 @@ button {
             return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
         }
 
+        /** 0=👑 1=🏆 2=⭐ 그 외 숫자 */
+        function topRankIcon(zeroBasedIndex) {
+            const icons = ['👑', '🏆', '⭐'];
+            return zeroBasedIndex < 3 ? icons[zeroBasedIndex] : String(zeroBasedIndex + 1);
+        }
+
         async function loadLoginTop3Preview() {
             const el = document.getElementById('login-top3-preview');
             if(!el) return;
@@ -1250,7 +1270,7 @@ button {
                     const top = sorted.filter(u => (Number(u[m.field]) || 0) > 0).slice(0, 3);
                     const lines = top.length
                         ? top.map((u, i) =>
-                            `<div class="login-top3-line"><span class="login-top3-rank">${i + 1}.</span> ${escapeHtml(u.id)} <span class="login-top3-muted">·</span> ${escapeHtml(u.school || '학교 없음')}</div>`
+                            `<div class="login-top3-line"><span class="login-top3-rank" title="${i + 1}등">${topRankIcon(i)}</span>${escapeHtml(u.id)} <span class="login-top3-muted">·</span> ${escapeHtml(u.school || '학교 없음')}</div>`
                           ).join('')
                         : '<div class="login-top3-empty">기록 없음</div>';
                     return `<div class="login-top3-block"><div class="login-top3-title">${m.label}</div>${lines}</div>`;
