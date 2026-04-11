@@ -1,215 +1,134 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
-    <title>퀴즈 랭킹 프로그램</title>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>기능사 자격증 고속 퀴즈</title>
+    <!-- Firebase 라이브러리 추가 -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
-        body { font-family: 'Malgun Gothic', sans-serif; text-align: center; padding: 20px; background-color: #f4f4f9; }
+        /* (기존 CSS와 동일) */
+        body { font-family: sans-serif; text-align: center; padding: 20px; background: #f0f2f5; }
+        .card { background: white; padding: 25px; border-radius: 12px; max-width: 500px; margin: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .hidden { display: none; }
-        .card { border: none; padding: 30px; border-radius: 15px; max-width: 450px; margin: auto; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        input { margin: 8px; padding: 12px; width: 85%; border: 1px solid #ddd; border-radius: 5px; }
-        button { padding: 12px 25px; cursor: pointer; background: #28a745; color: white; border: none; border-radius: 5px; font-weight: bold; margin-top: 10px; }
-        button:hover { background: #218838; }
-        img { max-width: 100%; height: auto; border-radius: 10px; margin: 15px 0; border: 1px solid #eee; }
-        .option-btn { display: block; width: 100%; margin: 8px 0; background: #f8f9fa; color: #333; border: 1px solid #ddd; text-align: left; padding: 12px; }
-        .option-btn:hover { background: #e2e6ea; }
-        #rank-list p { border-bottom: 1px solid #eee; padding: 8px; margin: 0; }
+        input { width: 85%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; }
+        button { width: 90%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin: 5px 0; }
+        button:hover { background: #0056b3; }
+        .sub-btn { background: #6c757d; }
+        .option-btn { background: #f8f9fa; color: #333; border: 1px solid #ddd; text-align: left; }
+        img { max-width: 100%; border-radius: 5px; margin: 10px 0; }
     </style>
 </head>
 <body>
 
-    <!-- 로그인 섹션 -->
-    <div id="login-section" class="card">
-        <h2>로그인</h2>
-        <input id="login-id" placeholder="아이디"><br>
-        <input id="login-pw" type="password" placeholder="비밀번호"><br>
-        <button onclick="login()">로그인</button>
-        <p style="font-size: 0.9em; color: gray; cursor: pointer;" onclick="showRegister()">계정이 없으신가요? 회원가입</p>
-    </div>
+<!-- (1~5 로그인, 회원가입, 과목선택, 퀴즈, 랭킹 섹션은 기존 HTML과 동일하게 유지) -->
+<!-- 화면 구조는 이전 답변과 똑같이 만드시면 됩니다. 아래 자바스크립트가 핵심입니다. -->
 
-    <!-- 회원가입 섹션 -->
-    <div id="register-section" class="card hidden">
-        <h2>회원가입</h2>
-        <input id="reg-id" placeholder="아이디"><br>
-        <input id="reg-pw" type="password" placeholder="비밀번호"><br>
-        <input id="reg-sid" placeholder="학번"><br>
-        <input id="reg-name" placeholder="이름"><br>
-        <input id="reg-birth" placeholder="생년월일(6자리)"><br>
-        <button onclick="register()">가입 완료</button>
-        <p style="font-size: 0.9em; color: gray; cursor: pointer;" onclick="showLogin()">이미 계정이 있나요? 로그인</p>
-    </div>
+<script>
+    // 1. Firebase 설정 (본인의 정보로 교체하세요)
+const firebaseConfig = {
+  apiKey: "AIzaSyBw4aKlyf8JGEXlTpvIXBsCr1XOFJ2eAzU",
+  authDomain: "catchcertification-1d63d.firebaseapp.com",
+  projectId: "catchcertification-1d63d",
+  storageBucket: "catchcertification-1d63d.firebasestorage.app",
+  messagingSenderId: "309107718029",
+  appId: "1:309107718029:web:f6addcc6b46cc52e33efc4",
+  measurementId: "G-W0P90QVS37"
+};
 
-    <!-- 퀴즈 섹션 -->
-    <div id="quiz-section" class="card hidden">
-        <h3 id="q-text"></h3>
-        <p id="q-view" style="color:#666; font-style: italic;"></p>
-        <div id="q-image"></div>
-        <div id="options"></div>
-        <hr>
-        <p>현재 점수: <span id="current-score" style="color:red; font-weight:bold;">0</span></p>
-    </div>
+    // Firebase 초기화
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-    <!-- 랭킹 섹션 -->
-    <div id="rank-section" class="card hidden">
-        <h2>실시간 랭킹</h2>
-        <div id="rank-list" style="text-align: left; margin-bottom: 20px;">
-            <p>데이터를 불러오는 중...</p>
-        </div>
-        <button onclick="location.reload()">다시 처음으로</button>
-    </div>
+    let problems = [], currentIdx = 0, score = 0, user = null, selectedSubject = "";
 
-    <script>
-        // 중요: 여기에 본인의 구글 웹 앱 URL을 넣으세요!
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwIofpGIAzl-ik8xSB1RwS3Ol1fisSy-0bapcEugoCEm215lVx4gqt8Z5xcu-ifq0Cv/exec";
-        
-        let currentUser = null;
-        let score = 0;
-        let problems = [];
-        let currentIdx = 0;
+    // 2. 로그인 (빛의 속도로 작동)
+    async function login() {
+        const id = document.getElementById('l-id').value.trim();
+        const pw = document.getElementById('l-pw').value.trim();
+        const btn = document.getElementById('login-btn');
+        btn.innerText = "로그인 중...";
 
-        // 1. 문제 데이터 불러오기
-        fetch('problems.json')
-            .then(res => res.json())
-            .then(data => { problems = data; })
-            .catch(err => console.error("문제를 불러오지 못했습니다.", err));
+        db.ref('users/' + id).once('value', (snapshot) => {
+            const userData = snapshot.val();
+            if (userData && userData.pw === pw) {
+                user = userData;
+                document.getElementById('login-box').classList.add('hidden');
+                document.getElementById('subject-box').classList.remove('hidden');
+            } else {
+                alert("아이디 또는 비밀번호가 틀립니다.");
+            }
+            btn.innerText = "로그인";
+        });
+    }
 
-        function showRegister() {
-            document.getElementById('login-section').classList.add('hidden');
-            document.getElementById('register-section').classList.remove('hidden');
-        }
+    // 3. 회원가입
+    async function register() {
+        const id = document.getElementById('r-id').value.trim();
+        const pw = document.getElementById('r-pw').value.trim();
+        const name = document.getElementById('r-name').value;
+        const sid = document.getElementById('r-sid').value;
+        const birth = document.getElementById('r-birth').value;
 
-        function showLogin() {
-            document.getElementById('register-section').classList.add('hidden');
-            document.getElementById('login-section').classList.remove('hidden');
-        }
+        if(!id || !pw) return alert("필수 정보를 입력하세요.");
 
-        // 2. 회원가입
-        async function register() {
-            const data = {
-                action: 'register',
-                id: document.getElementById('reg-id').value,
-                pw: document.getElementById('reg-pw').value,
-                student_id: document.getElementById('reg-sid').value,
-                name: document.getElementById('reg-name').value,
-                birth: document.getElementById('reg-birth').value
-            };
-            if(!data.id || !data.pw || !data.name) return alert("모든 항목을 입력하세요.");
+        db.ref('users/' + id).set({
+            id: id, pw: pw, name: name, student_id: sid, birth: birth, score: 0
+        }).then(() => {
+            alert("가입 완료!");
+            location.reload();
+        });
+    }
 
-            await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) });
-            alert("가입 성공! 로그인 화면으로 이동합니다.");
-            showLogin();
-        }
-
-        // 3. 로그인 (수정본)
-async function login() {
-    const idInput = document.getElementById('l-id').value.trim();
-    const pwInput = document.getElementById('l-pw').value.trim();
-    
-    // 1. 버튼 상태 변경 (로그인 시작)
-    const loginBtn = document.getElementById('login-btn');
-    loginBtn.innerText = "로그인 중..."; // 글자 변경
-    loginBtn.disabled = true;           // 버튼 클릭 금지
-    loginBtn.style.opacity = "0.7";     // 살짝 흐리게 (선택사항)
-
-    try {
-        // 2. 서버에서 데이터 가져오기
-        const res = await fetch(API_URL);
-        const users = await res.json();
-        
-        const foundUser = users.find(u => String(u.id) === idInput && String(u.pw) === pwInput);
-        
-        if (foundUser) {
-            user = foundUser;
-            alert(user.name + "님 환영합니다!");
-            
-            // 로그인 성공 시 퀴즈 화면으로 이동
-            document.getElementById('login-box').classList.add('hidden');
+    // (loadSubject, showQuiz 등 퀴즈 진행 함수는 기존과 동일하게 유지)
+    function loadSubject(fileName, subjectName) {
+        selectedSubject = subjectName;
+        fetch(fileName).then(r => r.json()).then(data => {
+            problems = data; currentIdx = 0; score = 0;
+            document.getElementById('subject-box').classList.add('hidden');
             document.getElementById('quiz-box').classList.remove('hidden');
             showQuiz();
-        } else {
-            alert("아이디 또는 비밀번호가 틀렸습니다.");
-        }
-    } catch (e) {
-        console.error(e);
-        alert("서버와 통신 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
-    } finally {
-        // 3. 버튼 상태 복구 (성공하든 실패하든 원래대로)
-        loginBtn.innerText = "로그인";
-        loginBtn.disabled = false;
-        loginBtn.style.opacity = "1";
+        });
     }
-}
 
-        function startQuiz() {
-            document.getElementById('login-section').classList.add('hidden');
-            document.getElementById('quiz-section').classList.remove('hidden');
-            showProblem();
+    function showQuiz() {
+        if (currentIdx >= problems.length) return finish();
+        const p = problems[currentIdx];
+        document.getElementById('q-txt').innerText = p.question;
+        document.getElementById('q-img').innerHTML = p.image_file ? `<img src="images/${p.image_file}">` : "";
+        const optDiv = document.getElementById('q-opts'); optDiv.innerHTML = "";
+        p.options.forEach((o, i) => {
+            const btn = document.createElement('button');
+            btn.className = "option-btn"; btn.innerText = (i + 1) + ". " + o;
+            btn.onclick = () => {
+                if (i + 1 === p.answer) score += 10;
+                document.getElementById('cur-score').innerText = score;
+                currentIdx++; showQuiz();
+            };
+            optDiv.appendChild(btn);
+        });
+    }
+
+    // 4. 점수 저장 및 실시간 랭킹 (거의 즉시 반영)
+    async function finish() {
+        document.getElementById('quiz-box').classList.add('hidden');
+        document.getElementById('rank-box').classList.remove('hidden');
+        
+        // 기존 최고 점수보다 높을 때만 업데이트
+        if (score > (user.score || 0)) {
+            db.ref('users/' + user.id).update({ score: score });
         }
 
-        function showProblem() {
-            if (currentIdx >= problems.length) {
-                finishQuiz();
-                return;
-            }
-            const p = problems[currentIdx];
-            document.getElementById('q-text').innerText = (currentIdx + 1) + ". " + p.question;
-            document.getElementById('q-view').innerText = p.view || "";
-            
-            const imgDiv = document.getElementById('q-image');
-            imgDiv.innerHTML = p.image_file ? `<img src="images/${p.image_file}">` : "";
+        // 전체 랭킹 불러오기 (점수순 정렬)
+        db.ref('users').orderByChild('score').limitToLast(10).once('value', (snapshot) => {
+            const users = [];
+            snapshot.forEach((child) => { users.push(child.val()); });
+            users.reverse(); // 내림차순 정렬
 
-            const optDiv = document.getElementById('options');
-            optDiv.innerHTML = "";
-            p.options.forEach((opt, i) => {
-                const btn = document.createElement('button');
-                btn.className = "option-btn";
-                btn.innerText = (i + 1) + ") " + opt;
-                btn.onclick = () => checkAnswer(i + 1);
-                optDiv.appendChild(btn);
-            });
-        }
-
-        function checkAnswer(ans) {
-            if (ans === problems[currentIdx].answer) {
-                score += 10;
-                document.getElementById('current-score').innerText = score;
-            }
-            currentIdx++;
-            showProblem();
-        }
-
-        // 4. 퀴즈 종료 및 랭킹 표시 (수정본)
-        async function finishQuiz() {
-            document.getElementById('quiz-section').classList.add('hidden');
-            document.getElementById('rank-section').classList.remove('hidden');
-            
-            const rankList = document.getElementById('rank-list');
-            rankList.innerHTML = "<p style='text-align:center;'>점수를 기록 중입니다...</p>";
-
-            try {
-                // 점수 저장
-                await fetch(SCRIPT_URL, { 
-                    method: 'POST', 
-                    body: JSON.stringify({ action: 'updateScore', id: currentUser.id, score: score }) 
-                });
-
-                // 잠시 대기
-                await new Promise(r => setTimeout(r, 1500));
-
-                // 최신 랭킹 가져오기
-                const res = await fetch(SCRIPT_URL);
-                const users = await res.json();
-                users.sort((a, b) => Number(b.score) - Number(a.score));
-                
-                rankList.innerHTML = users.slice(0, 10).map((u, i) => {
-                    const isMe = u.id === currentUser.id ? "background:#e8f4fd; font-weight:bold;" : "";
-                    return `<p style='${isMe}'>${i+1}위: ${u.name} - ${u.score}점</p>`;
-                }).join('');
-            } catch (e) {
-                rankList.innerHTML = "<p>랭킹 정보를 불러오지 못했습니다.</p>";
-            }
-        }
-    </script>
+            const list = document.getElementById('rank-list');
+            list.innerHTML = users.map((u, i) => `<p>${i+1}위: ${u.name} - ${u.score}점</p>`).join('');
+        });
+    }
+</script>
 </body>
 </html>
