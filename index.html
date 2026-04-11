@@ -4,33 +4,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>기능사 자격증 고속 퀴즈</title>
-    <!-- Firebase 라이브러리 (버전 9 호환성 모드) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; text-align: center; padding: 20px; background: #f0f2f5; color: #333; }
-        .card { background: white; padding: 25px; border-radius: 12px; max-width: 450px; margin: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .card { background: white; padding: 25px; border-radius: 15px; max-width: 480px; margin: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         .hidden { display: none; }
-        input { width: 85%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; }
-        button { width: 90%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin: 5px 0; font-size: 16px; }
-        button:hover { background: #0056b3; }
+        input { width: 88%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
+        
+        /* 버튼 스타일 */
+        button { width: 95%; padding: 14px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin: 8px 0; font-size: 16px; transition: 0.3s; }
+        button:hover { background: #0056b3; transform: translateY(-2px); }
+        .rank-view-btn { background: #ffc107; color: #212529; } /* 랭킹 보기 버튼 */
+        .rank-view-btn:hover { background: #e0a800; }
         .sub-btn { background: #6c757d; font-size: 14px; }
         .option-btn { background: #f8f9fa; color: #333; border: 1px solid #ddd; text-align: left; margin: 8px 0; }
-        .option-btn:hover { background: #e9ecef; }
-        img { max-width: 100%; border-radius: 5px; margin: 10px 0; }
-        #rank-list { text-align: left; margin-top: 15px; }
-        #rank-list p { border-bottom: 1px solid #eee; padding: 5px; margin: 0; }
+        
+        /* 랭킹 시각화 디자인 */
+        #rank-list { margin-top: 20px; }
+        .rank-item { display: flex; align-items: center; padding: 12px; margin: 8px 0; border-radius: 10px; background: #fff; border: 1px solid #eee; transition: 0.3s; }
+        
+        /* 1, 2, 3등 특별 스타일 */
+        .rank-1 { background: linear-gradient(45deg, #fff9e6, #ffdf80); border: 2px solid #ffd700; transform: scale(1.05); box-shadow: 0 4px 10px rgba(255, 215, 0, 0.3); }
+        .rank-2 { background: linear-gradient(45deg, #f2f2f2, #e0e0e0); border: 2px solid #c0c0c0; }
+        .rank-3 { background: linear-gradient(45deg, #fff2e6, #ffd9b3); border: 2px solid #cd7f32; }
+        
+        /* TOP 10 강조 */
+        .top-10 { border-left: 5px solid #007bff; font-weight: bold; }
+
+        .medal { font-size: 24px; margin-right: 15px; width: 35px; text-align: center; }
+        .rank-info { flex-grow: 1; text-align: left; }
+        .rank-name { font-size: 17px; margin-bottom: 2px; }
+        .rank-score { font-size: 14px; color: #dc3545; }
+        
+        img { max-width: 100%; border-radius: 8px; margin: 10px 0; }
     </style>
 </head>
 <body>
 
     <!-- 1. 로그인 섹션 -->
     <div id="login-box" class="card">
-        <h2>로그인</h2>
+        <h1 style="color:#007bff; margin-bottom:30px;">CATCH CERTIFICATION</h1>
         <input type="text" id="l-id" placeholder="아이디"><br>
         <input type="password" id="l-pw" placeholder="비밀번호"><br>
         <button id="login-btn" onclick="login()">로그인</button>
-        <p onclick="toggleView(true)" style="color:#007bff; cursor:pointer; font-size:14px;">처음이신가요? 회원가입</p>
+        <button class="rank-view-btn" onclick="showRankOnly()">🏆 명예의 전당 (랭킹 보기)</button>
+        <p onclick="toggleView(true)" style="color:#007bff; cursor:pointer; font-size:14px; margin-top:15px;">처음이신가요? 회원가입</p>
     </div>
 
     <!-- 2. 회원가입 섹션 -->
@@ -68,24 +87,22 @@
 
     <!-- 5. 랭킹 섹션 -->
     <div id="rank-box" class="card hidden">
-        <h2>실시간 전체 랭킹</h2>
+        <h2 style="color:#ffc107;">🏆 TOP 10 랭킹</h2>
         <div id="rank-list"></div>
-        <button onclick="location.reload()" style="margin-top:20px;">다른 과목 풀기</button>
+        <button onclick="location.reload()" style="margin-top:20px;">메인 화면으로</button>
     </div>
 
     <script>
-        // 사용자님의 Firebase 설정값 적용
-const firebaseConfig = {
-  apiKey: "AIzaSyBw4aKlyf8JGEXlTpvIXBsCr1XOFJ2eAzU",
-  authDomain: "catchcertification-1d63d.firebaseapp.com",
-  projectId: "catchcertification-1d63d",
-  storageBucket: "catchcertification-1d63d.firebasestorage.app",
-  messagingSenderId: "309107718029",
-  appId: "1:309107718029:web:f6addcc6b46cc52e33efc4",
-  measurementId: "G-W0P90QVS37"
-};
+        const firebaseConfig = {
+            apiKey: "AIzaSyBw4aKlyf8JGEXLTpvIXBScr1XOFJ2eAzU",
+            authDomain: "catchcertification-1d63d.firebaseapp.com",
+            projectId: "catchcertification-1d63d",
+            storageBucket: "catchcertification-1d63d.firebasestorage.app",
+            messagingSenderId: "309107718029",
+            appId: "1:309107718029:web:f6addcc6b46cc52e33efc4",
+            measurementId: "G-W0P90QVS37"
+        };
 
-        // Firebase 초기화
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
@@ -96,7 +113,6 @@ const firebaseConfig = {
             document.getElementById('reg-box').classList.toggle('hidden', !isReg);
         }
 
-        // 로그인
         async function login() {
             const id = document.getElementById('l-id').value.trim();
             const pw = document.getElementById('l-pw').value.trim();
@@ -120,7 +136,6 @@ const firebaseConfig = {
             });
         }
 
-        // 회원가입
         async function register() {
             const id = document.getElementById('r-id').value.trim();
             const pw = document.getElementById('r-pw').value.trim();
@@ -128,72 +143,84 @@ const firebaseConfig = {
             const sid = document.getElementById('r-sid').value;
             const birth = document.getElementById('r-birth').value;
 
-            if(!id || !pw || !name) return alert("필수 정보를 모두 입력하세요.");
+            if(!id || !pw || !name) return alert("필수 정보를 입력하세요.");
 
             db.ref('users/' + id).set({
                 id: id, pw: pw, name: name, student_id: sid, birth: birth, score: 0
-            }).then(() => {
-                alert("가입 완료! 로그인 해주세요.");
-                location.reload();
+            }).then(() => { alert("가입 완료!"); location.reload(); });
+        }
+
+        function loadSubject(fileName, subjectName) {
+            selectedSubject = subjectName;
+            fetch(fileName).then(r => r.json()).then(data => {
+                problems = data; currentIdx = 0; score = 0;
+                document.getElementById('subject-box').classList.add('hidden');
+                document.getElementById('quiz-box').classList.remove('hidden');
+                showQuiz();
             });
         }
 
-        // 과목 로드
-        function loadSubject(fileName, subjectName) {
-            selectedSubject = subjectName;
-            fetch(fileName)
-                .then(r => r.json())
-                .then(data => {
-                    problems = data; currentIdx = 0; score = 0;
-                    document.getElementById('subject-box').classList.add('hidden');
-                    document.getElementById('quiz-box').classList.remove('hidden');
-                    showQuiz();
-                })
-                .catch(e => alert("문제를 불러올 수 없습니다. (" + fileName + ")"));
-        }
-
-        // 퀴즈 표시
         function showQuiz() {
             if (currentIdx >= problems.length) return finish();
             const p = problems[currentIdx];
             document.getElementById('q-txt').innerText = (currentIdx + 1) + ". " + p.question;
             document.getElementById('q-img').innerHTML = p.image_file ? `<img src="images/${p.image_file}">` : "";
-            
-            const optDiv = document.getElementById('q-opts');
-            optDiv.innerHTML = "";
+            const optDiv = document.getElementById('q-opts'); optDiv.innerHTML = "";
             p.options.forEach((o, i) => {
                 const btn = document.createElement('button');
-                btn.className = "option-btn";
-                btn.innerText = (i + 1) + ") " + o;
+                btn.className = "option-btn"; btn.innerText = (i + 1) + ") " + o;
                 btn.onclick = () => {
                     if (i + 1 === p.answer) score += 10;
                     document.getElementById('cur-score').innerText = score;
-                    currentIdx++;
-                    showQuiz();
+                    currentIdx++; showQuiz();
                 };
                 optDiv.appendChild(btn);
             });
         }
 
-        // 종료 및 랭킹
+        // 랭킹 화면만 보여주는 함수
+        function showRankOnly() {
+            document.getElementById('login-box').classList.add('hidden');
+            document.getElementById('rank-box').classList.remove('hidden');
+            fetchRanking();
+        }
+
         async function finish() {
             document.getElementById('quiz-box').classList.add('hidden');
             document.getElementById('rank-box').classList.remove('hidden');
-            document.getElementById('rank-list').innerHTML = "<p>기록 중...</p>";
-            
-            // 최고 점수 갱신
             if (score > (user.score || 0)) {
                 await db.ref('users/' + user.id).update({ score: score });
             }
+            fetchRanking();
+        }
 
-            // 실시간 랭킹 로드 (상위 10명)
+        function fetchRanking() {
+            const list = document.getElementById('rank-list');
+            list.innerHTML = "<p style='text-align:center;'>명예의 전당 불러오는 중...</p>";
+            
             db.ref('users').orderByChild('score').limitToLast(10).once('value', (snapshot) => {
                 const users = [];
                 snapshot.forEach((child) => { users.push(child.val()); });
-                users.reverse(); // 내림차순
+                users.reverse();
 
-                const list = document.getElementById('rank-list');
-                list.innerHTML = users.map((u, i) => `<p>${i+1}위: ${u.name} - ${u.score}점</p>`).join('');
+                list.innerHTML = users.map((u, i) => {
+                    let rankClass = "";
+                    let medal = i + 1;
+                    if (i === 0) { rankClass = "rank-1"; medal = "🥇"; }
+                    else if (i === 1) { rankClass = "rank-2"; medal = "🥈"; }
+                    else if (i === 2) { rankClass = "rank-3"; medal = "🥉"; }
+                    else { rankClass = "top-10"; }
+
+                    return `
+                        <div class="rank-item ${rankClass}">
+                            <div class="medal">${medal}</div>
+                            <div class="rank-info">
+                                <div class="rank-name">${u.name} <small style="color:#999; font-size:11px;">(${u.id})</small></div>
+                                <div class="rank-score">${u.score}점</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
             });
         }
     </script>
