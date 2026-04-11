@@ -7,25 +7,25 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
-body { font-family: 'Malgun Gothic', sans-serif; text-align: center; padding: 20px; background: #f0f2f5; color: #333; }
-    
-    /* 2. 카드 내부 여백을 30px로 일정하게 설정 */
-    .card { background: white; padding: 30px; border-radius: 15px; max-width: 500px; margin: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-    .hidden { display: none; }
+/* 1. 모든 요소의 크기 계산을 테두리 포함으로 고정 */
+        * { box-sizing: border-box; }
 
-    /* 3. 모든 입력창, 선택창, 버튼의 가로폭을 100%로 통일 */
-    input, select, button { 
-        width: 100%; 
-        border-radius: 8px; 
-        font-size: 15px; 
-    }
+        body { font-family: 'Malgun Gothic', sans-serif; text-align: center; padding: 20px; background: #f0f2f5; color: #333; }
+        
+        /* 2. 카드의 패딩을 고정 (여백 관리의 기준) */
+        .card { background: white; padding: 30px; border-radius: 15px; max-width: 500px; margin: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .hidden { display: none; }
 
-    input, select { 
-        padding: 12px; 
-        margin: 8px 0; 
-        border: 1px solid #ddd; 
-        display: block; 
-    }
+        /* 3. 일반 입력창/선택창 설정: 너비 100% */
+        input, select { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 8px 0; /* 위아래 간격 */
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            font-size: 15px; 
+            display: block;
+        }
     
     /* 4. 중복확인 버튼과 아이디 입력창을 감싸는 그룹 */
     .input-group { 
