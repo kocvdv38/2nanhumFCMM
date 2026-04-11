@@ -223,6 +223,11 @@ button {
     
     img { max-width: 100%; border-radius: 8px; margin: 10px 0; }
     .rank-item { display: flex; align-items: center; padding: 12px; margin: 8px 0; border-radius: 10px; background: #fff; border: 1px solid #eee; font-size: 14px; }
+    .rank-item.rank-item--admin { align-items: flex-start; }
+    .rank-admin-label { flex-shrink: 0; margin: 0 6px 0 0; padding-top: 2px; cursor: pointer; }
+    .rank-admin-cb { width: 17px; height: 17px; cursor: pointer; vertical-align: middle; }
+    .rank-admin-actions { margin: 12px 0; text-align: left; }
+    .rank-admin-actions label { cursor: pointer; user-select: none; }
     .rank-1 { background: #fff9e6; border: 1px solid #ffd700; box-shadow: 0 2px 5px rgba(255,215,0,0.2); }
     .rank-school { font-size: 11px; color: #666; margin-top: 2px; }
     .rank-info { flex: 1; text-align: left; }
@@ -438,6 +443,10 @@ button {
         </div>
         <div id="rank-my-record" class="hidden" style="margin-bottom:14px;"></div>
         <div id="rank-list"></div>
+        <div id="rank-admin-actions" class="rank-admin-actions hidden">
+            <label><input type="checkbox" id="rank-admin-select-all" onchange="toggleRankSelectAll(this.checked)"> 전체 선택</label>
+            <button type="button" class="btn-red" onclick="adminDeleteSelectedUsers()" style="width:100%;margin-top:10px;">선택한 회원 삭제</button>
+        </div>
         <button class="btn-blue" onclick="location.reload()">메인으로</button>
     </div>
 
@@ -455,7 +464,11 @@ button {
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        /** 랭킹에서 회원 삭제 권한이 있는 관리자 아이디 (필요 시 추가) */
+        const ADMIN_USER_IDS = ['admin'];
+
         let user=null, quizList=[], currentIdx=0, score=0, mode='';
+        let currentRankMode = 'practice';
         let pendingQuizFile = null;
         const SUBJECT_LABELS = {
             'drawing.json': '전산응용기계제도기능사',
@@ -471,6 +484,10 @@ button {
         let sessionPracticeSolved = 0;
         let items = { hint: 0, shield: 0, time: 0 }, streak = 0, isIdCheck = false, lastId = "";
         let isIdentityCheck = false, lastIdentityName = "", lastIdentityBirth = "";
+
+        function isAdmin() {
+            return user && ADMIN_USER_IDS.includes(String(user.id));
+        }
 
         // UI 제어
         function toggleView(r) { document.getElementById('login-box').classList.toggle('hidden', r); document.getElementById('reg-box').classList.toggle('hidden', !r); }
@@ -806,10 +823,44 @@ button {
             persistGameResultAndShowRanking().catch(() => alert('저장에 실패했습니다.'));
         }
 
+        function escapeAttr(s) {
+            return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+        }
+
+        function toggleRankSelectAll(checked) {
+            document.querySelectorAll('#rank-list .rank-admin-cb').forEach(cb => { cb.checked = checked; });
+        }
+
+        async function adminDeleteSelectedUsers() {
+            if(!isAdmin()) return;
+            const cbs = [...document.querySelectorAll('#rank-list .rank-admin-cb:checked')];
+            if(cbs.length === 0) return alert('삭제할 항목을 선택하세요.');
+            const ids = cbs.map(cb => cb.getAttribute('data-uid')).filter(Boolean);
+            if(ids.length === 0) return;
+            if(!confirm(ids.length + '명의 회원 데이터를 삭제합니다. 되돌릴 수 없습니다. 계속하시겠습니까?')) return;
+            const updates = {};
+            ids.forEach(id => { updates['users/' + id] = null; });
+            try {
+                await db.ref().update(updates);
+                if(user && ids.includes(String(user.id))) {
+                    alert('계정이 삭제되어 로그아웃됩니다.');
+                    location.reload();
+                    return;
+                }
+                alert('삭제되었습니다.');
+                await fetchRanking(currentRankMode);
+            } catch(err) {
+                alert('삭제에 실패했습니다. Firebase 규칙에서 관리자 쓰기를 허용했는지 확인하세요.');
+            }
+        }
+
         async function fetchRanking(rankMode) {
+            currentRankMode = rankMode;
             document.querySelectorAll('.rank-tab').forEach(t => t.classList.remove('active-tab'));
             document.getElementById('tab-'+rankMode).classList.add('active-tab');
             const list = document.getElementById('rank-list');
+            const adminBar = document.getElementById('rank-admin-actions');
+            if(adminBar) adminBar.classList.add('hidden');
             list.innerHTML = "로딩 중...";
             if(user && user.id) {
                 try { await refreshUserFromDb(); } catch(e) {}
@@ -830,6 +881,7 @@ button {
                     return vb - va;
                 });
                 const top = arr.slice(0, 10);
+                const showAdmin = isAdmin();
                 list.innerHTML = top.map((u, i) => {
                     const hideName = u.hide_name_in_ranking === true;
                     const titleLine = hideName
@@ -839,9 +891,14 @@ button {
                         ? ('누적 ' + (u.practice_count != null ? u.practice_count : 0) + '문제')
                         : ((u[field] != null ? u[field] : 0) + '점');
                     const timeStr = u[rankMode + '_time'] || u['classic_time'] || '--:--';
+                    const uid = String(u.id || '');
+                    const cb = showAdmin
+                        ? `<label class="rank-admin-label"><input type="checkbox" class="rank-admin-cb" data-uid="${escapeAttr(uid)}" aria-label="${escapeAttr(uid)} 선택"></label>`
+                        : '';
                     return `
-                    <div class="rank-item ${i===0?'rank-1':''}">
-                        <b style="width:25px;">${i+1}</b>
+                    <div class="rank-item ${i===0?'rank-1':''}${showAdmin ? ' rank-item--admin' : ''}">
+                        ${cb}
+                        <b style="width:25px;flex-shrink:0;">${i+1}</b>
                         <div class="rank-info">
                             ${titleLine}<br>
                             <div class="rank-school">${u.school || "학교 정보 없음"}</div>
@@ -854,8 +911,16 @@ button {
                 `;
                 }).join('');
                 if(top.length === 0) list.innerHTML = '<p style="color:#666;">표시할 기록이 없습니다.</p>';
+                if(adminBar) {
+                    if(showAdmin && top.length > 0) {
+                        adminBar.classList.remove('hidden');
+                        const master = document.getElementById('rank-admin-select-all');
+                        if(master) master.checked = false;
+                    } else adminBar.classList.add('hidden');
+                }
             } catch(e) {
                 list.innerHTML = '<p style="color:#c00;">랭킹을 불러오지 못했습니다. 네트워크 또는 권한 설정을 확인해 주세요.</p>';
+                if(adminBar) adminBar.classList.add('hidden');
             }
         }
         function openRank() { document.getElementById('login-box').classList.add('hidden'); document.getElementById('rank-box').classList.remove('hidden'); fetchRanking('practice'); }
