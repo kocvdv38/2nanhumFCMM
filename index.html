@@ -122,7 +122,6 @@ button {
         align-items: center;
         margin-bottom: 6px;
     }
-    .mode-header-spacer { grid-column: 1; }
     .mode-title {
         grid-column: 2;
         margin: 0;
@@ -151,6 +150,33 @@ button {
         border-color: #007bff !important;
     }
     .btn-profile-icon svg {
+        width: 22px;
+        height: 22px;
+        display: block;
+    }
+
+    .btn-rank-icon {
+        grid-column: 1;
+        justify-self: start;
+        width: 44px !important;
+        height: 44px;
+        padding: 0 !important;
+        margin: 0 !important;
+        border-radius: 50%;
+        background: #f1f3f5 !important;
+        color: #495057 !important;
+        border: 1px solid #dee2e6 !important;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .btn-rank-icon:hover {
+        background: #e9ecef !important;
+        color: #fd7e14 !important;
+        border-color: #fd7e14 !important;
+    }
+    .btn-rank-icon svg {
         width: 22px;
         height: 22px;
         display: block;
@@ -250,7 +276,16 @@ button {
     <!-- 3. 모드 선택 -->
     <div id="mode-box" class="card hidden">
         <div class="mode-header">
-            <span class="mode-header-spacer" aria-hidden="true"></span>
+            <button type="button" class="btn-rank-icon" onclick="openRankFromMode()" aria-label="랭킹 보기" title="랭킹 보기">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+                    <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+                    <path d="M4 22h16"/>
+                    <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+                    <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+                    <path d="M18 2H6v7c0 2.21 1.79 4 4 4h0c2.21 0 4-1.79 4-4V2z"/>
+                </svg>
+            </button>
             <h2 class="mode-title">모드 선택</h2>
             <button type="button" class="btn-profile-icon" onclick="openProfile()" aria-label="개인정보 변경" title="개인정보 변경">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -339,7 +374,8 @@ button {
         </div>
 
         <div id="explanation-box" style="display:none; background:#eee; padding:10px; margin-top:10px; text-align:left; font-size:14px;"></div>
-        <button id="next-btn" class="btn-blue hidden" onclick="showQuestion()">다음 문제</button>
+        <button id="next-btn" class="btn-blue hidden" onclick="nextPracticeQuestion()">다음 문제</button>
+        <button type="button" class="btn-gray" onclick="quitGame()" style="margin-top:14px;">그만하기</button>
     </div>
 
     <!-- 6. 랭킹 화면 -->
@@ -382,6 +418,7 @@ button {
             'welding.json': '피복아크용접기능사'
         };
         let lives=3, timeLeft=60, totalTime=0, timerInterval, isShieldActive=false, isTimeFrozen=false;
+        let sessionPracticeSolved = 0;
         let items = { hint: 0, shield: 0, time: 0 }, streak = 0, isIdCheck = false, lastId = "";
         let isIdentityCheck = false, lastIdentityName = "", lastIdentityBirth = "";
 
@@ -572,8 +609,14 @@ button {
             document.getElementById('subject-box').classList.add('hidden');
             document.getElementById('quiz-box').classList.remove('hidden');
             score=0; currentIdx=0; lives=3; timeLeft=60; streak=0; totalTime=0; items={hint:0,shield:0,time:0};
+            sessionPracticeSolved = 0;
             document.getElementById('item-section').classList.toggle('hidden', mode !== 'timeattack');
             startTimer(); updateUI(); showQuestion();
+        }
+        function nextPracticeQuestion() {
+            if(mode !== 'practice') return;
+            currentIdx++;
+            showQuestion();
         }
         function startTimer() {
             clearInterval(timerInterval);
@@ -638,6 +681,7 @@ button {
                     proceed();
                 }
             }
+            if(mode === 'practice') sessionPracticeSolved++;
             updateUI();
         }
         function gainRandomItem() {
@@ -661,14 +705,14 @@ button {
         }
 
         // 결과 및 랭킹
-        async function endGame() {
+        async function persistGameResultAndShowRanking() {
             clearInterval(timerInterval);
             document.getElementById('quiz-box').classList.add('hidden');
             document.getElementById('rank-box').classList.remove('hidden');
             const timeStr = document.getElementById('timer-text').innerText;
             const updates = {};
             if(mode === 'practice') {
-                updates[`users/${user.id}/practice_count`] = (user.practice_count || 0) + (currentIdx + 1);
+                updates[`users/${user.id}/practice_count`] = (user.practice_count || 0) + sessionPracticeSolved;
                 updates[`users/${user.id}/practice_time`] = timeStr;
             } else {
                 updates[`users/${user.id}/${mode}_score`] = Math.max(user[mode+'_score'] || 0, score);
@@ -676,6 +720,13 @@ button {
             }
             await db.ref().update(updates);
             fetchRanking(mode);
+        }
+        async function endGame() {
+            await persistGameResultAndShowRanking();
+        }
+        function quitGame() {
+            if(!confirm('그만두시겠습니까? 지금까지의 기록이 저장되고 랭킹으로 이동합니다.')) return;
+            persistGameResultAndShowRanking().catch(() => alert('저장에 실패했습니다.'));
         }
 
         function fetchRanking(rankMode) {
@@ -708,6 +759,11 @@ button {
             });
         }
         function openRank() { document.getElementById('login-box').classList.add('hidden'); document.getElementById('rank-box').classList.remove('hidden'); fetchRanking('practice'); }
+        function openRankFromMode() {
+            document.getElementById('mode-box').classList.add('hidden');
+            document.getElementById('rank-box').classList.remove('hidden');
+            fetchRanking('practice');
+        }
     </script>
 </body>
 </html>
