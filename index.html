@@ -303,35 +303,8 @@ button {
         padding: 4px 0;
     }
 
-    /* 연습 오답노트 */
-    #wrong-note-div { text-align: left; margin-top: 8px; }
-    #wrong-note-div h3 { text-align: center; margin: 0 0 12px 0; font-size: 1.1rem; }
-    .wrong-note-item {
-        display: flex;
-        align-items: flex-start;
-        gap: 10px;
-        padding: 10px;
-        margin: 8px 0;
-        border: 1px solid #eee;
-        border-radius: 8px;
-        background: #fafafa;
-    }
-    .wrong-note-q {
-        flex: 1;
-        font-size: 14px;
-        line-height: 1.45;
-        word-break: break-word;
-        text-align: left;
-    }
-    .wrong-note-item .btn-red {
-        width: auto;
-        flex-shrink: 0;
-        padding: 8px 12px;
-        margin: 0;
-        font-size: 13px;
-    }
-    .wrong-note-empty { color: #888; text-align: center; padding: 16px; font-size: 14px; }
     #session-select-div .btn-wrong-note { margin-bottom: 10px; }
+    #btn-wrong-delete { max-width: 100%; }
 
     /* 모바일·좁은 화면 */
     @media (max-width: 520px) {
@@ -542,17 +515,10 @@ button {
         </div>
         <div id="session-select-div" class="hidden">
             <p id="session-subject-label" style="font-size:14px;color:#555;margin:0 0 10px 0;"></p>
-            <button type="button" class="btn-orange btn-wrong-note" onclick="openWrongNotePanel()">📕 오답노트</button>
+            <button type="button" class="btn-orange btn-wrong-note" onclick="startWrongNoteQuiz()">📕 오답노트</button>
             <select id="session-val" aria-label="회차 선택"><option value="25-01">2025년 1회차</option><option value="24-04">2024년 4회차</option></select>
             <button type="button" class="btn-green" onclick="startPracticeFromSelection()">이 회차로 시작</button>
             <button type="button" class="btn-gray" onclick="backToSubjectPick()">과목 다시 선택</button>
-        </div>
-        <div id="wrong-note-div" class="hidden">
-            <h3>오답노트 · <span id="wrong-note-subject-label"></span></h3>
-            <p style="font-size:13px;color:#666;margin:0 0 10px 0;text-align:left;">해당 과목에서 연습하기로 풀다가 틀린 문제만 모입니다. 회차와 관계없이 같은 문제는 한 번만 표시됩니다.</p>
-            <div id="wrong-note-list"></div>
-            <button type="button" class="btn-green" onclick="startWrongNoteQuiz()">틀린 문제만 연습</button>
-            <button type="button" class="btn-gray" onclick="closeWrongNotePanel()">← 회차 선택으로</button>
         </div>
         <button type="button" class="btn-gray" onclick="backToModeSelect()" style="margin-top:12px;">← 모드 선택으로</button>
     </div>
@@ -582,6 +548,7 @@ button {
         <div id="explanation-box" style="display:none; background:#eee; padding:10px; margin-top:10px; text-align:left; font-size:14px;"></div>
         <button id="next-btn" class="btn-blue hidden" onclick="nextPracticeQuestion()">다음 문제</button>
         <button type="button" class="btn-gray" onclick="quitGame()" style="margin-top:14px;">그만하기</button>
+        <button type="button" id="btn-wrong-delete" class="btn-red hidden" onclick="deleteCurrentWrongNote()" style="margin-top:8px;">문제 삭제</button>
     </div>
 
     <!-- 6. 랭킹 화면 -->
@@ -636,6 +603,8 @@ button {
         let sessionPracticeSolved = 0;
         /** 연습 중 로드된 JSON 파일명 (오답 저장·오답 연습에 사용) */
         let quizSubjectFile = null;
+        /** 오답노트만 풀 때 true — 랭킹·누적 연습 기록에는 반영하지 않음 */
+        let wrongNoteOnly = false;
         let items = { hint: 0, shield: 0, time: 0 }, streak = 0, isIdCheck = false, lastId = "";
         let isIdentityCheck = false, lastIdentityName = "", lastIdentityBirth = "";
 
@@ -654,11 +623,11 @@ button {
             mode = m;
             pendingQuizFile = null;
             quizSubjectFile = null;
+            wrongNoteOnly = false;
             document.getElementById('mode-box').classList.add('hidden');
             document.getElementById('subject-box').classList.remove('hidden');
             document.getElementById('subject-btns').classList.remove('hidden');
             document.getElementById('session-select-div').classList.add('hidden');
-            document.getElementById('wrong-note-div').classList.add('hidden');
             document.getElementById('subject-title').textContent = '과목 선택';
         }
 
@@ -666,7 +635,6 @@ button {
             if (mode === 'practice') {
                 pendingQuizFile = file;
                 document.getElementById('subject-btns').classList.add('hidden');
-                document.getElementById('wrong-note-div').classList.add('hidden');
                 document.getElementById('session-select-div').classList.remove('hidden');
                 document.getElementById('subject-title').textContent = '회차 선택';
                 document.getElementById('session-subject-label').textContent =
@@ -678,9 +646,9 @@ button {
         function backToSubjectPick() {
             pendingQuizFile = null;
             quizSubjectFile = null;
+            wrongNoteOnly = false;
             document.getElementById('subject-btns').classList.remove('hidden');
             document.getElementById('session-select-div').classList.add('hidden');
-            document.getElementById('wrong-note-div').classList.add('hidden');
             document.getElementById('subject-title').textContent = '과목 선택';
         }
         function startPracticeFromSelection() {
@@ -690,9 +658,9 @@ button {
         function backToModeSelect() {
             pendingQuizFile = null;
             quizSubjectFile = null;
+            wrongNoteOnly = false;
             document.getElementById('subject-btns').classList.remove('hidden');
             document.getElementById('session-select-div').classList.add('hidden');
-            document.getElementById('wrong-note-div').classList.add('hidden');
             document.getElementById('subject-title').textContent = '과목 선택';
             document.getElementById('subject-box').classList.add('hidden');
             document.getElementById('mode-box').classList.remove('hidden');
@@ -724,54 +692,28 @@ button {
             };
             db.ref('users/' + user.id + '/practice_wrong_notes/' + sk + '/' + id).set(payload).catch(() => {});
         }
-        async function openWrongNotePanel() {
-            if (!pendingQuizFile) return;
-            if (!user || !user.id) return alert('로그인이 필요합니다.');
-            document.getElementById('session-select-div').classList.add('hidden');
-            document.getElementById('wrong-note-div').classList.remove('hidden');
-            document.getElementById('wrong-note-subject-label').textContent = SUBJECT_LABELS[pendingQuizFile] || pendingQuizFile;
-            await renderWrongNoteList();
-        }
-        function closeWrongNotePanel() {
-            document.getElementById('wrong-note-div').classList.add('hidden');
-            document.getElementById('session-select-div').classList.remove('hidden');
-        }
-        async function renderWrongNoteList() {
-            const listEl = document.getElementById('wrong-note-list');
-            if (!listEl || !user || !user.id || !pendingQuizFile) return;
-            listEl.innerHTML = '<p class="wrong-note-empty">불러오는 중...</p>';
-            const sk = subjectStorageKey(pendingQuizFile);
-            try {
-                const snap = await db.ref('users/' + user.id + '/practice_wrong_notes/' + sk).once('value');
-                const val = snap.val();
-                const entries = val ? Object.entries(val) : [];
-                if (entries.length === 0) {
-                    listEl.innerHTML = '<p class="wrong-note-empty">저장된 오답이 없습니다. 회차별 연습 중 틀린 문제가 여기 쌓입니다.</p>';
-                    return;
-                }
-                entries.sort((a, b) => (b[1].at || 0) - (a[1].at || 0));
-                listEl.innerHTML = entries.map(([wid, row]) => {
-                    const q = String(row.question || '');
-                    const preview = q.length > 160 ? q.slice(0, 160) + '…' : q;
-                    return '<div class="wrong-note-item">' +
-                        '<div class="wrong-note-q">' + escapeHtml(preview) + '</div>' +
-                        '<button type="button" class="btn-red btn-wrong-del" data-wrong-id="' + escapeAttr(wid) + '">삭제</button>' +
-                        '</div>';
-                }).join('');
-            } catch (e) {
-                listEl.innerHTML = '<p class="wrong-note-empty" style="color:#c00;">목록을 불러오지 못했습니다.</p>';
-            }
-        }
-        async function deleteWrongNoteEntry(noteId) {
-            if (!user || !user.id || !pendingQuizFile || !noteId) return;
+        /** 오답노트 연습 중 — 현재 문제만 DB·목록에서 제거 */
+        async function deleteCurrentWrongNote() {
+            if (!wrongNoteOnly || !user || !user.id || !quizSubjectFile) return;
+            const p = quizList[currentIdx];
+            if (!p) return;
             if (!confirm('이 문제를 오답노트에서 삭제할까요?')) return;
-            const sk = subjectStorageKey(pendingQuizFile);
+            const sk = subjectStorageKey(quizSubjectFile);
+            const id = makeWrongNoteId(quizSubjectFile, p);
             try {
-                await db.ref('users/' + user.id + '/practice_wrong_notes/' + sk + '/' + noteId).remove();
-                await renderWrongNoteList();
+                await db.ref('users/' + user.id + '/practice_wrong_notes/' + sk + '/' + id).remove();
             } catch (e) {
                 alert('삭제에 실패했습니다.');
+                return;
             }
+            quizList.splice(currentIdx, 1);
+            if (quizList.length === 0) {
+                persistGameResultAndShowRanking().catch(() => alert('화면 전환에 실패했습니다.'));
+                return;
+            }
+            if (currentIdx >= quizList.length) currentIdx = quizList.length - 1;
+            updateUI();
+            showQuestion();
         }
         async function startWrongNoteQuiz() {
             if (!user || !user.id) return alert('로그인이 필요합니다.');
@@ -790,7 +732,7 @@ button {
             quizList = rows.sort(() => Math.random() - 0.5);
             quizSubjectFile = pendingQuizFile;
             mode = 'practice';
-            document.getElementById('wrong-note-div').classList.add('hidden');
+            wrongNoteOnly = true;
             document.getElementById('session-select-div').classList.add('hidden');
             startQuiz();
         }
@@ -952,6 +894,7 @@ button {
 
         // 퀴즈 준비 및 진행 (이전 답변과 로직 동일)
         function prepareQuiz(file) {
+            wrongNoteOnly = false;
             quizSubjectFile = file;
             fetch(file).then(r => r.json()).then(data => {
                 quizList = (mode === 'practice') ? data.filter(p => p.session === document.getElementById('session-val').value) : data.sort(() => Math.random() - 0.5);
@@ -990,7 +933,14 @@ button {
             }, 100);
         }
         function updateUI() {
-            document.getElementById('score-display').innerText = "점수: " + score;
+            const sd = document.getElementById('score-display');
+            if (wrongNoteOnly) sd.classList.add('hidden');
+            else {
+                sd.classList.remove('hidden');
+                sd.innerText = '점수: ' + score;
+            }
+            const delBtn = document.getElementById('btn-wrong-delete');
+            if (delBtn) delBtn.classList.toggle('hidden', !wrongNoteOnly);
             document.getElementById('life-display').innerText = (mode === 'survival') ? "❤️".repeat(lives) : "";
             document.getElementById('progress-display').innerText = (currentIdx + 1) + "/" + quizList.length;
             if(mode === 'timeattack') {
@@ -1018,7 +968,7 @@ button {
         function checkAnswer(ans, btn) {
             const p = quizList[currentIdx];
             if(ans === p.answer) {
-                score += 10;
+                if (!wrongNoteOnly) score += 10;
                 if(mode === 'timeattack') {
                     timeLeft += 30;
                     if((items.hint + items.shield + items.time) < 2) { streak++; if(streak >= 3) { gainRandomItem(); streak = 0; } }
@@ -1035,7 +985,7 @@ button {
                     proceed();
                 }
             }
-            if(mode === 'practice') sessionPracticeSolved++;
+            if (mode === 'practice' && !wrongNoteOnly) sessionPracticeSolved++;
             updateUI();
         }
         function gainRandomItem() {
@@ -1099,6 +1049,15 @@ button {
         async function persistGameResultAndShowRanking() {
             clearInterval(timerInterval);
             document.getElementById('quiz-box').classList.add('hidden');
+            if (wrongNoteOnly) {
+                wrongNoteOnly = false;
+                document.getElementById('rank-box').classList.add('hidden');
+                document.getElementById('subject-box').classList.remove('hidden');
+                document.getElementById('subject-btns').classList.add('hidden');
+                document.getElementById('session-select-div').classList.remove('hidden');
+                document.getElementById('subject-title').textContent = '회차 선택';
+                return;
+            }
             document.getElementById('rank-box').classList.remove('hidden');
             const timeStr = document.getElementById('timer-text').innerText;
             const updates = {};
@@ -1117,7 +1076,11 @@ button {
             await persistGameResultAndShowRanking();
         }
         function quitGame() {
-            if(!confirm('그만두시겠습니까? 지금까지의 기록이 저장되고 랭킹으로 이동합니다.')) return;
+            if (wrongNoteOnly) {
+                persistGameResultAndShowRanking().catch(() => alert('화면 전환에 실패했습니다.'));
+                return;
+            }
+            if (!confirm('그만두시겠습니까? 지금까지의 기록이 저장되고 랭킹으로 이동합니다.')) return;
             persistGameResultAndShowRanking().catch(() => alert('저장에 실패했습니다.'));
         }
 
@@ -1296,13 +1259,6 @@ button {
                 el.innerHTML = '<p class="login-top3-err">순위를 불러오지 못했습니다.</p>';
             }
         }
-
-        document.getElementById('wrong-note-list').addEventListener('click', function(e) {
-            const t = e.target.closest('.btn-wrong-del');
-            if (!t) return;
-            const id = t.getAttribute('data-wrong-id');
-            if (id) deleteWrongNoteEntry(id);
-        });
 
         loadLoginTop3Preview();
     </script>
