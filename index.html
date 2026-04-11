@@ -275,6 +275,29 @@ button {
     .item-count { position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 10px; }
 
     .option-btn { background: #f8f9fa; color: #333 !important; border: 1px solid #ddd; text-align: left; }
+
+    /* 문제 풀이(연습·모드·왕중왕전): 본문·이미지·보기 중앙 정렬 */
+    #quiz-box #q-txt,
+    #king-game-box #king-q-txt {
+        text-align: center;
+    }
+    #quiz-box #q-img,
+    #king-game-box #king-q-img {
+        text-align: center;
+    }
+    #quiz-box #q-img img,
+    #king-game-box #king-q-img img {
+        display: inline-block;
+        vertical-align: middle;
+    }
+    #quiz-box #q-opts,
+    #king-game-box #king-q-opts {
+        text-align: center;
+    }
+    #quiz-box #q-opts .option-btn,
+    #king-game-box #king-q-opts .option-btn {
+        text-align: center;
+    }
     .correct { background: #d4edda !important; border-color: #28a745 !important; }
     .wrong { background: #f8d7da !important; border-color: #dc3545 !important; }
     
@@ -489,6 +512,7 @@ button {
             font-size: 1.05rem;
             word-break: keep-all;
             line-height: 1.45;
+            text-align: center;
         }
         .rank-item {
             font-size: 13px;
