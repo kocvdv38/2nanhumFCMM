@@ -312,13 +312,41 @@ button {
     .correct { background: #d4edda !important; border-color: #28a745 !important; }
     .wrong { background: #f8d7da !important; border-color: #dc3545 !important; }
     
-    /* 랭킹 탭 */
-    .rank-tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-bottom: 15px; }
-    .rank-tab { 
-        width: auto !important; /* 탭 버튼도 100% 무시 */
-        font-size: 11px; padding: 10px 2px; cursor: pointer; background: #eee; border-radius: 5px; flex: 1; margin: 0 2px; border: 1px solid #ddd; color: #333;
+    /* 랭킹: 모드 드롭다운 (TOP3 미리보기 아래) */
+    .rank-mode-row {
+        margin-top: 14px;
+        padding-top: 12px;
+        border-top: 1px solid #eee;
+        margin-bottom: 16px;
+        text-align: left;
     }
-    .active-tab { background: #007bff !important; color: white !important; border-color: #0056b3; }
+    .rank-mode-row label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: #444;
+        margin-bottom: 8px;
+    }
+    #rank-mode-select {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        text-align: left;
+        cursor: pointer;
+    }
+    /* 실시간 랭킹: 모드별 TOP3 순환 (제목 바로 아래) */
+    .rank-top3-preview {
+        margin-top: 6px;
+        padding-top: 0;
+        border-top: none;
+        text-align: left;
+    }
+    .rank-top3-preview .login-top3-rotator-inner {
+        min-height: 118px;
+        touch-action: pan-y;
+        user-select: none;
+        cursor: grab;
+    }
     
     img { max-width: 100%; border-radius: 8px; margin: 10px 0; }
     .rank-item { display: flex; align-items: center; padding: 12px; margin: 8px 0; border-radius: 10px; background: #fff; border: 1px solid #eee; font-size: 14px; }
@@ -384,6 +412,10 @@ button {
         border-color: #d4c4f0;
         background: linear-gradient(180deg, #f5f0ff 0%, #faf9fc 100%);
     }
+    .login-top3-card--daily {
+        border-color: #b8e0e6;
+        background: linear-gradient(180deg, #f0fbfc 0%, #fafcfd 100%);
+    }
     .login-top3-card-head {
         display: flex;
         align-items: center;
@@ -441,6 +473,33 @@ button {
         color: #666;
         margin: 0 0 8px 0;
         text-align: center;
+    }
+    /* TOP3 변동 알림: 가로 무한 스크롤 */
+    .login-top3-ticker-outer {
+        overflow: hidden;
+        width: 100%;
+        max-width: 100%;
+        margin: 0 0 8px 0;
+        line-height: 1.45;
+    }
+    .login-top3-ticker-inner {
+        display: inline-flex;
+        white-space: nowrap;
+        animation: loginTop3Marquee 45s linear infinite;
+        will-change: transform;
+    }
+    .login-top3-ticker-inner span {
+        padding-right: 2.5rem;
+        font-size: 11px;
+        color: #0d5c4a;
+        font-weight: 600;
+    }
+    @keyframes loginTop3Marquee {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .login-top3-ticker-inner { animation: none; white-space: normal; }
     }
     .login-top3-rotator-inner {
         min-height: 118px;
@@ -654,17 +713,8 @@ button {
             width: 20px;
             height: 20px;
         }
-        .rank-tabs {
-            flex-wrap: wrap;
-            gap: 6px;
+        .rank-mode-row {
             margin-bottom: 12px;
-        }
-        .rank-tab {
-            flex: 1 1 calc(50% - 4px);
-            min-width: 0;
-            font-size: 11px;
-            padding: 10px 4px;
-            margin: 0;
         }
         #game-header {
             flex-wrap: wrap;
@@ -796,6 +846,7 @@ button {
             </button>
         </div>
         <p id="mode-user-line" style="font-size:14px;color:#555;margin:0 0 12px 0;"></p>
+        <button class="btn-blue" style="background:linear-gradient(135deg,#20c997 0%,#17a2b8 100%);" onclick="selectMode('daily')">📅 데일리 챌린지 (연속 출석)</button>
         <button class="btn-green" onclick="selectMode('practice')">📖 연습하기 (공부량 랭킹)</button>
         <button class="btn-purple" onclick="selectMode('classic')">🏆 클래식 도전 (전체 풀이)</button>
         <button class="btn-red" onclick="selectMode('survival')">💔 서바이벌 (목숨 3개)</button>
@@ -920,6 +971,7 @@ button {
         <label for="p-phone" class="profile-field-label">휴대폰 <span style="font-weight:normal;color:#999;">(선택)</span></label>
         <input type="tel" id="p-phone" placeholder="010-1234-5678 (선택)" autocomplete="tel" inputmode="tel" maxlength="13" oninput="formatPhoneHyphenInput(this)">
         <button type="button" class="btn-blue" onclick="saveProfile()">저장</button>
+        <button type="button" class="btn-orange" onclick="logout()">로그아웃</button>
         <button type="button" class="btn-gray" onclick="closeProfile()">취소</button>
     </div>
 
@@ -978,12 +1030,23 @@ button {
     <!-- 6. 랭킹 화면 -->
     <div id="rank-box" class="card hidden">
         <h2 id="res-title">실시간 랭킹</h2>
-        <div class="rank-tabs">
-            <div id="tab-practice" class="rank-tab" onclick="fetchRanking('practice')">연습왕</div>
-            <div id="tab-classic" class="rank-tab" onclick="fetchRanking('classic')">클래식</div>
-            <div id="tab-survival" class="rank-tab" onclick="fetchRanking('survival')">서바이벌</div>
-            <div id="tab-timeattack" class="rank-tab" onclick="fetchRanking('timeattack')">타임어택</div>
-            <div id="tab-king" class="rank-tab" onclick="fetchRanking('king')">⚔️ 왕중왕</div>
+        <div id="rank-top3-preview" class="rank-top3-preview login-top3-wrap" aria-live="polite">
+            <div class="login-top3-rotator-wrap">
+                <p class="login-top3-rotator-hint">모드별 TOP3 · 좌우로 넘기면 이동 · 5초마다 순환</p>
+                <div class="login-top3-rotator-inner" id="rank-top3-rotator-inner"></div>
+                <div class="login-top3-rotator-dots" id="rank-top3-rotator-dots" aria-hidden="true"></div>
+            </div>
+        </div>
+        <div class="rank-mode-row">
+            <label for="rank-mode-select">모드</label>
+            <select id="rank-mode-select" aria-label="랭킹 모드 선택" onchange="fetchRanking(this.value)">
+                <option value="daily">📅 데일리 챌린지</option>
+                <option value="practice">📚 연습왕</option>
+                <option value="classic">🎯 클래식</option>
+                <option value="survival">💔 서바이벌</option>
+                <option value="timeattack">⏱️ 타임어택</option>
+                <option value="king">⚔️ 왕중왕</option>
+            </select>
         </div>
         <div id="rank-my-record" class="hidden" style="margin-bottom:14px;"></div>
         <div id="rank-list"></div>
@@ -1017,7 +1080,7 @@ button {
         /** 연습: 문제당 최초 제출 시에만 sessionPracticeSolved 반영 */
         let practiceFirstSubmit = {};
         let classicProceedTimer = null;
-        let currentRankMode = 'practice';
+        let currentRankMode = 'daily';
         let pendingQuizFile = null;
         const SUBJECT_LABELS = {
             'drawing.json': '전산응용기계제도기능사',
@@ -1718,13 +1781,15 @@ button {
         }
 
         function onSubjectPick(file) {
-            if (mode === 'practice') {
+            if (mode === 'practice' || mode === 'daily') {
                 pendingQuizFile = file;
                 document.getElementById('subject-btns').classList.add('hidden');
                 document.getElementById('session-select-div').classList.remove('hidden');
                 document.getElementById('subject-title').textContent = '회차 선택';
                 document.getElementById('session-subject-label').textContent =
                     '선택한 과목: ' + (SUBJECT_LABELS[file] || file);
+                const wn = document.querySelector('#session-select-div .btn-wrong-note');
+                if (wn) wn.classList.toggle('hidden', mode === 'daily');
             } else {
                 prepareQuiz(file);
             }
@@ -1886,6 +1951,10 @@ button {
             document.getElementById('profile-box').classList.add('hidden');
             document.getElementById('mode-box').classList.remove('hidden');
         }
+        function logout() {
+            if (!confirm('로그아웃하고 첫 화면(로그인)으로 돌아갈까요?')) return;
+            location.reload();
+        }
         function saveProfile() {
             if(!user) return;
             const newPw = document.getElementById('p-pw').value.trim();
@@ -1986,7 +2055,8 @@ button {
                 const newUser = {
                     id, pw, school, name:n, student_id: s, birth:b,
                     hide_name_in_ranking: false,
-                    practice_count:0, classic_score:0, survival_score:0, timeattack_score:0, king_score:0
+                    practice_count:0, classic_score:0, survival_score:0, timeattack_score:0, king_score:0,
+                    daily_streak:0, daily_best_streak:0, daily_last_date:'', daily_time:'--:--'
                 };
                 if (emailRaw) newUser.email = emailRaw;
                 if (phoneRaw) newUser.phone = phoneRaw;
@@ -2011,7 +2081,9 @@ button {
             wrongNoteOnly = false;
             quizSubjectFile = file;
             fetch(file).then(r => r.json()).then(data => {
-                quizList = (mode === 'practice') ? data.filter(p => p.session === document.getElementById('session-val').value) : data.sort(() => Math.random() - 0.5);
+                quizList = (mode === 'practice' || mode === 'daily')
+                    ? data.filter(p => p.session === document.getElementById('session-val').value)
+                    : data.sort(() => Math.random() - 0.5);
                 startQuiz();
             }).catch(e => alert("파일 로드 실패"));
         }
@@ -2032,11 +2104,11 @@ button {
         function syncPrevQuestionBtn() {
             const btn = document.getElementById('prev-question-btn');
             if (!btn) return;
-            const show = !wrongNoteOnly && (mode === 'practice' || mode === 'classic') && currentIdx > 0;
+            const show = !wrongNoteOnly && (mode === 'practice' || mode === 'daily' || mode === 'classic') && currentIdx > 0;
             btn.classList.toggle('hidden', !show);
         }
         function goToPreviousQuestion() {
-            if (mode !== 'practice' && mode !== 'classic') return;
+            if (mode !== 'practice' && mode !== 'daily' && mode !== 'classic') return;
             if (currentIdx <= 0) return;
             if (classicProceedTimer) {
                 clearTimeout(classicProceedTimer);
@@ -2046,7 +2118,7 @@ button {
             showQuestion();
         }
         function nextPracticeQuestion() {
-            if(mode !== 'practice') return;
+            if(mode !== 'practice' && mode !== 'daily') return;
             currentIdx++;
             showQuestion();
         }
@@ -2110,7 +2182,7 @@ button {
         function checkAnswer(ans, btn) {
             const p = quizList[currentIdx];
             const idx = currentIdx;
-            const canRevise = (mode === 'practice' || mode === 'classic') && !wrongNoteOnly;
+            const canRevise = (mode === 'practice' || mode === 'daily' || mode === 'classic') && !wrongNoteOnly;
             if (canRevise && lastAnswerCorrect[idx] === true) {
                 score -= 10;
             }
@@ -2142,7 +2214,7 @@ button {
                     proceed();
                 }
             }
-            if (mode === 'practice' && !wrongNoteOnly) {
+            if ((mode === 'practice' || mode === 'daily') && !wrongNoteOnly) {
                 if (!practiceFirstSubmit[idx]) {
                     practiceFirstSubmit[idx] = true;
                     sessionPracticeSolved++;
@@ -2162,7 +2234,7 @@ button {
             updateUI();
         }
         function proceed() {
-            if(mode === 'practice') {
+            if(mode === 'practice' || mode === 'daily') {
                 const p = quizList[currentIdx];
                 const exp = document.getElementById('explanation-box');
                 exp.innerHTML = `<b>정답: ${p.answer}번</b><br>${p.explanation || "해설 없음"}`;
@@ -2179,6 +2251,19 @@ button {
             } else {
                 setTimeout(() => { currentIdx++; showQuestion(); }, 400);
             }
+        }
+
+        /** 로컬 날짜 YYYY-MM-DD (데일리 출석 기준) */
+        function getLocalDateStringForDaily(d) {
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return y + '-' + m + '-' + day;
+        }
+        function getYesterdayLocalDateStringForDaily() {
+            const d = new Date();
+            d.setDate(d.getDate() - 1);
+            return getLocalDateStringForDaily(d);
         }
 
         // 결과 및 랭킹
@@ -2215,6 +2300,12 @@ button {
             } else if (rankMode === 'king') {
                 const wins = user.king_score != null ? user.king_score : 0;
                 el.innerHTML = `<div class="rank-my-box"><b>나의 기록</b> · 인증 우승 <strong>${wins}</strong>회 <span style="color:#666;font-size:12px;">(한 게임당 처음 시작할 때 참가자 5명 이상인 방 우승만 집계)</span>${extra}</div>`;
+            } else if (rankMode === 'daily') {
+                const st = user.daily_streak != null ? user.daily_streak : 0;
+                const best = user.daily_best_streak != null ? user.daily_best_streak : 0;
+                const last = user.daily_last_date ? String(user.daily_last_date) : '—';
+                const tm = user.daily_time || '--:--';
+                el.innerHTML = `<div class="rank-my-box"><b>나의 기록</b> · 연속 <strong>${st}</strong>일 · 최고 <strong>${best}</strong>일 · 마지막 출석 <strong>${last}</strong> · 플레이 시간 ${tm}${extra}</div>`;
             } else {
                 const sc = user[rankMode + '_score'] != null ? user[rankMode + '_score'] : 0;
                 const tm = rankMode === 'classic' ? (user.classic_time || '--:--') : (user[rankMode + '_time'] || '--:--');
@@ -2240,6 +2331,25 @@ button {
             if(mode === 'practice') {
                 updates[`users/${user.id}/practice_count`] = (user.practice_count || 0) + sessionPracticeSolved;
                 updates[`users/${user.id}/practice_time`] = timeStr;
+            } else if (mode === 'daily') {
+                if (sessionPracticeSolved >= 1) {
+                    updates[`users/${user.id}/daily_time`] = timeStr;
+                    const todayStr = getLocalDateStringForDaily(new Date());
+                    const yestStr = getYesterdayLocalDateStringForDaily();
+                    const last = String(user.daily_last_date || '').trim();
+                    if (last !== todayStr) {
+                        let newStreak;
+                        if (last === yestStr) {
+                            newStreak = (Number(user.daily_streak) || 0) + 1;
+                        } else {
+                            newStreak = 1;
+                        }
+                        const best = Math.max(Number(user.daily_best_streak) || 0, newStreak);
+                        updates[`users/${user.id}/daily_streak`] = newStreak;
+                        updates[`users/${user.id}/daily_last_date`] = todayStr;
+                        updates[`users/${user.id}/daily_best_streak`] = best;
+                    }
+                }
             } else {
                 updates[`users/${user.id}/${mode}_score`] = Math.max(user[mode+'_score'] || 0, score);
                 if(mode === 'classic') updates[`users/${user.id}/classic_time`] = timeStr;
@@ -2313,8 +2423,9 @@ button {
 
         async function fetchRanking(rankMode) {
             currentRankMode = rankMode;
-            document.querySelectorAll('.rank-tab').forEach(t => t.classList.remove('active-tab'));
-            document.getElementById('tab-'+rankMode).classList.add('active-tab');
+            stopRankTop3Rotation();
+            const modeSel = document.getElementById('rank-mode-select');
+            if (modeSel) modeSel.value = rankMode;
             const list = document.getElementById('rank-list');
             const adminBar = document.getElementById('rank-admin-actions');
             if(adminBar) adminBar.classList.add('hidden');
@@ -2323,7 +2434,9 @@ button {
                 try { await refreshUserFromDb(); } catch(e) {}
             }
             updateRankBackButton();
-            const field = rankMode === 'practice' ? 'practice_count' : (rankMode === 'king' ? 'king_score' : rankMode + '_score');
+            const field = rankMode === 'practice'
+                ? 'practice_count'
+                : (rankMode === 'king' ? 'king_score' : (rankMode === 'daily' ? 'daily_streak' : rankMode + '_score'));
             try {
                 const snap = await db.ref('users').once('value');
                 const arr = [];
@@ -2336,7 +2449,13 @@ button {
                 arrWithRecord.sort((a, b) => {
                     const va = Number(a[field]) || 0;
                     const vb = Number(b[field]) || 0;
-                    return vb - va;
+                    if (vb !== va) return vb - va;
+                    if (rankMode === 'daily') {
+                        const da = String(a.daily_last_date || '');
+                        const db = String(b.daily_last_date || '');
+                        if (db !== da) return db.localeCompare(da);
+                    }
+                    return 0;
                 });
                 let rankInfo = null;
                 if(user && user.id) {
@@ -2363,9 +2482,13 @@ button {
                         ? ('누적 ' + (u.practice_count != null ? u.practice_count : 0) + '문제')
                         : rankMode === 'king'
                         ? ('인증 우승 ' + (u.king_score != null ? u.king_score : 0) + '회')
+                        : rankMode === 'daily'
+                        ? ('연속 ' + (u.daily_streak != null ? u.daily_streak : 0) + '일 · 최고 ' + (u.daily_best_streak != null ? u.daily_best_streak : 0) + '일')
                         : ((u[field] != null ? u[field] : 0) + '점');
                     const timeStr = rankMode === 'king'
                         ? '—'
+                        : rankMode === 'daily'
+                        ? (u.daily_time || '--:--')
                         : (u[rankMode + '_time'] || u['classic_time'] || '--:--');
                     const uid = String(u.id || '');
                     const cb = showAdmin
@@ -2395,8 +2518,14 @@ button {
                         if(master) master.checked = false;
                     } else adminBar.classList.add('hidden');
                 }
+                updateRankTop3Carousel(arr);
+                var rankHint = document.querySelector('#rank-top3-preview .login-top3-rotator-hint');
+                if (rankHint) {
+                    rankHint.textContent = '모드별 TOP3 · 좌우로 넘기면 이동 · ' + Math.round(LOGIN_TOP3_ROTATE_MS / 1000) + '초마다 순환';
+                }
                 updateRankBackButton();
             } catch(e) {
+                stopRankTop3Rotation();
                 list.innerHTML = '<p style="color:#c00;">랭킹을 불러오지 못했습니다. 네트워크 또는 권한 설정을 확인해 주세요.</p>';
                 if(adminBar) adminBar.classList.add('hidden');
                 if(user && user.id) updateMyRecordPanel(rankMode, null);
@@ -2409,6 +2538,7 @@ button {
             btn.textContent = (user && user.id) ? '모드 선택으로' : '메인으로';
         }
         function goBackFromRanking() {
+            stopRankTop3Rotation();
             if(user && user.id) {
                 document.getElementById('rank-box').classList.add('hidden');
                 document.getElementById('mode-box').classList.remove('hidden');
@@ -2416,11 +2546,11 @@ button {
                 location.reload();
             }
         }
-        function openRank() { document.getElementById('login-box').classList.add('hidden'); document.getElementById('rank-box').classList.remove('hidden'); fetchRanking('practice'); }
+        function openRank() { document.getElementById('login-box').classList.add('hidden'); document.getElementById('rank-box').classList.remove('hidden'); fetchRanking('daily'); }
         function openRankFromMode() {
             document.getElementById('mode-box').classList.add('hidden');
             document.getElementById('rank-box').classList.remove('hidden');
-            fetchRanking('practice');
+            fetchRanking('daily');
         }
 
         function escapeHtml(s) {
@@ -2731,9 +2861,166 @@ button {
         }
 
         const LOGIN_TOP3_ROTATE_MS = 5000;
+        /** 로그인 화면 TOP3 미리보기·스냅샷 공통 (key는 Firebase meta/top3_snapshot.modes 와 동일) */
+        const LOGIN_TOP3_MODES = [
+            { key: 'daily', field: 'daily_streak', label: '데일리', icon: '📅', cardClass: 'login-top3-card--daily' },
+            { key: 'practice', field: 'practice_count', label: '연습왕', icon: '📚', cardClass: 'login-top3-card--practice' },
+            { key: 'classic', field: 'classic_score', label: '클래식', icon: '🎯', cardClass: 'login-top3-card--classic' },
+            { key: 'survival', field: 'survival_score', label: '서바이벌', icon: '💔', cardClass: 'login-top3-card--survival' },
+            { key: 'timeattack', field: 'timeattack_score', label: '타임어택', icon: '⏱️', cardClass: 'login-top3-card--timeattack' },
+            { key: 'king', field: 'king_score', label: '왕중왕', icon: '⚔️', cardClass: 'login-top3-card--king' }
+        ];
+        const TOP3_EVENTS_MAX_AGE_MS = 48 * 60 * 60 * 1000;
         let loginTop3RotateInt = null;
         let loginTop3ModeIndex = 0;
         let loginTop3CardHtmlList = [];
+        let rankTop3RotateInt = null;
+        let rankTop3ModeIndex = 0;
+        let rankTop3CardHtmlList = [];
+
+        function loginTop3DisplayName(usersById, uid) {
+            var u = usersById[uid];
+            if (!u) return String(uid || '');
+            var n = u.name != null ? String(u.name).trim() : '';
+            return n ? n : String(u.id != null ? u.id : uid);
+        }
+
+        function sortUsersForLoginTop3Mode(arr, def) {
+            var sorted = arr.slice();
+            if (def.key === 'daily') {
+                sorted.sort(function (a, b) {
+                    var vb = Number(b[def.field]) || 0;
+                    var va = Number(a[def.field]) || 0;
+                    if (vb !== va) return vb - va;
+                    var db = String(b.daily_last_date || '');
+                    var da = String(a.daily_last_date || '');
+                    return db.localeCompare(da);
+                });
+            } else {
+                sorted.sort(function (a, b) {
+                    return (Number(b[def.field]) || 0) - (Number(a[def.field]) || 0);
+                });
+            }
+            return sorted.filter(function (u) { return (Number(u[def.field]) || 0) > 0; }).slice(0, 3);
+        }
+
+        /** 로그인·랭킹 화면 TOP3 카드 HTML 목록 (동일 데이터 소스) */
+        function buildTop3CardHtmlList(arr) {
+            return LOGIN_TOP3_MODES.map(function (m) {
+                var top = sortUsersForLoginTop3Mode(arr, m);
+                var lines = top.length
+                    ? top.map(function (u, i) {
+                        return '<div class="login-top3-line"><span class="login-top3-rank" title="' + (i + 1) + '등">' + topRankIcon(i) + '</span>' + escapeHtml(u.id) + ' <span class="login-top3-muted">·</span> ' + escapeHtml(u.school || '학교 없음') + '</div>';
+                    }).join('')
+                    : '<div class="login-top3-empty">기록 없음</div>';
+                return '<div class="login-top3-card ' + m.cardClass + '" role="region" aria-label="' + escapeHtml(m.label) + ' 순위">' +
+                    '<div class="login-top3-card-head">' +
+                    '<span class="login-top3-mode-icon" aria-hidden="true">' + m.icon + '</span>' +
+                    '<span class="login-top3-mode-title">' + escapeHtml(m.label) + ' TOP3</span>' +
+                    '</div>' +
+                    '<div class="login-top3-card-body">' + lines + '</div>' +
+                    '</div>';
+            });
+        }
+
+        function computeTop3SnapshotModes(arr, defs) {
+            var modes = {};
+            defs.forEach(function (def) {
+                var top = sortUsersForLoginTop3Mode(arr, def);
+                var ids = ['', '', ''];
+                for (var i = 0; i < top.length; i++) {
+                    ids[i] = String(top[i].id != null ? top[i].id : '');
+                }
+                modes[def.key] = ids;
+            });
+            return modes;
+        }
+
+        function diffTop3Messages(prevModes, nextModes, usersById, defs) {
+            var msgs = [];
+            defs.forEach(function (def) {
+                var label = def.label;
+                var po = (prevModes && prevModes[def.key]) ? prevModes[def.key].slice(0, 3) : ['', '', ''];
+                var pn = (nextModes && nextModes[def.key]) ? nextModes[def.key].slice(0, 3) : ['', '', ''];
+                var i;
+                for (i = 0; i < 3; i++) {
+                    if (!po[i]) po[i] = '';
+                    if (!pn[i]) pn[i] = '';
+                }
+                var prevRank = {};
+                var nextRank = {};
+                for (i = 0; i < 3; i++) {
+                    if (po[i]) prevRank[po[i]] = i;
+                    if (pn[i]) nextRank[pn[i]] = i;
+                }
+                Object.keys(nextRank).forEach(function (uid) {
+                    var ni = nextRank[uid];
+                    var name = loginTop3DisplayName(usersById, uid);
+                    if (prevRank[uid] == null) {
+                        msgs.push(name + '님이 ' + label + ' TOP3 ' + (ni + 1) + '위에 새로 올랐습니다');
+                    } else if (prevRank[uid] !== ni) {
+                        msgs.push(name + '님 ' + label + ' TOP3 ' + (prevRank[uid] + 1) + '위→' + (ni + 1) + '위');
+                    }
+                });
+            });
+            return msgs;
+        }
+
+        async function syncLoginTop3SnapshotAndEvents(currentModes, usersById) {
+            try {
+                var snapRef = db.ref('meta/top3_snapshot');
+                var prev = await snapRef.once('value');
+                var prevVal = prev.val();
+                if (!prevVal || !prevVal.modes) {
+                    await snapRef.set({ v: 1, updatedAt: Date.now(), modes: currentModes });
+                    return;
+                }
+                var msgs = diffTop3Messages(prevVal.modes, currentModes, usersById, LOGIN_TOP3_MODES);
+                if (msgs.length) {
+                    var evRef = db.ref('meta/top3_events');
+                    var t0 = Date.now();
+                    for (var i = 0; i < msgs.length; i++) {
+                        await evRef.push({ at: t0 + i, text: msgs[i] });
+                    }
+                }
+                await snapRef.set({ v: 1, updatedAt: Date.now(), modes: currentModes });
+            } catch (err) {
+                console.warn('meta/top3 snapshot', err);
+            }
+        }
+
+        async function fetchTop3EventsLast48h() {
+            try {
+                var snap = await db.ref('meta/top3_events').once('value');
+                var list = [];
+                var cutoff = Date.now() - TOP3_EVENTS_MAX_AGE_MS;
+                snap.forEach(function (c) {
+                    var v = c.val();
+                    if (v && v.text && typeof v.at === 'number' && v.at >= cutoff) {
+                        list.push({ at: v.at, text: String(v.text) });
+                    }
+                });
+                list.sort(function (a, b) { return b.at - a.at; });
+                return list;
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function buildLoginTop3HintRow(secHint, tickerLines) {
+            var defaultHint =
+                '<p class="login-top3-rotator-hint">모드별 순위 미리보기 · 좌우로 넘기면 이동 · ' + secHint + '초마다 자동 순환</p>';
+            if (!tickerLines || tickerLines.length === 0) return defaultHint;
+            var combined = tickerLines.map(function (x) { return x.text; }).join('   ◆   ');
+            var safe = escapeHtml(combined);
+            var dur = Math.max(20, Math.min(100, combined.length * 0.18));
+            return (
+                '<div class="login-top3-ticker-outer" role="status" aria-live="polite">' +
+                '<div class="login-top3-ticker-inner" style="animation-duration:' + dur + 's">' +
+                '<span>' + safe + '</span><span>' + safe + '</span>' +
+                '</div></div>'
+            );
+        }
 
         function stopLoginTop3Rotation() {
             if (loginTop3RotateInt) {
@@ -2768,6 +3055,112 @@ button {
                 loginTop3ModeIndex = (loginTop3ModeIndex + 1) % loginTop3CardHtmlList.length;
                 paintLoginTop3Slide();
             }, LOGIN_TOP3_ROTATE_MS);
+        }
+
+        function stopRankTop3Rotation() {
+            if (rankTop3RotateInt) {
+                clearInterval(rankTop3RotateInt);
+                rankTop3RotateInt = null;
+            }
+        }
+
+        function paintRankTop3Slide() {
+            var inner = document.getElementById('rank-top3-rotator-inner');
+            var dotsEl = document.getElementById('rank-top3-rotator-dots');
+            if (!inner || !rankTop3CardHtmlList.length) return;
+            if (rankTop3ModeIndex >= rankTop3CardHtmlList.length) rankTop3ModeIndex = 0;
+            inner.innerHTML = rankTop3CardHtmlList[rankTop3ModeIndex];
+            if (dotsEl) {
+                if (rankTop3CardHtmlList.length <= 1) {
+                    dotsEl.innerHTML = '';
+                } else {
+                    var dots = '';
+                    for (var j = 0; j < rankTop3CardHtmlList.length; j++) {
+                        dots += '<span class="' + (j === rankTop3ModeIndex ? 'is-on' : '') + '">●</span>';
+                    }
+                    dotsEl.innerHTML = dots;
+                }
+            }
+        }
+
+        function startRankTop3Rotation() {
+            stopRankTop3Rotation();
+            if (rankTop3CardHtmlList.length <= 1) return;
+            rankTop3RotateInt = setInterval(function () {
+                rankTop3ModeIndex = (rankTop3ModeIndex + 1) % rankTop3CardHtmlList.length;
+                paintRankTop3Slide();
+            }, LOGIN_TOP3_ROTATE_MS);
+        }
+
+        function rankTop3Step(dir) {
+            if (!rankTop3CardHtmlList.length || rankTop3CardHtmlList.length <= 1) return;
+            var nr = rankTop3CardHtmlList.length;
+            rankTop3ModeIndex = (rankTop3ModeIndex + dir + nr * 10) % nr;
+            paintRankTop3Slide();
+            startRankTop3Rotation();
+        }
+
+        function updateRankTop3Carousel(arr) {
+            rankTop3CardHtmlList = buildTop3CardHtmlList(arr);
+            rankTop3ModeIndex = 0;
+            paintRankTop3Slide();
+            startRankTop3Rotation();
+        }
+
+        function initRankTop3SwipeDelegate() {
+            var root = document.getElementById('rank-top3-preview');
+            if (!root || root.dataset.swipeInit === '1') return;
+            root.dataset.swipeInit = '1';
+            var T = 45;
+            var RATIO = 0.65;
+            var sx, sy, tracking = false;
+
+            function maybeSwipe(clientX, clientY) {
+                if (!tracking) return;
+                tracking = false;
+                var dx = clientX - sx;
+                var dy = clientY - sy;
+                if (Math.abs(dx) < T) return;
+                if (Math.abs(dy) > Math.abs(dx) * RATIO) return;
+                var inner = document.getElementById('rank-top3-rotator-inner');
+                if (!inner || !rankTop3CardHtmlList.length || rankTop3CardHtmlList.length <= 1) return;
+                if (dx < 0) rankTop3Step(1);
+                else rankTop3Step(-1);
+            }
+
+            root.addEventListener('touchstart', function (e) {
+                var inner = document.getElementById('rank-top3-rotator-inner');
+                if (!inner || !inner.contains(e.target)) return;
+                if (e.touches.length !== 1) return;
+                tracking = true;
+                sx = e.touches[0].clientX;
+                sy = e.touches[0].clientY;
+            }, { passive: true });
+            root.addEventListener('touchend', function (e) {
+                if (!e.changedTouches.length) return;
+                maybeSwipe(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+            }, { passive: true });
+            root.addEventListener('touchcancel', function () { tracking = false; }, { passive: true });
+
+            var md = false;
+            root.addEventListener('mousedown', function (e) {
+                var inner = document.getElementById('rank-top3-rotator-inner');
+                if (!inner || !inner.contains(e.target)) return;
+                if (e.button !== 0) return;
+                md = true;
+                tracking = true;
+                sx = e.clientX;
+                sy = e.clientY;
+            });
+            root.addEventListener('mouseup', function (e) {
+                if (!md) return;
+                md = false;
+                maybeSwipe(e.clientX, e.clientY);
+            });
+            root.addEventListener('mouseleave', function () {
+                md = false;
+                tracking = false;
+            });
         }
 
         /** dir: +1 다음 모드, -1 이전 모드 */
@@ -2841,13 +3234,6 @@ button {
             stopLoginTop3Rotation();
             loginTop3CardHtmlList = [];
             el.innerHTML = '<p class="login-top3-loading">순위 불러오는 중...</p>';
-            const modes = [
-                { field: 'practice_count', label: '연습왕', icon: '📚', cardClass: 'login-top3-card--practice' },
-                { field: 'classic_score', label: '클래식', icon: '🎯', cardClass: 'login-top3-card--classic' },
-                { field: 'survival_score', label: '서바이벌', icon: '💔', cardClass: 'login-top3-card--survival' },
-                { field: 'timeattack_score', label: '타임어택', icon: '⏱️', cardClass: 'login-top3-card--timeattack' },
-                { field: 'king_score', label: '왕중왕', icon: '⚔️', cardClass: 'login-top3-card--king' }
-            ];
             try {
                 const snap = await db.ref('users').once('value');
                 const arr = [];
@@ -2856,29 +3242,18 @@ button {
                     if (!v) return;
                     arr.push({ ...v, id: v.id != null ? v.id : c.key });
                 });
-                loginTop3CardHtmlList = modes.map(function (m) {
-                    const sorted = [...arr].sort(function (a, b) {
-                        return (Number(b[m.field]) || 0) - (Number(a[m.field]) || 0);
-                    });
-                    const top = sorted.filter(function (u) { return (Number(u[m.field]) || 0) > 0; }).slice(0, 3);
-                    const lines = top.length
-                        ? top.map(function (u, i) {
-                            return '<div class="login-top3-line"><span class="login-top3-rank" title="' + (i + 1) + '등">' + topRankIcon(i) + '</span>' + escapeHtml(u.id) + ' <span class="login-top3-muted">·</span> ' + escapeHtml(u.school || '학교 없음') + '</div>';
-                        }).join('')
-                        : '<div class="login-top3-empty">기록 없음</div>';
-                    return '<div class="login-top3-card ' + m.cardClass + '" role="region" aria-label="' + escapeHtml(m.label) + ' 순위">' +
-                        '<div class="login-top3-card-head">' +
-                        '<span class="login-top3-mode-icon" aria-hidden="true">' + m.icon + '</span>' +
-                        '<span class="login-top3-mode-title">' + escapeHtml(m.label) + ' TOP3</span>' +
-                        '</div>' +
-                        '<div class="login-top3-card-body">' + lines + '</div>' +
-                        '</div>';
-                });
+                var usersById = {};
+                arr.forEach(function (u) { usersById[String(u.id)] = u; });
+                var currentModes = computeTop3SnapshotModes(arr, LOGIN_TOP3_MODES);
+                await syncLoginTop3SnapshotAndEvents(currentModes, usersById);
+                var recentEvents = await fetchTop3EventsLast48h();
+                loginTop3CardHtmlList = buildTop3CardHtmlList(arr);
                 loginTop3ModeIndex = 0;
                 const secHint = Math.round(LOGIN_TOP3_ROTATE_MS / 1000);
+                var hintRow = buildLoginTop3HintRow(secHint, recentEvents);
                 el.innerHTML =
                     '<div class="login-top3-rotator-wrap">' +
-                    '<p class="login-top3-rotator-hint">모드별 순위 미리보기 · 좌우로 넘기면 이동 · ' + secHint + '초마다 자동 순환</p>' +
+                    hintRow +
                     '<div class="login-top3-rotator-inner" id="login-top3-rotator-inner"></div>' +
                     '<div class="login-top3-rotator-dots" id="login-top3-rotator-dots" aria-hidden="true"></div>' +
                     '</div>';
@@ -2895,6 +3270,7 @@ button {
         attachBoardCommentEnterHandlers();
         initBoardCommentsLoginSwipe();
         initLoginTop3SwipeDelegate();
+        initRankTop3SwipeDelegate();
         loadLoginTop3Preview();
     </script>
 </body>
