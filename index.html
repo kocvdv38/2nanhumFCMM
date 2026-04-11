@@ -488,12 +488,10 @@ button {
         function isAdmin() {
             return user && ADMIN_USER_IDS.includes(String(user.id));
         }
-        /** admin 포함 시 가입 불가. 단 아이디가 정확히 admin(대소문자만 다른 Admin 등)인 경우만 허용 → 최초 관리자 계정 생성용 */
+        /** 대소문자 구분 없이 "admin"과 동일하거나, 아이디에 "admin"이 들어가면 가입 불가 */
         function isForbiddenSignupUserId(id) {
             if(!id) return false;
-            const t = String(id).trim();
-            if(t.toLowerCase() === 'admin') return false;
-            return t.toLowerCase().includes('admin');
+            return String(id).trim().toLowerCase().includes('admin');
         }
 
         // UI 제어
@@ -642,7 +640,7 @@ button {
         function checkDuplicateId() {
             const id = document.getElementById('r-id').value.trim();
             if(!id) return alert("아이디를 입력하세요.");
-            if(isForbiddenSignupUserId(id)) return alert('아이디에 "admin"이 들어갈 수 없습니다. (정확히 admin 만 예외)');
+            if(isForbiddenSignupUserId(id)) return alert('아이디에 "admin"이 들어갈 수 없습니다. (대소문자 구분 없음)');
             db.ref('users/'+id).once('value').then(s => {
                 if(s.exists()) { alert("이미 사용 중인 아이디!"); isIdCheck = false; }
                 else { alert("사용 가능!"); isIdCheck = true; lastId = id; }
@@ -655,7 +653,7 @@ button {
             const school=document.getElementById('r-school').value;
             const n=document.getElementById('r-name').value.trim(), s=document.getElementById('r-sid').value.trim(), b=document.getElementById('r-birth').value.trim();
 
-            if(isForbiddenSignupUserId(id)) return alert('아이디에 "admin"이 들어갈 수 없습니다. (정확히 admin 만 예외)');
+            if(isForbiddenSignupUserId(id)) return alert('아이디에 "admin"이 들어갈 수 없습니다. (대소문자 구분 없음)');
             if(!isIdCheck || id !== lastId) return alert("아이디 중복 확인을 해주세요.");
             if(!isIdentityCheck || n !== lastIdentityName || b !== lastIdentityBirth) return alert("이름·생년월일 중복 확인을 해주세요.");
             if(!school) return alert("학교를 선택해주세요.");
@@ -807,7 +805,7 @@ button {
             if(s.exists()) user = { ...s.val(), id: user.id };
         }
 
-        function updateMyRecordPanel(rankMode) {
+        function updateMyRecordPanel(rankMode, rankInfo) {
             const el = document.getElementById('rank-my-record');
             if(!el) return;
             if(!user || !user.id) {
@@ -816,14 +814,25 @@ button {
                 return;
             }
             el.classList.remove('hidden');
+            let extra = '';
+            if(rankInfo) {
+                if(rankInfo.overallRank != null) {
+                    extra = ` · 전체 <strong>${rankInfo.overallRank}</strong>등 (기록 있는 사용자 ${rankInfo.totalRanked}명 중)`;
+                    if(rankInfo.inTop50 === false) {
+                        extra += ` <span style="color:#666;font-size:12px;">· 아래 목록은 상위 50명</span>`;
+                    }
+                } else if(rankInfo.noRecord) {
+                    extra = ` · <span style="color:#856404;">이 모드 기록 없음 — 순위 없음</span> (기록 있는 사용자 ${rankInfo.totalRanked}명)`;
+                }
+            }
             if(rankMode === 'practice') {
                 const cnt = user.practice_count != null ? user.practice_count : 0;
                 const t = user.practice_time || '--:--';
-                el.innerHTML = `<div class="rank-my-box"><b>나의 기록</b> · 누적 <strong>${cnt}</strong>문제 · 시간 ${t}</div>`;
+                el.innerHTML = `<div class="rank-my-box"><b>나의 기록</b> · 누적 <strong>${cnt}</strong>문제 · 시간 ${t}${extra}</div>`;
             } else {
                 const sc = user[rankMode + '_score'] != null ? user[rankMode + '_score'] : 0;
                 const tm = rankMode === 'classic' ? (user.classic_time || '--:--') : (user[rankMode + '_time'] || '--:--');
-                el.innerHTML = `<div class="rank-my-box"><b>나의 기록</b> · <strong>${sc}</strong>점 · ${tm}</div>`;
+                el.innerHTML = `<div class="rank-my-box"><b>나의 기록</b> · <strong>${sc}</strong>점 · ${tm}${extra}</div>`;
             }
         }
 
@@ -894,7 +903,6 @@ button {
             if(user && user.id) {
                 try { await refreshUserFromDb(); } catch(e) {}
             }
-            updateMyRecordPanel(rankMode);
             const field = rankMode === 'practice' ? 'practice_count' : rankMode + '_score';
             try {
                 const snap = await db.ref('users').once('value');
@@ -904,12 +912,27 @@ button {
                     if(!v) return;
                     arr.push({ ...v, id: v.id != null ? v.id : c.key });
                 });
-                arr.sort((a, b) => {
+                const arrWithRecord = arr.filter(u => (Number(u[field]) || 0) > 0);
+                arrWithRecord.sort((a, b) => {
                     const va = Number(a[field]) || 0;
                     const vb = Number(b[field]) || 0;
                     return vb - va;
                 });
-                const top = arr.slice(0, 10);
+                let rankInfo = null;
+                if(user && user.id) {
+                    const idx = arrWithRecord.findIndex(u => String(u.id) === String(user.id));
+                    if(idx >= 0) {
+                        rankInfo = {
+                            overallRank: idx + 1,
+                            totalRanked: arrWithRecord.length,
+                            inTop50: idx < 50
+                        };
+                    } else {
+                        rankInfo = { overallRank: null, totalRanked: arrWithRecord.length, noRecord: true };
+                    }
+                }
+                updateMyRecordPanel(rankMode, rankInfo);
+                const top = arrWithRecord.slice(0, 50);
                 const showAdmin = isAdmin();
                 list.innerHTML = top.map((u, i) => {
                     const hideName = u.hide_name_in_ranking === true;
@@ -950,6 +973,7 @@ button {
             } catch(e) {
                 list.innerHTML = '<p style="color:#c00;">랭킹을 불러오지 못했습니다. 네트워크 또는 권한 설정을 확인해 주세요.</p>';
                 if(adminBar) adminBar.classList.add('hidden');
+                if(user && user.id) updateMyRecordPanel(rankMode, null);
             }
         }
         function openRank() { document.getElementById('login-box').classList.add('hidden'); document.getElementById('rank-box').classList.remove('hidden'); fetchRanking('practice'); }
