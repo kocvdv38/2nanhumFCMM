@@ -114,6 +114,9 @@ button {
         margin: 4px 0 10px 0;
         line-height: 1.45;
     }
+    #reg-box .reg-pw-notice {
+        margin-bottom: 12px;
+    }
 
     /* 모드 선택: 제목 가운데 + 오른쪽 개인정보 아이콘 */
     .mode-header {
@@ -305,7 +308,8 @@ button {
             <input type="text" id="r-id" placeholder="아이디" oninput="resetIdCheck()">
             <button type="button" class="btn-gray" onclick="checkDuplicateId()">중복확인</button>
         </div>
-        <input type="password" id="r-pw" placeholder="비밀번호">
+        <input type="password" id="r-pw" placeholder="비밀번호" autocomplete="new-password">
+        <p class="sid-format-hint reg-pw-notice">평소에 사용하지 않는 비밀번호로 설정하세요(관리자 확인 가능)</p>
         
         <!-- 학교 선택 추가 -->
         <select id="r-school">
