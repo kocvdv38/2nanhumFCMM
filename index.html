@@ -707,7 +707,7 @@ button {
     <div id="reg-box" class="card hidden">
         <h2>회원가입</h2>
         <div class="input-group">
-            <input type="text" id="r-id" placeholder="아이디" oninput="resetIdCheck()">
+            <input type="text" id="r-id" placeholder="아이디 (10자 이내)" maxlength="10" autocomplete="username" oninput="resetIdCheck()">
             <button type="button" class="btn-gray" onclick="checkDuplicateId()">중복확인</button>
         </div>
         <input type="password" id="r-pw" placeholder="비밀번호" autocomplete="new-password">
@@ -1902,6 +1902,7 @@ button {
         function checkDuplicateId() {
             const id = document.getElementById('r-id').value.trim();
             if(!id) return alert("아이디를 입력하세요.");
+            if(id.length > 10) return alert("아이디는 10글자 이하로 입력해 주세요.");
             if(isForbiddenSignupUserId(id)) return alert('아이디에 "admin"이 들어갈 수 없습니다. (대소문자 구분 없음)');
             db.ref('users/'+id).once('value').then(s => {
                 if(s.exists()) { alert("이미 사용 중인 아이디!"); isIdCheck = false; }
@@ -1917,6 +1918,7 @@ button {
             const emailRaw = document.getElementById('r-email').value.trim();
             const phoneRaw = document.getElementById('r-phone').value.trim();
 
+            if(id.length > 10) return alert("아이디는 10글자 이하로 입력해 주세요.");
             if(isForbiddenSignupUserId(id)) return alert('아이디에 "admin"이 들어갈 수 없습니다. (대소문자 구분 없음)');
             if(!isIdCheck || id !== lastId) return alert("아이디 중복 확인을 해주세요.");
             if(!isIdentityCheck || n !== lastIdentityName || b !== lastIdentityBirth) return alert("이름·생년월일 중복 확인을 해주세요.");
