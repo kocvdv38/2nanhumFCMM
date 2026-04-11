@@ -435,6 +435,9 @@ button {
     }
     .login-top3-rotator-inner {
         min-height: 118px;
+        touch-action: pan-y;
+        user-select: none;
+        cursor: grab;
     }
     .login-top3-rotator-inner .login-top3-card {
         animation: loginTop3Fade 0.48s ease;
@@ -505,6 +508,29 @@ button {
         word-break: break-word;
     }
     .board-comments-item:last-child { border-bottom: none; }
+    .board-comments-item.board-comments-item--admin {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    .board-comments-admin-label {
+        flex-shrink: 0;
+        margin: 0;
+        padding-top: 2px;
+        cursor: pointer;
+    }
+    .board-comments-admin-cb {
+        width: 17px;
+        height: 17px;
+        cursor: pointer;
+        vertical-align: middle;
+    }
+    .board-comments-item-body { flex: 1; min-width: 0; }
+    .board-comments-admin-actions {
+        margin: 8px 0 12px 0;
+        text-align: left;
+    }
+    .board-comments-admin-actions label { cursor: pointer; user-select: none; }
     .board-comments-who { font-weight: bold; color: #007bff; margin-right: 6px; }
     .board-comments-meta { font-size: 10px; color: #999; }
     .board-comments-text { margin-top: 4px; color: #333; line-height: 1.4; }
@@ -544,6 +570,9 @@ button {
         border-radius: 10px;
         border: 1px solid #e8ecf1;
         margin-bottom: 0;
+        touch-action: pan-y;
+        user-select: none;
+        cursor: grab;
     }
     .board-comments-login-slide {
         animation: boardLoginFade 0.45s ease;
@@ -693,7 +722,7 @@ button {
         </div>
         <div class="board-comments" id="board-comments-wrap-login" aria-label="한줄 댓글">
             <div class="board-comments-head">
-                <p class="board-comments-title">💬 한줄 댓글 <small>(최근 5개 순환)</small></p>
+                <p class="board-comments-title">💬 한줄 댓글 <small>(좌우로 넘기면 이동 · 최근 5개 자동 순환)</small></p>
             </div>
             <div class="board-comments-login-rotator" id="board-comments-login-rotator" aria-live="polite"></div>
         </div>
@@ -769,6 +798,10 @@ button {
                 <button type="button" class="board-comments-more" id="board-comments-more-mode" onclick="toggleBoardCommentsExpand()" style="display:none;" title="더 보기">+</button>
             </div>
             <ul class="board-comments-list" id="board-comments-list-mode"></ul>
+            <div id="board-comments-admin-actions" class="board-comments-admin-actions hidden" aria-label="댓글 관리">
+                <label><input type="checkbox" id="board-comments-admin-select-all" onchange="toggleBoardCommentsSelectAll(this.checked)"> 전체 선택</label>
+                <button type="button" class="btn-red" onclick="adminDeleteSelectedBoardComments()" style="width:100%;margin-top:8px;">선택 댓글 삭제</button>
+            </div>
             <div class="board-comments-form">
                 <input type="text" id="board-comment-input-mode" maxlength="200" placeholder="로그인 후 작성 가능" disabled autocomplete="off">
                 <button type="button" class="btn-gray" onclick="submitBoardComment()">등록</button>
@@ -1801,6 +1834,7 @@ button {
                     document.getElementById('login-box').classList.add('hidden');
                     document.getElementById('mode-box').classList.remove('hidden');
                     updateBoardCommentsAuthUI();
+                    renderBoardComments();
                 }
                 else alert("아이디 또는 비밀번호 오류");
             });
@@ -2225,6 +2259,26 @@ button {
             document.querySelectorAll('#rank-list .rank-admin-cb').forEach(cb => { cb.checked = checked; });
         }
 
+        function toggleBoardCommentsSelectAll(checked) {
+            document.querySelectorAll('#board-comments-list-mode .board-comments-admin-cb').forEach(function (cb) { cb.checked = checked; });
+        }
+
+        async function adminDeleteSelectedBoardComments() {
+            if (!isAdmin()) return;
+            const cbs = [...document.querySelectorAll('#board-comments-list-mode .board-comments-admin-cb:checked')];
+            if (cbs.length === 0) return alert('삭제할 댓글을 선택하세요.');
+            const keys = cbs.map(function (cb) { return cb.getAttribute('data-key'); }).filter(Boolean);
+            if (keys.length === 0) return;
+            if (!confirm(keys.length + '개의 댓글을 삭제합니다. 되돌릴 수 없습니다. 계속하시겠습니까?')) return;
+            const ref = db.ref(BOARD_COMMENTS_PATH);
+            try {
+                await Promise.all(keys.map(function (k) { return ref.child(k).remove(); }));
+                alert('삭제되었습니다.');
+            } catch (err) {
+                alert('삭제에 실패했습니다. Firebase 규칙에서 관리자 쓰기를 허용했는지 확인해 주세요.');
+            }
+        }
+
         async function adminDeleteSelectedUsers() {
             if(!isAdmin()) return;
             const cbs = [...document.querySelectorAll('#rank-list .rank-admin-cb:checked')];
@@ -2379,6 +2433,8 @@ button {
         let boardCommentsLoginRotateInt = null;
         let boardCommentsLoginIndex = 0;
         let boardCommentsLoginKeySig = '';
+        /** 스와이프 시 paint에 사용 (renderBoardComments에서 갱신) */
+        let boardCommentsLoginTop5 = [];
 
         function normalizeForBadwordCheck(s) {
             return String(s || '').toLowerCase().replace(/\s+/g, '');
@@ -2452,11 +2508,82 @@ button {
             }, BOARD_LOGIN_ROTATE_MS);
         }
 
+        function restartBoardCommentsLoginRotation() {
+            stopBoardCommentsLoginRotation();
+            startBoardCommentsLoginRotation(boardCommentsLoginTop5);
+        }
+
+        /** dir: +1 다음(왼쪽으로 스와이프), -1 이전(오른쪽) */
+        function boardCommentsLoginStep(dir) {
+            if (!boardCommentsLoginTop5 || boardCommentsLoginTop5.length <= 1) return;
+            const n = boardCommentsLoginTop5.length;
+            boardCommentsLoginIndex = (boardCommentsLoginIndex + dir + n * 10) % n;
+            paintBoardCommentsLoginSlide(boardCommentsLoginTop5);
+            restartBoardCommentsLoginRotation();
+        }
+
+        /** 가로 스와이프/드래그: 왼쪽 밀기 → onDir(+1), 오른쪽 → onDir(-1) */
+        function attachHorizontalSwipe(el, onDir) {
+            if (!el) return;
+            var T = 45;
+            var RATIO = 0.65;
+            var sx, sy, active = false;
+
+            function finish(clientX, clientY) {
+                if (!active) return;
+                active = false;
+                var dx = clientX - sx;
+                var dy = clientY - sy;
+                if (Math.abs(dx) < T) return;
+                if (Math.abs(dy) > Math.abs(dx) * RATIO) return;
+                if (dx < 0) onDir(1);
+                else onDir(-1);
+            }
+
+            el.addEventListener('touchstart', function (e) {
+                if (e.touches.length !== 1) return;
+                active = true;
+                sx = e.touches[0].clientX;
+                sy = e.touches[0].clientY;
+            }, { passive: true });
+            el.addEventListener('touchend', function (e) {
+                if (!e.changedTouches.length) return;
+                finish(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+            }, { passive: true });
+            el.addEventListener('touchcancel', function () { active = false; }, { passive: true });
+
+            var md = false;
+            el.addEventListener('mousedown', function (e) {
+                if (e.button !== 0) return;
+                md = true;
+                active = true;
+                sx = e.clientX;
+                sy = e.clientY;
+            });
+            el.addEventListener('mouseup', function (e) {
+                if (!md) return;
+                md = false;
+                finish(e.clientX, e.clientY);
+            });
+            el.addEventListener('mouseleave', function () {
+                md = false;
+                active = false;
+            });
+        }
+
+        function initBoardCommentsLoginSwipe() {
+            var el = document.getElementById('board-comments-login-rotator');
+            if (!el || el.dataset.swipeInit === '1') return;
+            el.dataset.swipeInit = '1';
+            attachHorizontalSwipe(el, boardCommentsLoginStep);
+        }
+
         function renderBoardComments() {
             const sorted = [...boardCommentsCache].sort(function (a, b) {
                 return (Number(b.ts) || 0) - (Number(a.ts) || 0);
             });
             const top5 = sorted.slice(0, BOARD_LOGIN_MAX);
+            boardCommentsLoginTop5 = top5;
             const sig = top5.map(function (x) { return x.key || ''; }).join(',');
             if (sig !== boardCommentsLoginKeySig) {
                 boardCommentsLoginKeySig = sig;
@@ -2469,19 +2596,39 @@ button {
 
             const maxShow = boardCommentsExpanded ? 10 : 3;
             const slice = sorted.slice(0, maxShow);
+            const showBoardAdmin = isAdmin();
             let html = '';
             if (slice.length === 0) {
                 html = '<li class="board-comments-empty">아직 댓글이 없습니다.</li>';
             } else {
                 html = slice.map(function (c) {
-                    return '<li class="board-comments-item">' +
+                    const keyAttr = escapeAttr(c.key || '');
+                    const cb = showBoardAdmin
+                        ? '<label class="board-comments-admin-label"><input type="checkbox" class="board-comments-admin-cb" data-key="' + keyAttr + '" aria-label="댓글 선택"></label>'
+                        : '';
+                    const body =
                         '<span class="board-comments-who">' + escapeHtml(c.name || c.uid || '') + '</span>' +
                         '<span class="board-comments-meta">' + escapeHtml(formatBoardCommentTime(c.ts)) + '</span>' +
-                        '<div class="board-comments-text">' + escapeHtml(c.text || '') + '</div></li>';
+                        '<div class="board-comments-text">' + escapeHtml(c.text || '') + '</div>';
+                    const liClass = 'board-comments-item' + (showBoardAdmin ? ' board-comments-item--admin' : '');
+                    if (showBoardAdmin) {
+                        return '<li class="' + liClass + '">' + cb + '<div class="board-comments-item-body">' + body + '</div></li>';
+                    }
+                    return '<li class="' + liClass + '">' + body + '</li>';
                 }).join('');
             }
             const listMode = document.getElementById('board-comments-list-mode');
             if (listMode) listMode.innerHTML = html;
+            const adminBar = document.getElementById('board-comments-admin-actions');
+            const adminSelectAll = document.getElementById('board-comments-admin-select-all');
+            if (adminBar) {
+                if (showBoardAdmin && slice.length > 0) {
+                    adminBar.classList.remove('hidden');
+                    if (adminSelectAll) adminSelectAll.checked = false;
+                } else {
+                    adminBar.classList.add('hidden');
+                }
+            }
             const showToggle = sorted.length > 3;
             const btn = document.getElementById('board-comments-more-mode');
             if (btn) {
@@ -2610,6 +2757,71 @@ button {
             }, LOGIN_TOP3_ROTATE_MS);
         }
 
+        /** dir: +1 다음 모드, -1 이전 모드 */
+        function loginTop3Step(dir) {
+            if (!loginTop3CardHtmlList.length || loginTop3CardHtmlList.length <= 1) return;
+            var n = loginTop3CardHtmlList.length;
+            loginTop3ModeIndex = (loginTop3ModeIndex + dir + n * 10) % n;
+            paintLoginTop3Slide();
+            startLoginTop3Rotation();
+        }
+
+        function initLoginTop3SwipeDelegate() {
+            var root = document.getElementById('login-top3-preview');
+            if (!root || root.dataset.swipeInit === '1') return;
+            root.dataset.swipeInit = '1';
+            var T = 45;
+            var RATIO = 0.65;
+            var sx, sy, tracking = false;
+
+            function maybeSwipe(clientX, clientY) {
+                if (!tracking) return;
+                tracking = false;
+                var dx = clientX - sx;
+                var dy = clientY - sy;
+                if (Math.abs(dx) < T) return;
+                if (Math.abs(dy) > Math.abs(dx) * RATIO) return;
+                var inner = document.getElementById('login-top3-rotator-inner');
+                if (!inner || !loginTop3CardHtmlList.length || loginTop3CardHtmlList.length <= 1) return;
+                if (dx < 0) loginTop3Step(1);
+                else loginTop3Step(-1);
+            }
+
+            root.addEventListener('touchstart', function (e) {
+                var inner = document.getElementById('login-top3-rotator-inner');
+                if (!inner || !inner.contains(e.target)) return;
+                if (e.touches.length !== 1) return;
+                tracking = true;
+                sx = e.touches[0].clientX;
+                sy = e.touches[0].clientY;
+            }, { passive: true });
+            root.addEventListener('touchend', function (e) {
+                if (!e.changedTouches.length) return;
+                maybeSwipe(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+            }, { passive: true });
+            root.addEventListener('touchcancel', function () { tracking = false; }, { passive: true });
+
+            var md = false;
+            root.addEventListener('mousedown', function (e) {
+                var inner = document.getElementById('login-top3-rotator-inner');
+                if (!inner || !inner.contains(e.target)) return;
+                if (e.button !== 0) return;
+                md = true;
+                tracking = true;
+                sx = e.clientX;
+                sy = e.clientY;
+            });
+            root.addEventListener('mouseup', function (e) {
+                if (!md) return;
+                md = false;
+                maybeSwipe(e.clientX, e.clientY);
+            });
+            root.addEventListener('mouseleave', function () {
+                md = false;
+                tracking = false;
+            });
+        }
+
         async function loadLoginTop3Preview() {
             const el = document.getElementById('login-top3-preview');
             if (!el) return;
@@ -2653,7 +2865,7 @@ button {
                 const secHint = Math.round(LOGIN_TOP3_ROTATE_MS / 1000);
                 el.innerHTML =
                     '<div class="login-top3-rotator-wrap">' +
-                    '<p class="login-top3-rotator-hint">모드별 순위 미리보기 (' + secHint + '초마다 순환)</p>' +
+                    '<p class="login-top3-rotator-hint">모드별 순위 미리보기 · 좌우로 넘기면 이동 · ' + secHint + '초마다 자동 순환</p>' +
                     '<div class="login-top3-rotator-inner" id="login-top3-rotator-inner"></div>' +
                     '<div class="login-top3-rotator-dots" id="login-top3-rotator-dots" aria-hidden="true"></div>' +
                     '</div>';
@@ -2668,6 +2880,8 @@ button {
         attachBoardCommentsListener();
         updateBoardCommentsAuthUI();
         attachBoardCommentEnterHandlers();
+        initBoardCommentsLoginSwipe();
+        initLoginTop3SwipeDelegate();
         loadLoginTop3Preview();
     </script>
 </body>
