@@ -102,26 +102,44 @@
         }
 
         // 3. 로그인 (수정본)
-        async function login() {
-            const idInput = document.getElementById('login-id').value.trim();
-            const pwInput = document.getElementById('login-pw').value.trim();
+async function login() {
+    const idInput = document.getElementById('l-id').value.trim();
+    const pwInput = document.getElementById('l-pw').value.trim();
+    
+    // 1. 버튼 상태 변경 (로그인 시작)
+    const loginBtn = document.getElementById('login-btn');
+    loginBtn.innerText = "로그인 중..."; // 글자 변경
+    loginBtn.disabled = true;           // 버튼 클릭 금지
+    loginBtn.style.opacity = "0.7";     // 살짝 흐리게 (선택사항)
+
+    try {
+        // 2. 서버에서 데이터 가져오기
+        const res = await fetch(API_URL);
+        const users = await res.json();
+        
+        const foundUser = users.find(u => String(u.id) === idInput && String(u.pw) === pwInput);
+        
+        if (foundUser) {
+            user = foundUser;
+            alert(user.name + "님 환영합니다!");
             
-            try {
-                const res = await fetch(SCRIPT_URL);
-                const users = await res.json();
-                const user = users.find(u => String(u.id) === idInput && String(u.pw) === pwInput);
-                
-                if (user) {
-                    currentUser = user;
-                    alert(user.name + "님 환영합니다!");
-                    startQuiz();
-                } else {
-                    alert("아이디 또는 비밀번호가 틀렸습니다.");
-                }
-            } catch (e) {
-                alert("서버와 통신 중 오류가 발생했습니다.");
-            }
+            // 로그인 성공 시 퀴즈 화면으로 이동
+            document.getElementById('login-box').classList.add('hidden');
+            document.getElementById('quiz-box').classList.remove('hidden');
+            showQuiz();
+        } else {
+            alert("아이디 또는 비밀번호가 틀렸습니다.");
         }
+    } catch (e) {
+        console.error(e);
+        alert("서버와 통신 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+    } finally {
+        // 3. 버튼 상태 복구 (성공하든 실패하든 원래대로)
+        loginBtn.innerText = "로그인";
+        loginBtn.disabled = false;
+        loginBtn.style.opacity = "1";
+    }
+}
 
         function startQuiz() {
             document.getElementById('login-section').classList.add('hidden');
