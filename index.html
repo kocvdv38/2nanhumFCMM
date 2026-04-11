@@ -393,12 +393,12 @@ button {
         <div id="subject-btns">
             <button class="btn-blue" onclick="onSubjectPick('drawing.json')">전산응용기계제도기능사</button>
             <button class="btn-blue" onclick="onSubjectPick('lathe.json')">컴퓨터응용선반기능사</button>
-            <button class="sub-btn" onclick="onSubjectPick('milling.json')">컴퓨터응용밀링기능사</button>
-            <button class="sub-btn" onclick="onSubjectPick('assembly.json')">기계조립기능사</button>
-            <button class="sub-btn" onclick="onSubjectPick('maintenance.json')">설비보전기능사</button>
-            <button class="sub-btn" onclick="onSubjectPick('automation.json')">자동화설비기능사</button>
-            <button class="sub-btn" onclick="onSubjectPick('3dprint.json')">3D프린터운용기능사</button>
-            <button class="sub-btn" onclick="onSubjectPick('welding.json')">피복아크용접기능사</button>
+            <button class="btn-blue" onclick="onSubjectPick('milling.json')">컴퓨터응용밀링기능사</button>
+            <button class="btn-blue" onclick="onSubjectPick('assembly.json')">기계조립기능사</button>
+            <button class="btn-blue" onclick="onSubjectPick('maintenance.json')">설비보전기능사</button>
+            <button class="btn-blue" onclick="onSubjectPick('automation.json')">자동화설비기능사</button>
+            <button class="btn-blue" onclick="onSubjectPick('3dprint.json')">3D프린터운용기능사</button>
+            <button class="btn-blue" onclick="onSubjectPick('welding.json')">피복아크용접기능사</button>
         </div>
         <div id="session-select-div" class="hidden">
             <p id="session-subject-label" style="font-size:14px;color:#555;margin:0 0 10px 0;"></p>
@@ -451,7 +451,7 @@ button {
             <label><input type="checkbox" id="rank-admin-select-all" onchange="toggleRankSelectAll(this.checked)"> 전체 선택</label>
             <button type="button" class="btn-red" onclick="adminDeleteSelectedUsers()" style="width:100%;margin-top:10px;">선택한 회원 삭제</button>
         </div>
-        <button class="btn-blue" onclick="location.reload()">메인으로</button>
+        <button type="button" id="rank-back-btn" class="btn-blue" onclick="goBackFromRanking()">메인으로</button>
     </div>
 
     <script>
@@ -907,6 +907,7 @@ button {
             if(user && user.id) {
                 try { await refreshUserFromDb(); } catch(e) {}
             }
+            updateRankBackButton();
             const field = rankMode === 'practice' ? 'practice_count' : rankMode + '_score';
             try {
                 const snap = await db.ref('users').once('value');
@@ -974,10 +975,25 @@ button {
                         if(master) master.checked = false;
                     } else adminBar.classList.add('hidden');
                 }
+                updateRankBackButton();
             } catch(e) {
                 list.innerHTML = '<p style="color:#c00;">랭킹을 불러오지 못했습니다. 네트워크 또는 권한 설정을 확인해 주세요.</p>';
                 if(adminBar) adminBar.classList.add('hidden');
                 if(user && user.id) updateMyRecordPanel(rankMode, null);
+                updateRankBackButton();
+            }
+        }
+        function updateRankBackButton() {
+            const btn = document.getElementById('rank-back-btn');
+            if(!btn) return;
+            btn.textContent = (user && user.id) ? '모드 선택으로' : '메인으로';
+        }
+        function goBackFromRanking() {
+            if(user && user.id) {
+                document.getElementById('rank-box').classList.add('hidden');
+                document.getElementById('mode-box').classList.remove('hidden');
+            } else {
+                location.reload();
             }
         }
         function openRank() { document.getElementById('login-box').classList.add('hidden'); document.getElementById('rank-box').classList.remove('hidden'); fetchRanking('practice'); }
