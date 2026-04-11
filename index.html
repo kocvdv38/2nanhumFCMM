@@ -34,6 +34,46 @@
         }
         .hidden { display: none; }
 
+        /* 왕중왕전: 라운드 통과 축하 오버레이 */
+        /* 기본은 숨김. #id 단독의 display가 .hidden보다 우선하지 않도록 :not(.hidden)에서만 flex */
+        #king-celebrate-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9998;
+            background: rgba(0, 0, 0, 0.42);
+            display: none;
+            pointer-events: none;
+        }
+        #king-celebrate-overlay:not(.hidden) {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #king-celebrate-overlay .king-celebrate-inner {
+            background: linear-gradient(145deg, #fffdf5, #ffeecd);
+            border: 3px solid #e6b422;
+            border-radius: 18px;
+            padding: 28px 34px;
+            box-shadow: 0 16px 48px rgba(200, 150, 20, 0.35);
+            animation: kingCelebratePop 0.65s ease-out;
+        }
+        @keyframes kingCelebratePop {
+            0% { transform: scale(0.35) rotate(-2deg); opacity: 0; }
+            55% { transform: scale(1.06) rotate(1deg); opacity: 1; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        #king-celebrate-overlay .king-celebrate-title {
+            font-size: 1.35rem;
+            font-weight: bold;
+            color: #8b6914;
+            margin: 0 0 8px 0;
+        }
+        #king-celebrate-overlay .king-celebrate-sub {
+            font-size: 0.95rem;
+            color: #666;
+            margin: 0;
+        }
+
         /* 3. 일반 입력창/선택창 설정: 너비 100% */
         input, select { 
             width: 100%; 
@@ -539,6 +579,80 @@ button {
         <button class="btn-purple" onclick="selectMode('classic')">🏆 클래식 도전 (전체 풀이)</button>
         <button class="btn-red" onclick="selectMode('survival')">💔 서바이벌 (목숨 3개)</button>
         <button class="btn-orange" onclick="selectMode('timeattack')">⏱️ 타임 어택 (아이템전)</button>
+        <button class="btn-blue" style="background:linear-gradient(135deg,#6f42c1 0%,#007bff 100%);" onclick="selectMode('king')">👑 왕중왕전 (토너먼트)</button>
+    </div>
+
+    <div id="king-celebrate-overlay" class="hidden" aria-hidden="true">
+        <div class="king-celebrate-inner">
+            <p class="king-celebrate-title">🎉 라운드 통과!</p>
+            <p class="king-celebrate-sub">상위 50% 진출을 축하합니다. 잠시 후 다음 라운드가 시작됩니다.</p>
+        </div>
+    </div>
+
+    <!-- 3-0. 왕중왕전 -->
+    <div id="king-entry-box" class="card hidden">
+        <h2>👑 왕중왕전</h2>
+        <p style="font-size:14px;color:#555;text-align:left;margin:0 0 12px 0;"><strong>방 코드 6자리</strong>는 방을 구분하는 고유 코드입니다. 참가 방법은 두 가지입니다: (1) 아래 <strong>열린 방 목록</strong>에서 입장 (2) 방장에게 받은 <strong>코드로 입장</strong>. 방을 만들면 <strong>과목명·방 코드</strong>가 대기실에 표시됩니다. 방장은 과목 선택과 첫 게임 시작만 합니다. 라운드마다 <strong>5문제 · 3분</strong>, 전원 제출 또는 시간 종료 시 <strong>상위 50%</strong>가 선정되고 축하 연출 후 <strong>3초 뒤</strong> 다음 라운드가 자동으로 진행됩니다. <strong>최종 우승자</strong>가 새 방장이 됩니다.</p>
+        <label class="profile-field-label profile-field-label--first" for="king-subject-select">방 주제(과목) — 방 만들 때 1회 선택</label>
+        <select id="king-subject-select">
+            <option value="all">전체 과목 (랜덤)</option>
+            <option value="drawing.json">전산응용기계제도기능사</option>
+            <option value="lathe.json">컴퓨터응용선반기능사</option>
+            <option value="milling.json">컴퓨터응용밀링기능사</option>
+            <option value="assembly.json">기계조립기능사</option>
+            <option value="maintenance.json">설비보전기능사</option>
+            <option value="automation.json">자동화설비기능사</option>
+            <option value="3dprint.json">3D프린터운용기능사</option>
+            <option value="welding.json">피복아크용접기능사</option>
+        </select>
+        <button type="button" class="btn-green" onclick="kingCreateRoom()">방 만들기</button>
+        <hr style="margin:18px 0;border:none;border-top:1px solid #eee;">
+        <p style="font-size:13px;color:#666;text-align:left;margin:0 0 8px 0;"><strong>열린 방</strong> (대기 중인 방만 표시)</p>
+        <div id="king-public-rooms" style="text-align:left;margin-bottom:12px;min-height:2em;"></div>
+        <button type="button" class="btn-gray" onclick="kingRefreshPublicRooms()" style="margin-top:0;">목록 새로고침</button>
+        <hr style="margin:18px 0;border:none;border-top:1px solid #eee;">
+        <p style="font-size:13px;color:#666;text-align:left;margin:0 0 8px 0;"><strong>코드로 입장</strong> (6자리)</p>
+        <input type="text" id="king-join-code" placeholder="방 코드 6자리" maxlength="6" style="text-transform:uppercase;">
+        <button type="button" class="btn-blue" onclick="kingJoinRoom()">방 입장</button>
+        <button type="button" class="btn-gray" onclick="kingBackToMode()" style="margin-top:14px;">← 모드 선택</button>
+    </div>
+    <div id="king-lobby-box" class="card hidden">
+        <h2>대기실 · <span id="king-room-code-disp"></span></h2>
+        <p id="king-lobby-subject-line" style="font-size:15px;color:#333;text-align:left;margin:0 0 10px 0;"></p>
+        <p id="king-host-line" style="font-size:13px;color:#555;text-align:left;margin:0 0 8px 0;"></p>
+        <div id="king-lobby-subject-wrap" class="hidden" style="text-align:left;margin-bottom:12px;">
+            <label class="profile-field-label" for="king-lobby-subject">과목 (방장만 변경)</label>
+            <select id="king-lobby-subject" onchange="kingLobbySubjectChange(this.value)">
+                <option value="all">전체 과목 (랜덤)</option>
+                <option value="drawing.json">전산응용기계제도기능사</option>
+                <option value="lathe.json">컴퓨터응용선반기능사</option>
+                <option value="milling.json">컴퓨터응용밀링기능사</option>
+                <option value="assembly.json">기계조립기능사</option>
+                <option value="maintenance.json">설비보전기능사</option>
+                <option value="automation.json">자동화설비기능사</option>
+                <option value="3dprint.json">3D프린터운용기능사</option>
+                <option value="welding.json">피복아크용접기능사</option>
+            </select>
+        </div>
+        <p id="king-lobby-hint" style="font-size:13px;color:#666;"></p>
+        <div id="king-player-list" style="text-align:left;margin:12px 0;font-size:14px;"></div>
+        <div id="king-spectator-note" class="hidden" style="background:#fff8e6;border:1px solid #ffe0a8;padding:10px;border-radius:8px;text-align:left;font-size:13px;margin-bottom:10px;">관전 모드입니다. 다음 라운드 결과를 확인하세요.</div>
+        <div id="king-round-result" style="display:none;text-align:left;margin:12px 0;padding:12px;background:#f8f9fa;border-radius:10px;font-size:14px;"></div>
+        <p id="king-between-countdown" style="display:none;font-size:14px;color:#6f42c1;font-weight:bold;">다음 라운드까지 …</p>
+        <button type="button" id="king-btn-start" class="btn-green hidden" onclick="kingManualStartFirstRound()">게임 시작 (5문제 · 3분)</button>
+        <button type="button" class="btn-gray" onclick="kingLeaveRoom()">나가기</button>
+    </div>
+    <div id="king-game-box" class="card hidden">
+        <div class="timer-bar" style="margin-bottom:10px;"><div id="king-timer-fill" style="height:100%;background:#6f42c1;width:100%;transition:width 0.2s;"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:bold;margin-bottom:8px;">
+            <span id="king-time-left">3:00</span>
+            <span id="king-game-progress">1/5</span>
+        </div>
+        <p id="king-spectate-banner" class="hidden" style="color:#856404;font-weight:bold;">관전 중 — 풀이는 참가자만 가능합니다.</p>
+        <h3 id="king-q-txt"></h3>
+        <div id="king-q-img"></div>
+        <div id="king-q-opts"></div>
+        <div id="king-wait-msg" class="hidden" style="margin-top:12px;color:#666;">제출 완료. 다른 참가자 대기 중…</div>
     </div>
 
     <!-- 3-1. 개인정보 변경 -->
@@ -687,6 +801,591 @@ button {
         let items = { hint: 0, shield: 0, time: 0 }, streak = 0, isIdCheck = false, lastId = "";
         let isIdentityCheck = false, lastIdentityName = "", lastIdentityBirth = "";
 
+        const KING_SESSION_FILTER = '25-01';
+        const KING_ROUND_MS = 180000;
+        const KING_AUTO_NEXT_MS = 3000;
+        const KING_Q_PER_ROUND = 5;
+        const KING_SUBJECT_FILE_LIST = Object.keys(SUBJECT_LABELS);
+        function kingSubjectLabel(key) {
+            if (!key || key === 'all') return '전체 과목 (랜덤)';
+            return SUBJECT_LABELS[key] || key;
+        }
+        let kingRoomId = null;
+        let kingQuizLocal = [];
+        let kingGameIdx = 0;
+        let kingRoundCorrect = 0;
+        let kingRoundDoneLocal = false;
+        let kingEndsAt = 0;
+        let kingTimerInt = null;
+        let kingBetweenTickInt = null;
+        let kingLastSnap = null;
+        let kingAutoCloseScheduled = false;
+        let kingAutoNextScheduled = false;
+        let kingClientRound = -1;
+
+        function kingShuffle(a) {
+            const arr = a.slice();
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+        function kingStripQuestionForDb(p) {
+            return {
+                question: p.question,
+                options: p.options,
+                answer: p.answer,
+                explanation: p.explanation || '',
+                image_file: p.image_file || ''
+            };
+        }
+        async function kingFetchQuestionPool(subjectKey) {
+            const files = subjectKey === 'all' ? KING_SUBJECT_FILE_LIST : [subjectKey];
+            let pool = [];
+            for (const f of files) {
+                try {
+                    const r = await fetch(f);
+                    const data = await r.json();
+                    const arr = Array.isArray(data) ? data : [];
+                    arr.filter(q => q && q.session === KING_SESSION_FILTER && Array.isArray(q.options)).forEach(q => pool.push(q));
+                } catch (e) { /* skip file */ }
+            }
+            return kingShuffle(pool);
+        }
+        function kingOpenEntry() {
+            document.getElementById('king-entry-box').classList.remove('hidden');
+            document.getElementById('king-lobby-box').classList.add('hidden');
+            document.getElementById('king-game-box').classList.add('hidden');
+            kingRefreshPublicRooms();
+        }
+        function kingRefreshPublicRooms() {
+            const box = document.getElementById('king-public-rooms');
+            if (!box) return;
+            box.innerHTML = '<p style="font-size:13px;color:#888;margin:0;">불러오는 중…</p>';
+            db.ref('kingRooms').once('value').then(function (snap) {
+                const list = [];
+                snap.forEach(function (child) {
+                    const v = child.val();
+                    const code = child.key;
+                    if (!v) return;
+                    if (v.status === 'ended') return;
+                    if (v.status === 'lobby' && (v.round === 0 || v.round == null)) {
+                        list.push({ code: code, subjectKey: v.subjectKey || 'all', v: v });
+                    }
+                });
+                if (list.length === 0) {
+                    box.innerHTML = '<p style="font-size:13px;color:#888;margin:0;">열린 대기 방이 없습니다. 방 만들기 또는 코드로 입장하세요.</p>';
+                    return;
+                }
+                list.sort(function (a, b) {
+                    return (Number(b.v.createdAt) || 0) - (Number(a.v.createdAt) || 0);
+                });
+                box.innerHTML = list.map(function (r) {
+                    const lab = kingSubjectLabel(r.subjectKey);
+                    return '<div style="display:flex;align-items:center;gap:8px;margin:8px 0;padding:10px;background:#f4f0ff;border-radius:8px;text-align:left;">' +
+                        '<div style="flex:1;font-size:14px;"><span style="color:#6f42c1;font-weight:bold;">' + escapeHtml(r.code) + '</span> · ' + escapeHtml(lab) + '</div>' +
+                        '<button type="button" class="btn-blue" style="width:auto;margin:0;padding:8px 14px;font-size:14px;" onclick="kingJoinRoom(\'' + r.code.replace(/'/g, '') + '\')">입장</button></div>';
+                }).join('');
+            }).catch(function () {
+                box.innerHTML = '<p style="font-size:13px;color:#c00;margin:0;">목록을 불러오지 못했습니다.</p>';
+            });
+        }
+        function kingBackToModeSilently() {
+            const cel = document.getElementById('king-celebrate-overlay');
+            if (cel) {
+                cel.classList.add('hidden');
+                cel.setAttribute('aria-hidden', 'true');
+            }
+            if (kingTimerInt) {
+                clearInterval(kingTimerInt);
+                kingTimerInt = null;
+            }
+            if (kingBetweenTickInt) {
+                clearInterval(kingBetweenTickInt);
+                kingBetweenTickInt = null;
+            }
+            if (kingRoomId) {
+                db.ref('kingRooms/' + kingRoomId).off('value');
+            }
+            kingRoomId = null;
+            kingLastSnap = null;
+            kingQuizLocal = [];
+            kingAutoCloseScheduled = false;
+            kingClientRound = -1;
+            ['king-entry-box', 'king-lobby-box', 'king-game-box'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
+            });
+        }
+        function kingBackToMode() {
+            if (kingRoomId && user) {
+                const ref = db.ref('kingRooms/' + kingRoomId);
+                ref.once('value').then(s => {
+                    const v = s.val();
+                    if (v && String(v.hostId) === String(user.id)) ref.remove().catch(() => {});
+                    else ref.child('players/' + user.id).remove().catch(() => {});
+                }).catch(() => {});
+            }
+            kingBackToModeSilently();
+            document.getElementById('mode-box').classList.remove('hidden');
+        }
+        async function kingCreateRoom() {
+            if (!user) return alert('로그인이 필요합니다.');
+            const subjectKey = document.getElementById('king-subject-select').value;
+            const code = kingGenRoomCode();
+            const ref = db.ref('kingRooms/' + code);
+            try {
+                await ref.set({
+                    hostId: user.id,
+                    subjectKey,
+                    status: 'lobby',
+                    round: 0,
+                    createdAt: firebase.database.ServerValue.TIMESTAMP
+                });
+                await ref.child('players/' + user.id).set({
+                    name: user.name || user.id,
+                    school: user.school || '',
+                    role: 'host',
+                    status: 'active',
+                    roundScore: 0,
+                    roundDone: false
+                });
+                kingRoomId = code;
+                kingAttachRoomListener();
+                kingShowLobbyShell();
+            } catch (e) {
+                alert('방 생성 실패. Firebase에 kingRooms 쓰기 권한을 확인하세요.');
+            }
+        }
+        function kingGenRoomCode() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let s = '';
+            for (let i = 0; i < 6; i++) s += chars[Math.floor(Math.random() * chars.length)];
+            return s;
+        }
+        async function kingJoinRoom(codeFromList) {
+            if (!user) return alert('로그인이 필요합니다.');
+            const code = (codeFromList != null && String(codeFromList).trim() !== '')
+                ? String(codeFromList).trim().toUpperCase()
+                : document.getElementById('king-join-code').value.trim().toUpperCase();
+            if (code.length < 4) return alert('방 코드를 입력하세요.');
+            const snap = await db.ref('kingRooms/' + code).once('value');
+            if (!snap.exists()) return alert('방을 찾을 수 없습니다.');
+            const v = snap.val();
+            if (v.status === 'ended') return alert('이미 종료된 방입니다.');
+            try {
+                await db.ref('kingRooms/' + code + '/players/' + user.id).set({
+                    name: user.name || user.id,
+                    school: user.school || '',
+                    role: 'joiner',
+                    status: 'active',
+                    roundScore: 0,
+                    roundDone: false
+                });
+                kingRoomId = code;
+                kingAttachRoomListener();
+                kingShowLobbyShell();
+            } catch (e) {
+                alert('입장 실패.');
+            }
+        }
+        function kingAttachRoomListener() {
+            if (!kingRoomId) return;
+            const ref = db.ref('kingRooms/' + kingRoomId);
+            ref.off('value');
+            ref.on('value', snap => kingOnRoomUpdate(snap.val()));
+        }
+        function kingShowLobbyShell() {
+            document.getElementById('king-entry-box').classList.add('hidden');
+            document.getElementById('king-lobby-box').classList.remove('hidden');
+            document.getElementById('king-game-box').classList.add('hidden');
+            document.getElementById('king-room-code-disp').textContent = kingRoomId;
+            document.getElementById('king-lobby-hint').textContent = '이 6자리 코드로 다른 사람이 입장할 수 있습니다. 전원이 5문제를 풀거나 시간이 지나면 상위 50%가 선정되고, 3초 뒤 다음 라운드가 자동으로 시작됩니다.';
+        }
+        function kingLobbySubjectChange(subjectKey) {
+            if (!kingRoomId || !user || !kingLastSnap || String(kingLastSnap.hostId) !== String(user.id)) return;
+            if (kingLastSnap.status !== 'lobby') return;
+            db.ref('kingRooms/' + kingRoomId).update({ subjectKey: subjectKey || 'all' }).catch(() => {});
+        }
+        function kingOnRoomUpdate(val) {
+            if (!val || !kingRoomId) return;
+            kingLastSnap = val;
+            if (val.status !== 'round') kingAutoCloseScheduled = false;
+            if (val.status !== 'between') kingAutoNextScheduled = false;
+            if (val.status !== 'between' && kingBetweenTickInt) {
+                clearInterval(kingBetweenTickInt);
+                kingBetweenTickInt = null;
+            }
+            const celOv = document.getElementById('king-celebrate-overlay');
+            if (celOv) {
+                const showCel = val.status === 'between' && val.betweenCelebrate === true;
+                celOv.classList.toggle('hidden', !showCel);
+                celOv.setAttribute('aria-hidden', showCel ? 'false' : 'true');
+            }
+            const subLineEl = document.getElementById('king-lobby-subject-line');
+            if (subLineEl) {
+                if (val.status === 'lobby' || val.status === 'between' || val.status === 'ended') {
+                    subLineEl.innerHTML = '방 주제: <strong style="color:#333;">' + escapeHtml(kingSubjectLabel(val.subjectKey)) + '</strong> · 방 코드: <strong style="color:#6f42c1;">' + escapeHtml(kingRoomId || '') + '</strong>';
+                    subLineEl.style.display = 'block';
+                } else {
+                    subLineEl.style.display = 'none';
+                }
+            }
+            const players = val.players || {};
+            const listEl = document.getElementById('king-player-list');
+            const rows = Object.keys(players).map(uid => {
+                const p = players[uid];
+                const st = p.status === 'spectator' ? '관전' : (p.status === 'active' ? '참가' : p.status);
+                return '<div style="padding:6px 0;border-bottom:1px solid #eee;">' + escapeHtml(p.name || uid) + ' <small style="color:#888;">(' + st + ')</small>' + (p.roundDone ? ' ✓' : '') + '</div>';
+            }).join('');
+            listEl.innerHTML = rows || '<p>대기 중…</p>';
+            const me = user && players[user.id];
+            const isHost = user && String(val.hostId) === String(user.id);
+            const startBtn = document.getElementById('king-btn-start');
+            const specNote = document.getElementById('king-spectator-note');
+            const rr = document.getElementById('king-round-result');
+            const hostLine = document.getElementById('king-host-line');
+            const subWrap = document.getElementById('king-lobby-subject-wrap');
+            const subSel = document.getElementById('king-lobby-subject');
+            const winUid = val.championUid ? String(val.championUid) : '';
+            if (hostLine) {
+                const hid = val.hostId != null ? String(val.hostId) : '';
+                hostLine.innerHTML = '방장: <strong>' + escapeHtml(players[hid] ? (players[hid].name || hid) : hid) + '</strong>' +
+                    (winUid ? ' · 직전 우승: <strong>' + escapeHtml(players[winUid] ? (players[winUid].name || winUid) : winUid) + '</strong>' : '');
+            }
+            if (subWrap && subSel) {
+                subWrap.classList.toggle('hidden', !isHost || val.status !== 'lobby');
+                if (isHost && val.status === 'lobby') {
+                    subSel.value = val.subjectKey || 'all';
+                }
+            }
+            if (me && me.status === 'spectator') specNote.classList.remove('hidden');
+            else specNote.classList.add('hidden');
+            const betweenCd = document.getElementById('king-between-countdown');
+            if (val.status === 'lobby' || val.status === 'between') {
+                if (kingTimerInt) {
+                    clearInterval(kingTimerInt);
+                    kingTimerInt = null;
+                }
+                document.getElementById('king-lobby-box').classList.remove('hidden');
+                document.getElementById('king-game-box').classList.add('hidden');
+                rr.style.display = val.lastResultsHtml ? 'block' : 'none';
+                if (val.lastResultsHtml) rr.innerHTML = val.lastResultsHtml;
+                const canFirstStart = isHost && val.status === 'lobby' && (val.round === 0 || val.round == null);
+                startBtn.classList.toggle('hidden', !canFirstStart);
+                if (betweenCd) {
+                    if (val.status === 'between' && val.autoNextRoundAt) {
+                        betweenCd.style.display = 'block';
+                        if (!kingBetweenTickInt) {
+                            kingBetweenTickInt = setInterval(function () {
+                                if (!kingLastSnap || kingLastSnap.status !== 'between' || !kingLastSnap.autoNextRoundAt) {
+                                    if (kingBetweenTickInt) {
+                                        clearInterval(kingBetweenTickInt);
+                                        kingBetweenTickInt = null;
+                                    }
+                                    return;
+                                }
+                                const t = Math.max(0, kingLastSnap.autoNextRoundAt - Date.now());
+                                const celeb = kingLastSnap.betweenCelebrate === true;
+                                betweenCd.textContent = (celeb ? '🎉 ' : '') + '다음 라운드까지 ' + Math.ceil(t / 1000) + '초…';
+                                if (t <= 0 && user && !kingAutoNextScheduled) {
+                                    kingAutoNextScheduled = true;
+                                    kingTryAutoStartRound().catch(function () { kingAutoNextScheduled = false; });
+                                }
+                            }, 200);
+                        }
+                    } else {
+                        betweenCd.style.display = 'none';
+                        if (kingBetweenTickInt) {
+                            clearInterval(kingBetweenTickInt);
+                            kingBetweenTickInt = null;
+                        }
+                    }
+                }
+            } else if (betweenCd) {
+                betweenCd.style.display = 'none';
+                if (kingBetweenTickInt) {
+                    clearInterval(kingBetweenTickInt);
+                    kingBetweenTickInt = null;
+                }
+            }
+            if (val.status === 'round' && val.roundQuestions) {
+                document.getElementById('king-lobby-box').classList.add('hidden');
+                kingHandleRoundState(val);
+            }
+            if (val.status === 'ended') {
+                if (kingTimerInt) {
+                    clearInterval(kingTimerInt);
+                    kingTimerInt = null;
+                }
+                document.getElementById('king-game-box').classList.add('hidden');
+                document.getElementById('king-lobby-box').classList.remove('hidden');
+                rr.style.display = 'block';
+                rr.innerHTML = val.lastResultsHtml || '<p>대회 종료</p>';
+                startBtn.classList.add('hidden');
+            }
+        }
+        function kingManualStartFirstRound() {
+            if (!kingRoomId || !user) return;
+            kingManualStartFirstRoundAsync().catch(() => alert('시작 실패'));
+        }
+        async function kingManualStartFirstRoundAsync() {
+            const ref = db.ref('kingRooms/' + kingRoomId);
+            const snap = await ref.once('value');
+            const val = snap.val();
+            if (!val || String(val.hostId) !== String(user.id)) return alert('방장만 게임을 시작할 수 있습니다.');
+            if (val.status !== 'lobby') return;
+            if ((val.round || 0) !== 0) return;
+            const n = Object.keys(val.players || {}).filter(uid => (val.players[uid].status === 'active')).length;
+            if (n < 2) return alert('참가자가 2명 이상일 때 시작할 수 있습니다.');
+            await kingStartRoundCore(val, {});
+        }
+        async function kingStartRoundCore(val, opts) {
+            const quiet = opts && opts.quiet;
+            const ref = db.ref('kingRooms/' + kingRoomId);
+            const subjectKey = val.subjectKey || 'all';
+            const pool = await kingFetchQuestionPool(subjectKey);
+            if (pool.length < KING_Q_PER_ROUND) {
+                if (!quiet) alert('문제 풀이 부족(회차 ' + KING_SESSION_FILTER + '). JSON을 확인하세요.');
+                return false;
+            }
+            const pick = pool.slice(0, KING_Q_PER_ROUND).map(kingStripQuestionForDb);
+            const rnd = (val.round || 0) + 1;
+            const ends = Date.now() + KING_ROUND_MS;
+            kingAutoCloseScheduled = false;
+            const updates = {};
+            Object.keys(val.players || {}).forEach(uid => {
+                const p = val.players[uid];
+                if (p.status === 'active') {
+                    updates['players/' + uid + '/roundScore'] = 0;
+                    updates['players/' + uid + '/roundDone'] = false;
+                }
+            });
+            updates.round = rnd;
+            updates.status = 'round';
+            updates.roundEndsAt = ends;
+            updates.roundQuestions = pick;
+            updates.lastResultsHtml = null;
+            updates.autoNextRoundAt = null;
+            updates.roundCloseLock = null;
+            updates.nextRoundLock = null;
+            updates.betweenCelebrate = null;
+            await ref.update(updates);
+            return true;
+        }
+        function kingHandleRoundState(val) {
+            const me = user && val.players && val.players[user.id];
+            kingEndsAt = val.roundEndsAt || 0;
+            kingQuizLocal = val.roundQuestions || [];
+            const rno = val.round || 0;
+            if (rno !== kingClientRound) {
+                kingClientRound = rno;
+                kingGameIdx = 0;
+                kingRoundCorrect = 0;
+                kingRoundDoneLocal = false;
+            }
+            if (!kingTimerInt) {
+                kingTimerInt = setInterval(kingTickTimer, 200);
+            }
+            if (!me) return;
+            if (me.status === 'spectator') {
+                document.getElementById('king-game-box').classList.remove('hidden');
+                document.getElementById('king-spectate-banner').classList.remove('hidden');
+                document.getElementById('king-q-opts').innerHTML = '';
+                document.getElementById('king-q-txt').textContent = '라운드 진행 중 (관전)';
+                document.getElementById('king-q-img').innerHTML = '';
+                return;
+            }
+            document.getElementById('king-spectate-banner').classList.add('hidden');
+            if (me.roundDone) {
+                document.getElementById('king-game-box').classList.remove('hidden');
+                document.getElementById('king-wait-msg').classList.remove('hidden');
+                document.getElementById('king-q-opts').innerHTML = '';
+                document.getElementById('king-q-txt').textContent = '제출 완료';
+                document.getElementById('king-q-img').innerHTML = '';
+                kingTickTimer();
+                return;
+            }
+            kingRoundCorrect = Number(me.roundScore) || 0;
+            document.getElementById('king-wait-msg').classList.add('hidden');
+            document.getElementById('king-game-box').classList.remove('hidden');
+            kingRenderKingQuestion();
+            kingTickTimer();
+        }
+        function kingAllActivePlayersDone(val) {
+            const pl = val && val.players ? val.players : {};
+            const active = Object.keys(pl).filter(function (uid) { return pl[uid].status === 'active'; });
+            if (active.length === 0) return false;
+            return active.every(function (uid) { return pl[uid].roundDone === true; });
+        }
+        function kingTickTimer() {
+            const left = Math.max(0, kingEndsAt - Date.now());
+            const sec = Math.ceil(left / 1000);
+            const mm = String(Math.floor(sec / 60)).padStart(2, '0');
+            const ss = String(sec % 60).padStart(2, '0');
+            const el = document.getElementById('king-time-left');
+            if (el) el.textContent = mm + ':' + ss;
+            const pct = kingEndsAt ? Math.max(0, Math.min(100, (left / KING_ROUND_MS) * 100)) : 0;
+            const fill = document.getElementById('king-timer-fill');
+            if (fill) fill.style.width = pct + '%';
+            if (user && kingLastSnap && kingLastSnap.status === 'round' && !kingAutoCloseScheduled) {
+                if (left <= 0 || kingAllActivePlayersDone(kingLastSnap)) {
+                    kingAutoCloseScheduled = true;
+                    kingTryCloseRound().catch(function () { kingAutoCloseScheduled = false; });
+                }
+            }
+        }
+        function kingTryCloseRound() {
+            if (!kingRoomId) return Promise.resolve();
+            const ref = db.ref('kingRooms/' + kingRoomId);
+            return new Promise(function (resolve, reject) {
+                ref.transaction(function (val) {
+                    if (!val || val.status !== 'round') return undefined;
+                    if (val.roundCloseLock) return undefined;
+                    return Object.assign({}, val, { roundCloseLock: Date.now() });
+                }, function (error, committed) {
+                    if (error) return reject(error);
+                    if (!committed) return resolve();
+                    kingHostCloseRoundAsync().then(resolve).catch(reject);
+                });
+            });
+        }
+        function kingTryAutoStartRound() {
+            if (!kingRoomId) return Promise.resolve();
+            const ref = db.ref('kingRooms/' + kingRoomId);
+            return new Promise(function (resolve, reject) {
+                ref.transaction(function (val) {
+                    if (!val || val.status !== 'between') return undefined;
+                    if (!val.autoNextRoundAt || Date.now() < val.autoNextRoundAt) return undefined;
+                    if (val.nextRoundLock) return undefined;
+                    return Object.assign({}, val, { nextRoundLock: Date.now() });
+                }, function (error, committed, snapshot) {
+                    if (error) return reject(error);
+                    if (!committed) return resolve();
+                    const val = snapshot.val();
+                    kingStartRoundCore(val, { quiet: true }).then(function (ok) {
+                        if (!ok) {
+                            return ref.update({
+                                nextRoundLock: null,
+                                autoNextRoundAt: Date.now() + KING_AUTO_NEXT_MS
+                            });
+                        }
+                    }).then(resolve).catch(reject);
+                });
+            });
+        }
+        function kingRenderKingQuestion() {
+            const p = kingQuizLocal[kingGameIdx];
+            if (!p) return;
+            document.getElementById('king-q-txt').textContent = p.question;
+            document.getElementById('king-q-img').innerHTML = p.image_file ? '<img src="images/' + p.image_file + '" style="max-width:100%;">' : '';
+            document.getElementById('king-game-progress').textContent = (kingGameIdx + 1) + '/' + kingQuizLocal.length;
+            const opt = document.getElementById('king-q-opts');
+            opt.innerHTML = '';
+            p.options.forEach((o, i) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = (i + 1) + '. ' + o;
+                btn.onclick = () => kingPickAnswer(i + 1, btn);
+                opt.appendChild(btn);
+            });
+        }
+        function kingPickAnswer(ans, btn) {
+            if (kingRoundDoneLocal) return;
+            const p = kingQuizLocal[kingGameIdx];
+            if (ans === p.answer) {
+                kingRoundCorrect++;
+                btn.classList.add('correct');
+            } else btn.classList.add('wrong');
+            const bs = document.getElementById('king-q-opts').querySelectorAll('button');
+            bs.forEach(b => { b.disabled = true; });
+            setTimeout(() => {
+                kingGameIdx++;
+                if (kingGameIdx >= kingQuizLocal.length) kingSubmitRound();
+                else kingRenderKingQuestion();
+            }, 350);
+        }
+        async function kingSubmitRound() {
+            if (kingRoundDoneLocal || !user || !kingRoomId) return;
+            kingRoundDoneLocal = true;
+            await db.ref('kingRooms/' + kingRoomId + '/players/' + user.id).update({
+                roundScore: kingRoundCorrect,
+                roundDone: true
+            });
+            document.getElementById('king-wait-msg').classList.remove('hidden');
+            document.getElementById('king-q-opts').innerHTML = '';
+            document.getElementById('king-q-txt').textContent = '제출 완료 (' + kingRoundCorrect + '/' + KING_Q_PER_ROUND + ')';
+        }
+        async function kingHostCloseRoundAsync() {
+            const ref = db.ref('kingRooms/' + kingRoomId);
+            const snap = await ref.once('value');
+            const val = snap.val();
+            if (!val || val.status !== 'round') return;
+            const players = val.players || {};
+            const activeUids = Object.keys(players).filter(uid => players[uid].status === 'active');
+            if (activeUids.length === 0) return;
+            const ranked = activeUids.map(uid => ({
+                uid,
+                name: players[uid].name || uid,
+                sc: Number(players[uid].roundScore) || 0
+            })).sort((a, b) => b.sc - a.sc || String(a.uid).localeCompare(String(b.uid)));
+            const n = ranked.length;
+            const advance = n <= 1 ? 1 : Math.max(1, Math.ceil(n / 2));
+            const survivors = ranked.slice(0, advance);
+            const eliminated = ranked.slice(advance);
+            let html = '<p><b>라운드 결과</b></p><ol style="margin:8px 0 0 18px;">';
+            ranked.forEach((r, i) => {
+                const tag = i < advance ? '상위 50% 진출' : '탈락(관전)';
+                html += '<li>' + escapeHtml(r.name) + ' — ' + r.sc + '점 ' + tag + '</li>';
+            });
+            html += '</ol>';
+            if (survivors.length <= 1) {
+                const winnerUid = survivors[0].uid;
+                const winName = survivors[0].name;
+                const updates = {
+                    status: 'lobby',
+                    round: 0,
+                    hostId: winnerUid,
+                    championUid: winnerUid,
+                    roundEndsAt: null,
+                    roundQuestions: null,
+                    autoNextRoundAt: null,
+                    roundCloseLock: null,
+                    nextRoundLock: null,
+                    betweenCelebrate: null,
+                    lastResultsHtml: html + '<p><b>최종 우승: ' + escapeHtml(winName) + '</b> (새 방장)</p>'
+                };
+                Object.keys(players).forEach(uid => {
+                    updates['players/' + uid + '/status'] = 'active';
+                    updates['players/' + uid + '/roundScore'] = 0;
+                    updates['players/' + uid + '/roundDone'] = false;
+                });
+                await ref.update(updates);
+                return;
+            }
+            const updates = {
+                status: 'between',
+                roundEndsAt: null,
+                roundQuestions: null,
+                lastResultsHtml: html,
+                autoNextRoundAt: Date.now() + KING_AUTO_NEXT_MS,
+                roundCloseLock: null,
+                betweenCelebrate: true
+            };
+            eliminated.forEach(x => {
+                updates['players/' + x.uid + '/status'] = 'spectator';
+            });
+            survivors.forEach(r => {
+                updates['players/' + r.uid + '/roundScore'] = 0;
+                updates['players/' + r.uid + '/roundDone'] = false;
+            });
+            await ref.update(updates);
+        }
+        function kingLeaveRoom() {
+            kingBackToMode();
+        }
+
         function isAdmin() {
             return user && ADMIN_USER_IDS.includes(String(user.id));
         }
@@ -737,6 +1436,11 @@ button {
             quizSubjectFile = null;
             wrongNoteOnly = false;
             document.getElementById('mode-box').classList.add('hidden');
+            if (m === 'king') {
+                document.getElementById('subject-box').classList.add('hidden');
+                kingOpenEntry();
+                return;
+            }
             document.getElementById('subject-box').classList.remove('hidden');
             document.getElementById('subject-btns').classList.remove('hidden');
             document.getElementById('session-select-div').classList.add('hidden');
@@ -768,6 +1472,7 @@ button {
             prepareQuiz(pendingQuizFile);
         }
         function backToModeSelect() {
+            kingBackToModeSilently();
             pendingQuizFile = null;
             quizSubjectFile = null;
             wrongNoteOnly = false;
