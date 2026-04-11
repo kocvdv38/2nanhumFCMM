@@ -620,6 +620,7 @@ button {
 
         <div id="explanation-box" style="display:none; background:#eee; padding:10px; margin-top:10px; text-align:left; font-size:14px;"></div>
         <button id="next-btn" class="btn-blue hidden" onclick="nextPracticeQuestion()">다음 문제</button>
+        <button type="button" id="prev-question-btn" class="btn-gray hidden" onclick="goToPreviousQuestion()" style="margin-top:10px;">← 이전 문제</button>
         <button type="button" class="btn-gray" onclick="quitGame()" style="margin-top:14px;">그만하기</button>
         <button type="button" id="btn-wrong-delete" class="btn-red hidden" onclick="deleteCurrentWrongNote()" style="margin-top:8px;">문제 삭제</button>
     </div>
@@ -660,6 +661,11 @@ button {
         const ADMIN_USER_IDS = ['admin'];
 
         let user=null, quizList=[], currentIdx=0, score=0, mode='';
+        /** 연습·클래식: 문제별 직전 정답 여부(재선택 시 점수 보정용) idx → boolean */
+        let lastAnswerCorrect = {};
+        /** 연습: 문제당 최초 제출 시에만 sessionPracticeSolved 반영 */
+        let practiceFirstSubmit = {};
+        let classicProceedTimer = null;
         let currentRankMode = 'practice';
         let pendingQuizFile = null;
         const SUBJECT_LABELS = {
@@ -797,6 +803,12 @@ button {
                 at: Date.now()
             };
             db.ref('users/' + user.id + '/practice_wrong_notes/' + sk + '/' + id).set(payload).catch(() => {});
+        }
+        function removeWrongNoteForQuestion(subjectFile, p) {
+            if (!user || !user.id || !subjectFile || !p) return;
+            const sk = subjectStorageKey(subjectFile);
+            const id = makeWrongNoteId(subjectFile, p);
+            db.ref('users/' + user.id + '/practice_wrong_notes/' + sk + '/' + id).remove().catch(() => {});
         }
         /** 오답노트 연습 중 — 현재 문제만 DB·목록에서 제거 */
         async function deleteCurrentWrongNote() {
@@ -1029,8 +1041,30 @@ button {
             document.getElementById('quiz-box').classList.remove('hidden');
             score=0; currentIdx=0; lives=3; timeLeft=60; streak=0; totalTime=0; items={hint:0,shield:0,time:0};
             sessionPracticeSolved = 0;
+            lastAnswerCorrect = {};
+            practiceFirstSubmit = {};
+            if (classicProceedTimer) {
+                clearTimeout(classicProceedTimer);
+                classicProceedTimer = null;
+            }
             document.getElementById('item-section').classList.toggle('hidden', mode !== 'timeattack');
             startTimer(); updateUI(); showQuestion();
+        }
+        function syncPrevQuestionBtn() {
+            const btn = document.getElementById('prev-question-btn');
+            if (!btn) return;
+            const show = !wrongNoteOnly && (mode === 'practice' || mode === 'classic') && currentIdx > 0;
+            btn.classList.toggle('hidden', !show);
+        }
+        function goToPreviousQuestion() {
+            if (mode !== 'practice' && mode !== 'classic') return;
+            if (currentIdx <= 0) return;
+            if (classicProceedTimer) {
+                clearTimeout(classicProceedTimer);
+                classicProceedTimer = null;
+            }
+            currentIdx--;
+            showQuestion();
         }
         function nextPracticeQuestion() {
             if(mode !== 'practice') return;
@@ -1072,8 +1106,13 @@ button {
                 document.getElementById('cnt-shield').innerText = items.shield;
                 document.getElementById('cnt-time').innerText = items.time;
             }
+            syncPrevQuestionBtn();
         }
         function showQuestion() {
+            if (classicProceedTimer) {
+                clearTimeout(classicProceedTimer);
+                classicProceedTimer = null;
+            }
             if(currentIdx >= quizList.length) return endGame();
             const p = quizList[currentIdx];
             document.getElementById('q-txt').innerText = p.question;
@@ -1087,28 +1126,49 @@ button {
                 btn.onclick = () => checkAnswer(i + 1, btn);
                 optDiv.appendChild(btn);
             });
+            syncPrevQuestionBtn();
         }
         function checkAnswer(ans, btn) {
             const p = quizList[currentIdx];
+            const idx = currentIdx;
+            const canRevise = (mode === 'practice' || mode === 'classic') && !wrongNoteOnly;
+            if (canRevise && lastAnswerCorrect[idx] === true) {
+                score -= 10;
+            }
             if(ans === p.answer) {
                 if (!wrongNoteOnly) score += 10;
                 if(mode === 'timeattack') {
                     timeLeft += 30;
                     if((items.hint + items.shield + items.time) < 2) { streak++; if(streak >= 3) { gainRandomItem(); streak = 0; } }
                 }
-                btn.classList.add('correct'); proceed();
+                btn.classList.add('correct');
+                if (canRevise) lastAnswerCorrect[idx] = true;
+                if (mode === 'practice' && !wrongNoteOnly && user && user.id && quizSubjectFile) removeWrongNoteForQuestion(quizSubjectFile, p);
+                proceed();
             } else {
                 streak = 0;
-                if(isShieldActive) { isShieldActive = false; alert("🛡️ 실드 방어!"); btn.classList.add('correct'); proceed(); }
-                else {
+                if(isShieldActive) {
+                    isShieldActive = false;
+                    alert("🛡️ 실드 방어!");
+                    btn.classList.add('correct');
+                    if (canRevise) lastAnswerCorrect[idx] = true;
+                    if (mode === 'practice' && !wrongNoteOnly && user && user.id && quizSubjectFile) removeWrongNoteForQuestion(quizSubjectFile, p);
+                    proceed();
+                } else {
                     btn.classList.add('wrong');
-                    if(mode === 'practice' && user && user.id && quizSubjectFile) saveWrongNote(quizSubjectFile, p);
+                    if (canRevise) lastAnswerCorrect[idx] = false;
+                    if(mode === 'practice' && user && user.id && quizSubjectFile && !wrongNoteOnly) saveWrongNote(quizSubjectFile, p);
                     if(mode === 'survival') { lives--; if(lives <= 0) return endGame(); }
                     if(mode === 'timeattack') timeLeft -= 10;
                     proceed();
                 }
             }
-            if (mode === 'practice' && !wrongNoteOnly) sessionPracticeSolved++;
+            if (mode === 'practice' && !wrongNoteOnly) {
+                if (!practiceFirstSubmit[idx]) {
+                    practiceFirstSubmit[idx] = true;
+                    sessionPracticeSolved++;
+                }
+            }
             updateUI();
         }
         function gainRandomItem() {
@@ -1127,8 +1187,19 @@ button {
                 const p = quizList[currentIdx];
                 const exp = document.getElementById('explanation-box');
                 exp.innerHTML = `<b>정답: ${p.answer}번</b><br>${p.explanation || "해설 없음"}`;
-                exp.style.display = "block"; document.getElementById('next-btn').classList.remove('hidden');
-            } else setTimeout(() => { currentIdx++; showQuestion(); }, 400);
+                exp.style.display = "block";
+                document.getElementById('next-btn').classList.remove('hidden');
+                syncPrevQuestionBtn();
+            } else if (mode === 'classic') {
+                if (classicProceedTimer) clearTimeout(classicProceedTimer);
+                classicProceedTimer = setTimeout(() => {
+                    classicProceedTimer = null;
+                    currentIdx++;
+                    showQuestion();
+                }, 400);
+            } else {
+                setTimeout(() => { currentIdx++; showQuestion(); }, 400);
+            }
         }
 
         // 결과 및 랭킹
