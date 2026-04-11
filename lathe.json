@@ -1,28 +1,20 @@
 [
-    {
-        "id": 1,
-        "question": "대한민국의 수도는 어디인가요?",
-        "view": "힌트: 한강이 흐르는 도시입니다.",
-        "options": [
-            "부산",
-            "서울",
-            "인천",
-            "대구"
-        ],
-        "answer": 2,
-        "image_file": "25_1_1.png"
-    },
-    {
-        "id": 2,
-        "question": "다음 중 광합성에 필요한 요소가 아닌 것은?",
-        "view": null,
-        "options": [
-            "빛",
-            "물",
-            "이산화탄소",
-            "산소"
-        ],
-        "answer": 4,
-        "image_file": "photosynthesis.jpg"
-    }
+  {
+    "id": 1,
+    "session": "25-01",
+    "question": "전산응용기계제도 문제 예시...",
+    "options": ["선지1", "선지2", "선지3", "선지4"],
+    "answer": 1,
+    "explanation": "해설 내용입니다.",
+    "image_file": "img01.png"
+  },
+  {
+    "id": 2,
+    "session": "24-04",
+    "question": "다른 회차 문제...",
+    "options": ["선지1", "선지2", "선지3", "선지4"],
+    "answer": 3,
+    "explanation": "해설 내용입니다.",
+    "image_file": null
+  }
 ]
