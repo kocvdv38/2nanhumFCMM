@@ -47,9 +47,11 @@
     }
 
     /* 5. 버튼 공통 스타일 */
-    button { 
+button { 
+        width: 100%;       /* 기본적으로는 가로폭 100% */
         padding: 14px; 
         border: none; 
+        border-radius: 8px; /* ★ 모서리를 부드럽게 깎아주는 코드 */
         cursor: pointer; 
         font-weight: bold; 
         margin: 8px 0; 
@@ -57,12 +59,25 @@
         color: white; 
         transition: 0.2s; 
     }
+
+    /* 로그인 상자 안의 두 버튼만 나란히 배치 */
+    #login-box button {
+        width: 46%;        /* 두 버튼이 들어갈 수 있게 폭 조절 */
+        display: inline-block;
+        margin: 10px 1%;   /* 버튼 사이 간격 */
+    }
     
-    .btn-blue { background: #007bff; } .btn-green { background: #28a745; }
-    .btn-red { background: #dc3545; } .btn-orange { background: #fd7e14; }
-    .btn-purple { background: #6f42c1; } .btn-gray { background: #6c757d; }
+    .btn-blue { background: #007bff; } 
+    .btn-green { background: #28a745; }
+    .btn-red { background: #dc3545; } 
+    .btn-orange { background: #fd7e14; }
+    .btn-purple { background: #6f42c1; } 
+    .btn-gray { background: #6c757d; }
     
-    button:hover { opacity: 0.9; transform: translateY(-1px); }
+    button:hover { 
+        opacity: 0.9; 
+        transform: translateY(-1px); 
+    }
 
     /* 게임 UI */
     #game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 13px; font-weight: bold; }
