@@ -177,6 +177,37 @@ button {
         cursor: default;
         color: #444;
     }
+    #profile-box .profile-photo-wrap {
+        text-align: left;
+        margin: 0 0 12px 0;
+    }
+    #profile-box .profile-photo-preview {
+        display: block;
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin: 8px 0;
+        border: 2px solid #dee2e6;
+        background: #f8f9fa;
+    }
+    #profile-box .profile-photo-preview.hidden {
+        display: none !important;
+    }
+    #profile-box input.profile-photo-file {
+        width: 100%;
+        max-width: 100%;
+        margin: 6px 0;
+        padding: 10px;
+        font-size: 13px;
+    }
+    #profile-box .profile-photo-hint {
+        font-size: 11px;
+        color: #888;
+        text-align: left;
+        margin: 0 0 8px 0;
+        line-height: 1.4;
+    }
 
     .sid-format-hint {
         font-size: 12px;
@@ -278,9 +309,18 @@ button {
     .item-container { display: flex; justify-content: space-around; gap: 5px; }
     .item-btn { 
         width: 32% !important; /* 아이템 버튼은 100%가 아니므로 !important 추가 */
-        font-size: 11px; background: #6f42c1; padding: 10px 2px; position: relative; 
+        font-size: 11px; background: #6f42c1; padding: 10px 2px; position: relative;
+        transform-origin: center center;
     }
     .item-btn:disabled { background: #ccc; filter: grayscale(1); cursor: not-allowed; }
+    @keyframes itemGainPop {
+        0% { transform: scale(1); }
+        35% { transform: scale(1.14); }
+        100% { transform: scale(1); }
+    }
+    .item-btn.item-gain-pop {
+        animation: itemGainPop 0.55s ease;
+    }
     .item-count { position: absolute; top: -5px; right: -5px; background: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 10px; }
 
     .option-btn { background: #f8f9fa; color: #333 !important; border: 1px solid #ddd; text-align: left; }
@@ -350,6 +390,16 @@ button {
     
     img { max-width: 100%; border-radius: 8px; margin: 10px 0; }
     .rank-item { display: flex; align-items: center; padding: 12px; margin: 8px 0; border-radius: 10px; background: #fff; border: 1px solid #eee; font-size: 14px; }
+    .rank-item .rank-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+        margin: 0 10px 0 0;
+        border: 2px solid #e8ecf1;
+        background: #f0f2f5;
+    }
     .rank-item.rank-item--admin { align-items: flex-start; }
     .rank-admin-label { flex-shrink: 0; margin: 0 6px 0 0; padding-top: 2px; cursor: pointer; }
     .rank-admin-cb { width: 17px; height: 17px; cursor: pointer; vertical-align: middle; }
@@ -970,6 +1020,13 @@ button {
         <input type="email" id="p-email" placeholder="예: hong@gmail.com (선택)" autocomplete="email">
         <label for="p-phone" class="profile-field-label">휴대폰 <span style="font-weight:normal;color:#999;">(선택)</span></label>
         <input type="tel" id="p-phone" placeholder="010-1234-5678 (선택)" autocomplete="tel" inputmode="tel" maxlength="13" oninput="formatPhoneHyphenInput(this)">
+        <label for="p-photo-input" class="profile-field-label">프로필 사진 <span style="font-weight:normal;color:#999;">(선택 · 실시간 랭킹 1~3등에서만 표시)</span></label>
+        <p class="profile-photo-hint">JPG·PNG 등 이미지를 선택하면 가로·세로 최대 약 180px로 줄여 저장합니다. 모드별 TOP3 미리보기에는 나오지 않습니다.</p>
+        <div class="profile-photo-wrap">
+            <img id="p-photo-preview" class="profile-photo-preview hidden" alt="프로필 미리보기">
+            <input type="file" id="p-photo-input" class="profile-photo-file" accept="image/jpeg,image/png,image/webp,image/gif">
+            <button type="button" class="btn-gray" onclick="clearProfilePhoto()" style="width:100%;margin-top:4px;">사진 삭제</button>
+        </div>
         <button type="button" class="btn-blue" onclick="saveProfile()">저장</button>
         <button type="button" class="btn-orange" onclick="logout()">로그아웃</button>
         <button type="button" class="btn-gray" onclick="closeProfile()">취소</button>
@@ -1082,6 +1139,9 @@ button {
         let classicProceedTimer = null;
         let currentRankMode = 'daily';
         let pendingQuizFile = null;
+        /** 개인정보: 프로필 사진(data URL) 저장 전 대기 */
+        let pendingProfilePhotoData = null;
+        let removeProfilePhotoPending = false;
         const SUBJECT_LABELS = {
             'drawing.json': '전산응용기계제도기능사',
             'lathe.json': '컴퓨터응용선반기능사',
@@ -1914,9 +1974,53 @@ button {
             });
         }
 
+        function compressImageToDataURL(file, maxSide, quality) {
+            return new Promise(function (resolve, reject) {
+                var fr = new FileReader();
+                fr.onload = function () {
+                    var img = new Image();
+                    img.onload = function () {
+                        var w = img.naturalWidth || img.width;
+                        var h = img.naturalHeight || img.height;
+                        var scale = Math.min(1, maxSide / Math.max(w, h));
+                        var tw = Math.max(1, Math.round(w * scale));
+                        var th = Math.max(1, Math.round(h * scale));
+                        var canvas = document.createElement('canvas');
+                        canvas.width = tw;
+                        canvas.height = th;
+                        var ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, tw, th);
+                        try {
+                            resolve(canvas.toDataURL('image/jpeg', quality));
+                        } catch (err) {
+                            reject(err);
+                        }
+                    };
+                    img.onerror = function () { reject(new Error('img')); };
+                    img.src = fr.result;
+                };
+                fr.onerror = function () { reject(new Error('read')); };
+                fr.readAsDataURL(file);
+            });
+        }
+
+        function clearProfilePhoto() {
+            pendingProfilePhotoData = null;
+            removeProfilePhotoPending = true;
+            var prev = document.getElementById('p-photo-preview');
+            if (prev) {
+                prev.classList.add('hidden');
+                prev.removeAttribute('src');
+            }
+            var inp = document.getElementById('p-photo-input');
+            if (inp) inp.value = '';
+        }
+
         function openProfile() {
             document.getElementById('mode-box').classList.add('hidden');
             document.getElementById('profile-box').classList.remove('hidden');
+            pendingProfilePhotoData = null;
+            removeProfilePhotoPending = false;
             document.getElementById('p-id-display').textContent = user.id;
             document.getElementById('p-name').value = user.name || '';
             document.getElementById('p-pw').value = '';
@@ -1924,6 +2028,18 @@ button {
             document.getElementById('p-sid').value = user.student_id || '';
             document.getElementById('p-email').value = user.email || '';
             document.getElementById('p-phone').value = normalizePhoneForDisplay(user.phone);
+            var pinput = document.getElementById('p-photo-input');
+            if (pinput) pinput.value = '';
+            var pprev = document.getElementById('p-photo-preview');
+            if (pprev) {
+                if (user.profile_photo) {
+                    pprev.src = user.profile_photo;
+                    pprev.classList.remove('hidden');
+                } else {
+                    pprev.classList.add('hidden');
+                    pprev.removeAttribute('src');
+                }
+            }
             syncProfileHideButton();
         }
         function syncProfileHideButton() {
@@ -1970,12 +2086,24 @@ button {
             if(newPw) payload.pw = newPw;
             payload.email = email || null;
             payload.phone = phoneRaw || null;
+            if (removeProfilePhotoPending) {
+                payload.profile_photo = null;
+            } else if (pendingProfilePhotoData) {
+                payload.profile_photo = pendingProfilePhotoData;
+            }
             db.ref('users/' + user.id).update(payload).then(() => {
                 if(newPw) user.pw = newPw;
                 user.school = school;
                 user.student_id = sid;
                 user.email = email || undefined;
                 user.phone = phoneRaw || undefined;
+                if (removeProfilePhotoPending) {
+                    delete user.profile_photo;
+                } else if (pendingProfilePhotoData) {
+                    user.profile_photo = pendingProfilePhotoData;
+                }
+                pendingProfilePhotoData = null;
+                removeProfilePhotoPending = false;
                 document.getElementById('p-pw').value = '';
                 const line = (user.name ? user.name + ' · ' : '') + user.id;
                 document.getElementById('mode-user-line').textContent = line;
@@ -2223,8 +2351,20 @@ button {
             updateUI();
         }
         function gainRandomItem() {
-            const p = ['hint', 'shield', 'time']; const picked = p[Math.floor(Math.random()*3)];
-            items[picked]++; alert("🎁 아이템 획득: " + picked.toUpperCase());
+            var types = ['hint', 'shield', 'time'];
+            var picked = types[Math.floor(Math.random() * types.length)];
+            items[picked]++;
+            var btnId = { hint: 'item-hint', shield: 'item-shield', time: 'item-time' };
+            var cntId = { hint: 'cnt-hint', shield: 'cnt-shield', time: 'cnt-time' };
+            var cEl = document.getElementById(cntId[picked]);
+            if (cEl) cEl.textContent = String(items[picked]);
+            var btn = document.getElementById(btnId[picked]);
+            if (btn) {
+                btn.classList.remove('item-gain-pop');
+                void btn.offsetWidth;
+                btn.classList.add('item-gain-pop');
+                setTimeout(function () { btn.classList.remove('item-gain-pop'); }, 560);
+            }
         }
         function useItem(t) {
             if(items[t] <= 0) return; items[t]--; streak = 0;
@@ -2495,10 +2635,14 @@ button {
                         ? `<label class="rank-admin-label"><input type="checkbox" class="rank-admin-cb" data-uid="${escapeAttr(uid)}" aria-label="${escapeAttr(uid)} 선택"></label>`
                         : '';
                     const posLabel = topRankIcon(i);
+                    const avatarHtml = (i < 3 && u.profile_photo)
+                        ? `<img class="rank-avatar" src="${escapeAttr(String(u.profile_photo))}" width="48" height="48" alt="" loading="lazy">`
+                        : '';
                     return `
                     <div class="rank-item ${i===0?'rank-1':''}${showAdmin ? ' rank-item--admin' : ''}">
                         ${cb}
                         <span class="rank-pos-badge" title="${i + 1}등">${posLabel}</span>
+                        ${avatarHtml}
                         <div class="rank-info">
                             ${titleLine}<br>
                             <div class="rank-school">${u.school || "학교 정보 없음"}</div>
@@ -3264,6 +3408,48 @@ button {
                 el.innerHTML = '<p class="login-top3-err">순위를 불러오지 못했습니다.</p>';
             }
         }
+
+        (function initProfilePhotoInput() {
+            var inp = document.getElementById('p-photo-input');
+            if (!inp) return;
+            inp.addEventListener('change', function () {
+                var f = inp.files && inp.files[0];
+                if (!f) return;
+                if (!/^image\//.test(f.type)) {
+                    alert('이미지 파일만 선택할 수 있습니다.');
+                    inp.value = '';
+                    return;
+                }
+                if (f.size > 8 * 1024 * 1024) {
+                    alert('8MB 이하 이미지를 선택해 주세요.');
+                    inp.value = '';
+                    return;
+                }
+                compressImageToDataURL(f, 180, 0.82).then(function (dataUrl) {
+                    if (dataUrl.length > 950000) {
+                        return compressImageToDataURL(f, 120, 0.75);
+                    }
+                    return dataUrl;
+                }).then(function (dataUrl) {
+                    if (dataUrl.length > 950000) {
+                        alert('이미지 용량이 너무 큽니다. 다른 사진을 선택해 주세요.');
+                        inp.value = '';
+                        return;
+                    }
+                    removeProfilePhotoPending = false;
+                    pendingProfilePhotoData = dataUrl;
+                    var prev = document.getElementById('p-photo-preview');
+                    if (prev) {
+                        prev.src = dataUrl;
+                        prev.classList.remove('hidden');
+                    }
+                    inp.value = '';
+                }).catch(function () {
+                    alert('이미지를 처리하지 못했습니다.');
+                    inp.value = '';
+                });
+            });
+        })();
 
         attachBoardCommentsListener();
         updateBoardCommentsAuthUI();
