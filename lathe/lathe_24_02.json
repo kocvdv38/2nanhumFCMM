@@ -8,4 +8,13 @@
     "explanation": "",
     "image_file": null
   },
+  {
+    "id": 2,
+    "session": "24-02",
+    "question": "청동은 주석의 함유량이 몇 % 정도일 때, 연신율이 최대가 되는가?",
+    "options": ["4~5%", "11~15%", "16~19%", "20~22%"],
+    "answer": 4,
+    "explanation": "",
+    "image_file": null
+  }
 ]
