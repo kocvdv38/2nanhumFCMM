@@ -1714,18 +1714,40 @@ button {
                 });
             });
         }
-        /** 선지 문자열이 images/ 아래 그림 파일명이면 true (예: lathe_24_01_17_op1.png) */
+        /**
+         * JSON의 image_file / 옵션 경로를 img src로 통일.
+         * - 이미 images/ 로 시작하거나 http(s):// 이면 그대로
+         * - lathe/24_01/foo.png 처럼 상대 경로면 앞에 images/ 만 붙임
+         * - foo.png 처럼 파일명만 있으면 images/foo.png
+         */
+        function resolveImageSrc(pathRaw) {
+            if (pathRaw == null || pathRaw === '') return '';
+            let p = String(pathRaw).trim().replace(/\\/g, '/');
+            if (!p) return '';
+            const low = p.toLowerCase();
+            if (low.startsWith('http://') || low.startsWith('https://') || low.startsWith('//')) return p;
+            if (low.startsWith('images/')) return p;
+            if (p.startsWith('/')) return p;
+            return 'images/' + p;
+        }
+        function imageSrcForHtmlAttr(pathRaw) {
+            const r = resolveImageSrc(pathRaw);
+            return r ? escapeHtml(encodeURI(r)) : '';
+        }
+        /** 선지가 그림 경로면 true (예: foo.png 또는 images/lathe/24_01/foo.png 또는 lathe/24_01/foo.png) */
         function optionIsImageFilename(s) {
             if (typeof s !== 'string') return false;
-            const t = s.trim();
-            return /^[\w.-]+\.(png|jpe?g|gif|webp)$/i.test(t) && !/[<>&"]/.test(t);
+            const t = s.trim().replace(/\\/g, '/');
+            if (!t || t.includes('..')) return false;
+            if (/[<>"]/.test(t)) return false;
+            if (!/\.(png|jpe?g|gif|webp)$/i.test(t)) return false;
+            return /^(images\/)?[\w/.\-]+\.(png|jpe?g|gif|webp)$/i.test(t);
         }
         function setOptionButtonContent(btn, index0, o) {
             const prefix = (index0 + 1) + '. ';
             if (optionIsImageFilename(o)) {
-                const name = o.trim();
-                const src = 'images/' + encodeURI(name);
-                btn.innerHTML = '<span class="opt-num">' + escapeHtml(prefix) + '</span><img class="opt-img-inline" src="' + escapeHtml(src) + '" alt="보기 ' + (index0 + 1) + '">';
+                const srcAttr = imageSrcForHtmlAttr(o.trim());
+                btn.innerHTML = '<span class="opt-num">' + escapeHtml(prefix) + '</span><img class="opt-img-inline" src="' + srcAttr + '" alt="보기 ' + (index0 + 1) + '">';
             } else {
                 btn.textContent = prefix + o;
             }
@@ -1734,7 +1756,7 @@ button {
             const p = kingQuizLocal[kingGameIdx];
             if (!p) return;
             document.getElementById('king-q-txt').textContent = p.question;
-            document.getElementById('king-q-img').innerHTML = p.image_file ? '<img src="images/' + p.image_file + '" style="max-width:100%;">' : '';
+            document.getElementById('king-q-img').innerHTML = p.image_file ? '<img src="' + imageSrcForHtmlAttr(p.image_file) + '" style="max-width:100%;">' : '';
             document.getElementById('king-game-progress').textContent = (kingGameIdx + 1) + '/' + kingQuizLocal.length;
             const opt = document.getElementById('king-q-opts');
             opt.innerHTML = '';
@@ -2364,7 +2386,7 @@ button {
             if(currentIdx >= quizList.length) return endGame();
             const p = quizList[currentIdx];
             document.getElementById('q-txt').innerText = p.question;
-            document.getElementById('q-img').innerHTML = p.image_file ? `<img src="images/${p.image_file}">` : "";
+            document.getElementById('q-img').innerHTML = p.image_file ? '<img src="' + imageSrcForHtmlAttr(p.image_file) + '">' : "";
             document.getElementById('explanation-box').style.display = "none";
             document.getElementById('next-btn').classList.add('hidden');
             const optDiv = document.getElementById('q-opts'); optDiv.innerHTML = "";
