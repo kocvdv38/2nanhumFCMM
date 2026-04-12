@@ -1,38 +1,101 @@
 [
   {
     "id": 1,
-    "session": "25-01",
-    "question": "다음 중 유동형 칩(chip)이 생겨나는 작업은?",
-    "options": ["판금", "선삭", "용접", "주조"],
-    "answer": 2,
+    "session": "24-01",
+    "question": "다음 중 탄소 공구강 및 일반 공구재료의 구비조건이 아닌 것은?",
+    "options": ["열처리성이 양호할 것", "내마모성이 클 것", "고온 경도가 클 것", "부식성이 클 것"],
+    "answer": 4,
     "explanation": "",
-    "image_file": "img01.png"
+    "image_file": null
   },
   {
     "id": 2,
-    "session": "25-01",
-    "question": "선반작업 사용하는 센터가 아닌 것은?",
-    "options": ["하프 센터", "게이지 센터", "파이프 센터", "베어링 센터"],
-    "answer": 2,
+    "session": "24-01",
+    "question": "스테인리스강을 조직상으로 분류한 것 중 틀린 것은?",
+    "options": ["마텐자이트계", "오스테나이트계", "시멘타이트계", "페라이트계"],
+    "answer": 3,
     "explanation": "",
     "image_file": null
   },
   {
     "id": 3,
-    "session": "25-01",
-    "question": "그림과 같이 부품의 일부를 도시하는 것으로 충분한 경우에는 그 필요 부분만을 표시할 수 있는 투상도는?",
-    "options": ["회전 투상도", "부분 투상도", "국부 투상도", "요점 투상도"],
-    "answer": 3,
+    "session": "24-01",
+    "question": "베어링 합금의 구비조건으로 옳지 않은 것은?",
+    "options": ["녹아 붙지 않아야 한다.", "열전도율이 커야 한다.", "내식성이 있고, 충분한 인성이 있어야 한다.", "마찰계수가 크고, 저항력이 작아야 한다."],
+    "answer": 4,
     "explanation": "",
-    "image_file": "lathe_25_01_03.png"
+    "image_file": null
   },
   {
     "id": 4,
-    "session": "25-01",
-    "question": "그림과 같이 부품의 일부를 도시하는 것으로 충분한 경우에는 그 필요 부분만을 표시할 수 있는 투상도는?",
-    "options": ["회전 투상도", "부분 투상도", "국부 투상도", "요점 투상도"],
+    "session": "24-01",
+    "question": "알루미늄(AI)에 특성에 관한 설명으로 틀린 것은?",
+    "options": ["내식성이 우수하다.", "합금이 어려운 재료의 특성이 있다.", "압접이나 단접이 비교적 용이하다.", "전연성이 우수하고 복잡한 형상의 제품을 만들기 쉽다."],
+    "answer": 2,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 5,
+    "session": "24-01",
+    "question": "주철의 특성에 대한 설명으로 옳지 않은 것은?",
+    "options": ["주조성이 우수하다.", "내마모성이 우수하다.", "강보다 탄소 함유량이 적다.", "인장강도보다 압축강도가 크다."],
     "answer": 3,
     "explanation": "",
     "image_file": null
-  }  
+  }
+  {
+    "id": 6,
+    "session": "24-01",
+    "question": "30° 사다리꼴나사의 종류를 표시하는 기호는?",
+    "options": ["Rc", "Rp", "TW", "Tr"],
+    "answer": 4,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 7,
+    "session": "24-01",
+    "question": "철강을 열처리하는 목적에 해당하지 않는 것은?",
+    "options": ["일반적으로 조직을 미세화시킨다.", "내부 응력을 증가시킨다.", "표면을 경화시킨다.", "기계적 성질을 향상시킨다."],
+    "answer": 3,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 8,
+    "session": "24-01",
+    "question": "다음 중 열가소성 수지가 아닌 것은?",
+    "options": ["멜라닌 수지", "폴리에틸렌 수지", "초산비닐 수지", "폴리염화비닐 수지"],
+    "answer": 1,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 9,
+    "session": "24-01",
+    "question": "원주피치를 P, 원주율을 π라 할 때, 모듈 m을 구하는 식으로 옳은 것은?",
+    "options": ["m=π/P", "m=P/π", "m=πP", "m=2πP"],
+    "answer": 2,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 10,
+    "session": "24-01",
+    "question": "벨트풀리의 설계에서 림(Rim)의 중앙부를 약간 높게 만드는 이유는?",
+    "options": ["제작이 용이하기 때문에", "풀리의 강도 증대와 마모를 고려하여", "벨트가 벗겨지는 것을 방지하기 위하여", "벨트의 착탈이 용이하도록 하기 위하여"],
+    "answer": 3,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 11,
+    "session": "24-01",
+    "question": "절구 베어링이라고도 하며, 세워져 있는 축에 의하여 추력을 받을 때 사용되는 것은?",
+    "options": ["피벗 베어링", "칼라 베어링", "단일체 베어링", "분할 베어링"],
+    "answer": 1,
+    "explanation": "",
+    "image_file": null
+  },  
 ]
