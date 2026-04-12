@@ -248,7 +248,8 @@
   {
     "id": 26,
     "session": "24-02",
-    "question": "다음 중 절삭공구용 재료가 가져야 할 기계적 성질 중 옳은 것을 모두 고르면?\n㉠ 고온경도(Hot Hardness)\n㉡ 취성(Brittleness)\n㉢ 내마모성(Resistance To Wear)\n㉣ 강인성(Toughness)",
+    "question": "다음 중 절삭공구용 재료가 가져야 할 기계적 성질 중 옳은 것을 모두 고르면?",
+    "passage": "\n㉠ 고온경도(Hot Hardness)\n㉡ 취성(Brittleness)\n㉢ 내마모성(Resistance To Wear)\n㉣ 강인성(Toughness)",
     "options": ["㉠, ㉡, ㉢", "㉠, ㉡, ㉣", "㉠, ㉢, ㉣", "㉡, ㉢, ㉣"],
     "answer": 3,
     "explanation": "",
