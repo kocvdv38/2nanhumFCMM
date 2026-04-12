@@ -1,1 +1,308 @@
-
+[
+  {
+    "id": 1,
+    "session": "24-01",
+    "question": "다음 중 탄소 공구강 및 일반 공구재료의 구비조건이 아닌 것은?",
+    "options": ["열처리성이 양호할 것", "내마모성이 클 것", "고온 경도가 클 것", "부식성이 클 것"],
+    "answer": 4,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 2,
+    "session": "24-01",
+    "question": "스테인리스강을 조직상으로 분류한 것 중 틀린 것은?",
+    "options": ["마텐자이트계", "오스테나이트계", "시멘타이트계", "페라이트계"],
+    "answer": 3,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 3,
+    "session": "24-01",
+    "question": "베어링 합금의 구비조건으로 옳지 않은 것은?",
+    "options": ["녹아 붙지 않아야 한다.", "열전도율이 커야 한다.", "내식성이 있고, 충분한 인성이 있어야 한다.", "마찰계수가 크고, 저항력이 작아야 한다."],
+    "answer": 4,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 4,
+    "session": "24-01",
+    "question": "알루미늄(AI)에 특성에 관한 설명으로 틀린 것은?",
+    "options": ["내식성이 우수하다.", "합금이 어려운 재료의 특성이 있다.", "압접이나 단접이 비교적 용이하다.", "전연성이 우수하고 복잡한 형상의 제품을 만들기 쉽다."],
+    "answer": 2,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 5,
+    "session": "24-01",
+    "question": "주철의 특성에 대한 설명으로 옳지 않은 것은?",
+    "options": ["주조성이 우수하다.", "내마모성이 우수하다.", "강보다 탄소 함유량이 적다.", "인장강도보다 압축강도가 크다."],
+    "answer": 3,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 6,
+    "session": "24-01",
+    "question": "30° 사다리꼴나사의 종류를 표시하는 기호는?",
+    "options": ["Rc", "Rp", "TW", "Tr"],
+    "answer": 4,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 7,
+    "session": "24-01",
+    "question": "철강을 열처리하는 목적에 해당하지 않는 것은?",
+    "options": ["일반적으로 조직을 미세화시킨다.", "내부 응력을 증가시킨다.", "표면을 경화시킨다.", "기계적 성질을 향상시킨다."],
+    "answer": 3,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 8,
+    "session": "24-01",
+    "question": "다음 중 열가소성 수지가 아닌 것은?",
+    "options": ["멜라닌 수지", "폴리에틸렌 수지", "초산비닐 수지", "폴리염화비닐 수지"],
+    "answer": 1,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 9,
+    "session": "24-01",
+    "question": "원주피치를 P, 원주율을 π라 할 때, 모듈 m을 구하는 식으로 옳은 것은?",
+    "options": ["m=π/P", "m=P/π", "m=πP", "m=2πP"],
+    "answer": 2,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 10,
+    "session": "24-01",
+    "question": "벨트풀리의 설계에서 림(Rim)의 중앙부를 약간 높게 만드는 이유는?",
+    "options": ["제작이 용이하기 때문에", "풀리의 강도 증대와 마모를 고려하여", "벨트가 벗겨지는 것을 방지하기 위하여", "벨트의 착탈이 용이하도록 하기 위하여"],
+    "answer": 3,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 11,
+    "session": "24-01",
+    "question": "절구 베어링이라고도 하며, 세워져 있는 축에 의하여 추력을 받을 때 사용되는 것은?",
+    "options": ["피벗 베어링", "칼라 베어링", "단일체 베어링", "분할 베어링"],
+    "answer": 1,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 12,
+    "session": "24-01",
+    "question": "소선의 지름이 8mm, 스프링 전체의 평균 지름이 80mm인 압축코일 스프링의 스프링 지수는?",
+    "options": ["10", "40", "64", "72"],
+    "answer": 1,
+    "explanation": "스프링 지수(C) = 스프링 전체의 평균 지름(D)/ 소선의 지름(d) = 80mm/8mm = 10mm",
+    "image_file": null
+  },
+  {
+    "id": 13,
+    "session": "24-01",
+    "question": "길이가 200mm인 스프링의 한 끝을 천장에 고정하고, 다른 한 끝에 무게 100N의 물체를 달았더니 스프링의 길이가 240MM로 늘어났다. 이때 스프링 상수(N/mm)는?",
+    "options": ["1", "2", "2.5", "4"],
+    "answer": 3,
+    "explanation": "스프링 상수 K = W/δ = 하중/늘어난 길이 = 100N/40mm = 2.5N/mm",
+    "image_file": null
+  },
+  {
+    "id": 14,
+    "session": "24-01",
+    "question": "다음 중 핀에 대한 설명으로 잘못된 것은?",
+    "options": ["테이퍼핀의 기울기는 1/50이다.", "분할핀은 너트의 풀림 방지에 사용된다.", "테이퍼핀은 굵은 쪽의 지름으로 크기를 표시한다.", "핀의 재질은 보통 강재이고 황동, 구리, 알루미늄 등으로 만든다."],
+    "answer": 3,
+    "explanation": "테이퍼핀은 작은 쪽의 지름으로 크기를 표시한다.",
+    "image_file": null
+  },
+  {
+    "id": 15,
+    "session": "24-01",
+    "question": "기계운동을 정지 또는 감속 조절하여 위험을 방지하는 장치는?",
+    "options": ["기어", "커플링", "마찰차", "브레이크"],
+    "answer": 4,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 16,
+    "session": "24-01",
+    "question": "도면에서 두 종류 이상의 선이 같은 장소에 겹치게 될 경우 우선순위로 옳은 것은?",
+    "options": ["외형선, 숨은선, 절단선, 중심선, 무게중심선", "외형선, 중심선, 절단선, 숨은선, 무게중심선", "외형선, 중심선, 숨은선, 무게중심선, 절단선", "외형선, 절단선, 숨은선, 무게중심선, 중심선"],
+    "answer": 1,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 17,
+    "session": "24-01",
+    "question": "도면에서 두 종류 이상의 선이 같은 장소에 겹치게 될 경우 우선순위로 옳은 것은?",
+    "options": ["lathe/24_01/lathe_24_01_17_op1.png", "lathe/24_01/lathe_24_01_17_op2.png", "lathe/24_01/lathe_24_01_17_op3.png", "lathe/24_01/lathe_24_01_17_op4.png"],
+    "answer": 2,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 18,
+    "session": "24-01",
+    "question": "기계제도 도면에서 치수가 ø50H7/p6이라 표시되어 있을 때의 설명으로 옳은 것은?",
+    "options": ["구멍기준식 헐거운 끼워맞춤", "축기준식 중간 끼워맞춤", "구멍기준식 억지 끼워맞춤", "축기준식 억지 끼워맞춤"],
+    "answer": 3,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 19,
+    "session": "24-01",
+    "question": "3줄 나사의 피치가 3mm일 때, 리드는 얼마인가?",
+    "options": ["1mm", "3mm", "6mm", "9mm"],
+    "answer": 4,
+    "explanation": "리드(L) = 줄수(n) x 피치(p) = 3 x 3 = 9mm",
+    "image_file": null
+  },
+  {
+    "id": 20,
+    "session": "24-01",
+    "question": "롤러 베어링의 호칭번호 6302에서 베어링 안지름 호칭을 표시하는 것은?",
+    "options": ["6", "63", "0", "02"],
+    "answer": 4,
+    "explanation": "6-형식번호, 3-치수기호, 02-안지름 번호",
+    "image_file": null
+  },
+  {
+    "id": 21,
+    "session": "24-01",
+    "question": "다음 그림과 같은 도면에서 (     )안에 들어갈 치수는?",
+    "options": ["74", "70", "62", "60"],
+    "answer": 1,
+    "explanation": "",
+    "image_file": "lathe/24_01/lathe_24_01_21.png"
+  },
+  {
+    "id": 22,
+    "session": "24-01",
+    "question": "치수에 사용되는 치수 보조기호의 설명으로 틀린 것은?",
+    "options": ["Sø: 원의 지름", "R: 반지름", "ㅁ: 정사각형의 변", "C: 45° 모따기"],
+    "answer": 1,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 23,
+    "session": "24-01",
+    "question": "다음 도시된 단면도의 명칭은?",
+    "options": ["전단면도", "한쪽단면도", "부분단면도", "회전도시단면도"],
+    "answer": 4,
+    "explanation": "",
+    "image_file": "lathe/24_01/lathe_24_01_23.png"
+  },
+  {
+    "id": 24,
+    "session": "24-01",
+    "question": "기계제도 도면에서 파단선에 관한 설명으로 가장 옳은 것은?",
+    "options": ["되풀이하는 것을 나타내는 선", "전단면도를 그릴 경우 그 절단 위치를 나타내는 선", "물체의 보이지 않는 부분을 가정해서 나타내는 선", "물체의 일부를 떼어낸 경계를 표시하는 선"],
+    "answer": 4,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 25,
+    "session": "24-01",
+    "question": "다음 보기의 설명으로 만족하기 위하여 그림의 빈칸에 들어갈 내용으로 옳은 것은?",
+    "options": ["lathe/24_01/lathe_24_01_25_op1.png", "lathe/24_01/lathe_24_01_25_op2.png", "lathe/24_01/lathe_24_01_25_op3.png", "lathe/24_01/lathe_24_01_25_op4.png"],
+    "answer": 3,
+    "explanation": "",
+    "image_file": "lathe/24_01/lathe_24_01_25.png"
+  },
+  {
+    "id": 26,
+    "session": "24-01",
+    "question": "밀링머신의 부속품과 부속장치 중 원주를 분할하는 데 사용하는 것은?",
+    "options": ["슬로팅 장치", "분할대", "수직축 장치", "래크 절삭장치"],
+    "answer": 2,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 27,
+    "session": "24-01",
+    "question": "연삭가공의 일반적인 특징에 대한 설명으로 옳지 않은 것은?",
+    "options": ["치수 정밀도가 높다.", "칩의 크기가 매우 작다.", "가공면의 표면거칠기가 불량하다.", "경화된 강과 같은 단단한 재료를 가공할 수 있다."],
+    "answer": 3,
+    "explanation": "연삭가공은 정밀도가 높고, 표면거칠기가 우수한 다듬질면을 가공할 수 있다.",
+    "image_file": null
+  },
+  {
+    "id": 28,
+    "session": "24-01",
+    "question": "다음 중 각도 측정용 게이지가 아닌 것은?",
+    "options": ["옵티컬 플랫", "사인바", "콤비네이션 세트", "오토 콜리메이터"],
+    "answer": 1,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 29,
+    "session": "24-01",
+    "question": "수평 밀링머신의 플레인 커터작업에서 하향절삭의 장점이 아닌 것은?",
+    "options": ["공작물의 고정이 쉽다.", "날의 마멸이 적고, 수명이 길다.", "날 자리의 간격이 짧고, 가공면이 깨끗하다.", "백래시 제거장치가 필요 없다."],
+    "answer": 4,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 30,
+    "session": "24-01",
+    "question": "밀링커터를 매분 220rpm으로 회전시켜 절삭속도 110m/min로 공작물을 절삭하려 할 때 밀링커터의 직경은 약 몇 mm인가?",
+    "options": ["150", "160", "170", "180"],
+    "answer": 2,
+    "explanation": "V= πDN / 1000, D= 1000V / πN = 1000x110m/min / π x 220rpm = 159.2rpm",
+    "image_file": null
+  },
+  {
+    "id": 31,
+    "session": "24-01",
+    "question": "절삭가공할 때 절삭온도를 측정하는 방법이 아닌 것은?",
+    "options": ["손으로 측정한다.", "열전대로 측정한다.", "칩의 색깔로 측정한다.", "칼로리미터로 측정한다."],
+    "answer": 1,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 32,
+    "session": "24-01",
+    "question": "연삭가공 중 숫돌바퀴의 질이 균일하지 못하거나 일감의 영향을 받으면 숫돌바퀴의 모양이 점차 변한다. 이렇게 변형된 숫돌을 정확한 모양으로 바르게 고치는 작업은?",
+    "options": ["드레싱", "밸런싱", "채터링", "트루잉"],
+    "answer": 4,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 33,
+    "session": "24-01",
+    "question": "측정량이 증가 또는 감소하는 방향이 달라서 생기는 동일 치수에 대한 지시량의 차는?",
+    "options": ["개인오차", "우연오차", "후퇴오차", "접촉오차"],
+    "answer": 3,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 34,
+    "session": "24-01",
+    "question": "일반적으로 드릴링 머신에서 가공하기 곤란한 작업은?",
+    "options": ["카운터 싱킹", "스플라인 홈", "스폿 페이싱", "리밍"],
+    "answer": 2,
+    "explanation": "",
+    "image_file": null
+  }                         
+]
