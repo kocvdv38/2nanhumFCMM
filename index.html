@@ -981,6 +981,7 @@ button {
         <button class="btn-red" onclick="selectMode('survival')">💔 서바이벌 (목숨 3개)</button>
         <button class="btn-orange" onclick="selectMode('timeattack')">⏱️ 타임 어택 (아이템전)</button>
         <button class="btn-blue" style="background:linear-gradient(135deg,#6f42c1 0%,#007bff 100%);" onclick="selectMode('king')">⚔️ 왕중왕전 (토너먼트)</button>
+        <button type="button" class="btn-gray" style="border:1px solid #adb5bd;background:linear-gradient(135deg,#f8f9fa 0%,#e9ecef 100%);color:#333;" onclick="goSchAttack()">🏫 학교 점령전 (별도 화면)</button>
         <div class="board-comments" id="board-comments-wrap-mode" aria-label="한줄 댓글">
             <div class="board-comments-head">
                 <p class="board-comments-title">💬 한줄 댓글 <small>(최근 10개)</small></p>
@@ -1116,16 +1117,7 @@ button {
 
     <!-- 4. 과목 및 회차 선택 (연습: 과목 → 회차 순) -->
     <div id="subject-box" class="card hidden">
-        <div id="subject-rank-help" class="subject-rank-help" aria-label="모드별 랭킹 반영 안내">
-            <h3>모드별 랭킹 기록(요약)</h3>
-            <ul>
-                <li><strong>데일리</strong> — 그날 문제를 1문제 이상 풀고 <strong>그만두기</strong>로 종료하면 연속 출석·시간이 반영됩니다.</li>
-                <li><strong>연습하기</strong> — 회차별 연습에서 각 문제를 <strong>처음 제출</strong>할 때마다 풀이 수가 누적되고, 종료 시 랭킹에 반영됩니다. (오답노트만 풀 때는 반영되지 않습니다.)</li>
-                <li><strong>클래식 · 서바이벌 · 타임어택</strong> — 게임이 끝나거나 <strong>그만두기</strong>할 때 <strong>이번 점수</strong>가 본인 <strong>역대 최고점</strong>보다 높을 때만 점수가 갱신됩니다.</li>
-                <li><strong>왕중왕</strong> — 한 게임을 시작할 때 <strong>참가자가 5명 이상</strong>인 방에서 <strong>우승</strong>한 경우에만 인증 횟수가 올라갑니다.</li>
-            </ul>
-            <p class="sub">로그인한 뒤 플레이한 결과만 저장되며, 저장은 보통 <strong>게임 종료</strong> 또는 <strong>그만두기(확인)</strong> 시 이루어집니다.</p>
-        </div>
+        <div id="subject-rank-help" class="subject-rank-help" aria-label="선택한 모드 랭킹 반영 안내"></div>
         <h2 id="subject-title">과목 선택</h2>
         <div id="subject-btns">
             <button class="btn-blue" onclick="onSubjectPick('drawing')">전산응용기계제도기능사</button>
@@ -2140,6 +2132,32 @@ button {
 
         // UI 제어
         function toggleView(r) { document.getElementById('login-box').classList.toggle('hidden', r); document.getElementById('reg-box').classList.toggle('hidden', !r); }
+        function updateSubjectRankHelp() {
+            var el = document.getElementById('subject-rank-help');
+            if (!el) return;
+            var foot = '<p class="sub">로그인한 뒤 플레이한 결과만 반영됩니다. 저장은 보통 <strong>게임 종료</strong> 또는 <strong>그만두기(확인)</strong> 시 이루어집니다.</p>';
+            var m = mode;
+            var html = '';
+            if (m === 'daily') {
+                html = '<h3>📅 데일리 — 랭킹 반영</h3><ul><li>그날 문제를 <strong>1문제 이상</strong> 풀고 <strong>그만두기</strong>로 종료하면 <strong>연속 출석</strong>과 <strong>플레이 시간</strong>이 랭킹에 반영됩니다.</li></ul>' + foot;
+            } else if (m === 'practice') {
+                html = '<h3>📖 연습하기 — 랭킹 반영</h3><ul><li>회차별 연습에서 각 문제를 <strong>처음 제출</strong>할 때마다 풀이 수가 누적되고, 종료 시 <strong>연습왕(누적 문제 수)</strong> 랭킹에 반영됩니다.</li><li><strong>오답노트</strong>만 풀 때는 랭킹·누적 연습 기록에 반영되지 않습니다.</li></ul>' + foot;
+            } else if (m === 'classic') {
+                html = '<h3>🏆 클래식 — 랭킹 반영</h3><ul><li>게임이 끝나거나 <strong>그만두기</strong>할 때, <strong>이번 점수</strong>가 본인 <strong>역대 최고점</strong>보다 높을 때만 랭킹 점수가 갱신됩니다.</li></ul>' + foot;
+            } else if (m === 'survival') {
+                html = '<h3>💔 서바이벌 — 랭킹 반영</h3><ul><li>게임이 끝나거나 <strong>그만두기</strong>할 때, <strong>이번 점수</strong>가 본인 <strong>역대 최고점</strong>보다 높을 때만 랭킹 점수가 갱신됩니다.</li></ul>' + foot;
+            } else if (m === 'timeattack') {
+                html = '<h3>⏱️ 타임 어택 — 랭킹 반영</h3><ul><li>게임이 끝나거나 <strong>그만두기</strong>할 때, <strong>이번 점수</strong>가 본인 <strong>역대 최고점</strong>보다 높을 때만 랭킹 점수가 갱신됩니다.</li></ul>' + foot;
+            } else {
+                html = '<h3>랭킹 반영</h3><p class="sub">모드를 선택하면 이 안내가 표시됩니다.</p>';
+            }
+            el.innerHTML = html;
+        }
+
+        function goSchAttack() {
+            window.location.href = 'schattack/index.html';
+        }
+
         function selectMode(m) {
             mode = m;
             pendingQuizFile = null;
@@ -2155,6 +2173,7 @@ button {
             document.getElementById('subject-btns').classList.remove('hidden');
             document.getElementById('session-select-div').classList.add('hidden');
             document.getElementById('subject-title').textContent = '과목 선택';
+            updateSubjectRankHelp();
         }
 
         function onSubjectPick(file) {
@@ -2864,6 +2883,7 @@ button {
                 document.getElementById('subject-btns').classList.add('hidden');
                 document.getElementById('session-select-div').classList.remove('hidden');
                 document.getElementById('subject-title').textContent = '회차 선택';
+                updateSubjectRankHelp();
                 if (pendingQuizFile) {
                     populateSessionSelect(normalizeSubjectKey(pendingQuizFile)).catch(function () {});
                 }
