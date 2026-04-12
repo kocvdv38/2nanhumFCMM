@@ -205,5 +205,32 @@
     "answer": 4,
     "explanation": "",
     "image_file": "images/lathe/24_01/lathe_24_01_23.png"
-  }         
+  },
+  {
+    "id": 24,
+    "session": "24-01",
+    "question": "기계제도 도면에서 파단선에 관한 설명으로 가장 옳은 것은?",
+    "options": ["되풀이하는 것을 나타내는 선", "전단면도를 그릴 경우 그 절단 위치를 나타내는 선", "물체의 보이지 않는 부분을 가정해서 나타내는 선", "물체의 일부를 떼어낸 경계를 표시하는 선"],
+    "answer": 4,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 25,
+    "session": "24-01",
+    "question": "다음 보기의 설명으로 만족하기 위하여 그림의 빈칸에 들어갈 내용으로 옳은 것은?",
+    "options": ["", "", "", ""],
+    "answer": 3,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 26,
+    "session": "24-01",
+    "question": "밀링머신의 부속품과 부속장치 중 원주를 분할하는 데 사용하는 것은?",
+    "options": ["슬로팅 장치", "분할대", "수직축 장치", "래크 절삭장치"],
+    "answer": 2,
+    "explanation": "",
+    "image_file": null
+  }            
 ]
