@@ -234,6 +234,123 @@ grid-template-columns: 44px 1fr 44px;
 align-items: center;
 margin-bottom: 6px;
 }
+.mode-subject-pref-bar {
+text-align: left;
+margin: 0 0 16px 0;
+padding: 14px 16px;
+border-radius: 14px;
+background: linear-gradient(155deg, #faf9ff 0%, #f0ecfb 100%);
+border: 1px solid rgba(74, 63, 107, 0.12);
+box-shadow: 0 4px 16px rgba(74, 63, 107, 0.06);
+}
+.mode-subject-pref-bar-title {
+margin: 0 0 8px 0;
+font-size: 14px;
+font-weight: 700;
+color: #4a3f6b;
+}
+.mode-subject-pref-hint {
+font-weight: 400;
+font-size: 12px;
+color: #888;
+}
+.mode-pref-inline-line {
+margin: 0 0 10px 0;
+font-size: 13px;
+color: #444;
+line-height: 1.45;
+word-break: keep-all;
+}
+.mode-pref-open-btn {
+width: 100%;
+max-width: 280px;
+}
+.subject-pref-summary-wrap {
+text-align: left;
+margin-bottom: 14px;
+padding: 12px 14px;
+border-radius: 12px;
+background: #f8f9fc;
+border: 1px solid #e9ecef;
+}
+.subject-pref-line {
+margin: 0 0 10px 0;
+font-size: 13px;
+color: #444;
+line-height: 1.45;
+}
+.subject-quick-start-wrap {
+text-align: center;
+margin: 8px 0 16px 0;
+}
+.subject-quick-start-wrap > .btn-green {
+width: 100%;
+max-width: 100%;
+box-sizing: border-box;
+}
+.subject-pref-modal {
+position: fixed;
+inset: 0;
+z-index: 10050;
+display: none;
+align-items: center;
+justify-content: center;
+padding: 16px;
+}
+.subject-pref-modal:not(.hidden) {
+display: flex;
+}
+.subject-pref-modal-backdrop {
+position: absolute;
+inset: 0;
+background: rgba(0, 0, 0, 0.45);
+}
+.subject-pref-modal-card {
+position: relative;
+width: 100%;
+max-width: 420px;
+max-height: 90vh;
+overflow: auto;
+background: #fff;
+border-radius: 16px;
+padding: 20px 22px;
+text-align: left;
+box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+}
+.subject-pref-modal-card h3 {
+margin: 0 0 8px 0;
+font-size: 1.15rem;
+color: #4a3f6b;
+}
+.subject-pref-modal-hint {
+margin: 0 0 14px 0;
+font-size: 13px;
+color: #666;
+line-height: 1.45;
+}
+.subject-pref-modal-body .pref-modal-row {
+display: flex;
+align-items: flex-start;
+gap: 10px;
+margin: 8px 0;
+font-size: 14px;
+cursor: pointer;
+}
+.subject-pref-modal-body .pref-modal-row input {
+margin-top: 3px;
+flex-shrink: 0;
+}
+.subject-pref-modal-actions {
+display: flex;
+gap: 10px;
+margin-top: 18px;
+flex-wrap: wrap;
+}
+.subject-pref-modal-actions .btn-blue,
+.subject-pref-modal-actions .btn-gray {
+flex: 1;
+min-width: 120px;
+}
 .mode-title {
 grid-column: 2;
 margin: 0;
@@ -975,6 +1092,11 @@ min-height: 108px;
 </button>
 </div>
 <p id="mode-user-line" style="font-size:14px;color:#555;margin:0 0 12px 0;"></p>
+<div id="mode-subject-pref-bar" class="mode-subject-pref-bar">
+<p class="mode-subject-pref-bar-title">풀이 과목 <span class="mode-subject-pref-hint">(왕중왕전 제외 · 저장됨)</span></p>
+<p id="mode-pref-inline-line" class="mode-pref-inline-line">불러오는 중…</p>
+<button type="button" class="btn-gray mode-pref-open-btn" onclick="openSubjectPrefModal()">과목 선택</button>
+</div>
 <button class="btn-blue" style="background:linear-gradient(135deg,#20c997 0%,#17a2b8 100%);" onclick="selectMode('daily')">📅 데일리 챌린지 (연속 출석)</button>
 <button class="btn-green" onclick="selectMode('practice')">📖 연습하기 (공부량 랭킹)</button>
 <button class="btn-purple" onclick="selectMode('classic')">🏆 클래식 도전 (전체 풀이)</button>
@@ -1114,28 +1236,37 @@ min-height: 108px;
 <button type="button" class="btn-gray" onclick="closeProfile()">취소</button>
 </div>
 
-<!-- 4. 과목 및 회차 선택 (연습: 과목 → 회차 순) -->
+<!-- 4. 과목 및 회차 선택 (과목은 모드 화면에서 저장 · 왕중왕 제외) -->
 <div id="subject-box" class="card hidden">
         <div id="subject-rank-help" class="subject-rank-help" aria-label="선택 모드 랭킹 반영 안내"></div>
 <h2 id="subject-title">과목 선택</h2>
-<div id="subject-btns">
-<button class="btn-blue" onclick="onSubjectPick('drawing')">전산응용기계제도기능사</button>
-<button class="btn-blue" onclick="onSubjectPick('lathe')">컴퓨터응용선반기능사</button>
-<button class="btn-blue" onclick="onSubjectPick('milling')">컴퓨터응용밀링기능사</button>
-<button class="btn-blue" onclick="onSubjectPick('assembly')">기계조립기능사</button>
-<button class="btn-blue" onclick="onSubjectPick('maintenance')">설비보전기능사</button>
-<button class="btn-blue" onclick="onSubjectPick('automation')">자동화설비기능사</button>
-<button class="btn-blue" onclick="onSubjectPick('3dprint')">3D프린터운용기능사</button>
-<button class="btn-blue" onclick="onSubjectPick('welding')">피복아크용접기능사</button>
+<div id="subject-pref-summary-wrap" class="subject-pref-summary-wrap hidden">
+<p id="subject-pref-line" class="subject-pref-line"></p>
+<button type="button" class="btn-gray" onclick="openSubjectPrefModal()">과목 변경</button>
+</div>
+<div id="subject-quick-start-wrap" class="subject-quick-start-wrap hidden">
+<button type="button" class="btn-green" onclick="startQuizFromPreferredNonDaily()">선택한 과목 범위로 게임 시작</button>
 </div>
 <div id="session-select-div" class="hidden">
 <p id="session-subject-label" style="font-size:14px;color:#555;margin:0 0 10px 0;"></p>
 <button type="button" class="btn-orange btn-wrong-note" onclick="startWrongNoteQuiz()">📕 오답노트</button>
 <select id="session-val" aria-label="회차 선택"><option value="">과목을 먼저 선택하세요</option></select>
 <button type="button" class="btn-green" onclick="startPracticeFromSelection()">이 회차로 시작</button>
-<button type="button" class="btn-gray" onclick="backToSubjectPick()">과목 다시 선택</button>
 </div>
 <button type="button" class="btn-gray" onclick="backToModeSelect()" style="margin-top:12px;">← 모드 선택으로</button>
+</div>
+
+<div id="subject-pref-modal" class="subject-pref-modal hidden" aria-hidden="true">
+<div class="subject-pref-modal-backdrop" onclick="closeSubjectPrefModal()"></div>
+<div class="subject-pref-modal-card" role="dialog" aria-modal="true" aria-labelledby="subject-pref-modal-title" onclick="event.stopPropagation()">
+<h3 id="subject-pref-modal-title">풀이 과목 선택</h3>
+<p class="subject-pref-modal-hint">여러 과목을 동시에 선택할 수 있습니다. <strong>모든 과목</strong>을 끄면 개별 과목을 고르세요. 왕중왕전을 제외한 모드에 적용되며, 이 기기에 저장됩니다.</p>
+<div id="subject-pref-modal-body" class="subject-pref-modal-body"></div>
+<div class="subject-pref-modal-actions">
+<button type="button" class="btn-blue" onclick="applySubjectPrefModal()">적용</button>
+<button type="button" class="btn-gray" onclick="closeSubjectPrefModal()">취소</button>
+</div>
+</div>
 </div>
 
 <!-- 5. 퀴즈 화면 -->
@@ -1236,6 +1367,10 @@ automation: '자동화설비기능사',
 '3dprint': '3D프린터운용기능사',
 welding: '피복아크용접기능사'
 };
+const KING_SUBJECT_FILE_LIST_PREF = Object.keys(SUBJECT_LABELS);
+const PREF_SUBJECTS_STORAGE_KEY = 'catch_cert_pref_subjects_v1';
+/** 'all' 단독이거나 SUBJECT_LABELS 키 여러 개. 왕중왕전을 제외한 모드의 출제 범위 */
+let preferredSubjectKeys = ['all'];
 /**
         * 회차별 문제 파일명 관례: {과목폴더}/{과목키}_YY_MM.json (예: lathe/lathe_24_01.json).
         * 웹에서는 폴더 목록을 읽을 수 없어, 아래 연도·회차 범위로 경로를 만들어 존재하는 파일만 목록에 넣습니다.
@@ -1322,6 +1457,147 @@ return false;
 return false;
 }
 }
+function loadPreferredSubjectsFromStorage() {
+try {
+var raw = localStorage.getItem(PREF_SUBJECTS_STORAGE_KEY);
+if (!raw) return;
+var parsed = JSON.parse(raw);
+if (!Array.isArray(parsed) || parsed.length === 0) return;
+if (parsed.indexOf('all') >= 0) {
+preferredSubjectKeys = ['all'];
+return;
+}
+var next = parsed.filter(function (k) { return KING_SUBJECT_FILE_LIST_PREF.indexOf(k) >= 0; });
+if (next.length) preferredSubjectKeys = next;
+} catch (e) {}
+}
+function savePreferredSubjectsToStorage() {
+try {
+localStorage.setItem(PREF_SUBJECTS_STORAGE_KEY, JSON.stringify(preferredSubjectKeys));
+} catch (e) {}
+}
+function getPreferredSubjectEffectiveKeys() {
+if (preferredSubjectKeys.indexOf('all') >= 0) return KING_SUBJECT_FILE_LIST_PREF.slice();
+return preferredSubjectKeys.filter(function (k) { return KING_SUBJECT_FILE_LIST_PREF.indexOf(k) >= 0; });
+}
+function getPreferredSubjectSummaryHtml() {
+if (preferredSubjectKeys.indexOf('all') >= 0) return '모든 과목';
+var labels = preferredSubjectKeys.map(function (k) { return SUBJECT_LABELS[k] || k; });
+if (labels.length === 0) return '과목 미선택';
+if (labels.length <= 3) return labels.join(', ');
+return labels.slice(0, 3).join(', ') + ' 외 ' + (labels.length - 3) + '개';
+}
+function syncPreferredSubjectUi() {
+var line = '현재: <strong>' + getPreferredSubjectSummaryHtml() + '</strong>';
+var a = document.getElementById('mode-pref-inline-line');
+if (a) a.innerHTML = line;
+var b = document.getElementById('subject-pref-line');
+if (b) b.innerHTML = line;
+}
+function renderSubjectPrefModalBody() {
+var body = document.getElementById('subject-pref-modal-body');
+if (!body) return;
+var isAll = preferredSubjectKeys.indexOf('all') >= 0;
+var html = '<label class="pref-modal-row"><input type="checkbox" id="pref-modal-all" ' + (isAll ? 'checked' : '') + '> 모든 과목 (전 자격)</label>';
+KING_SUBJECT_FILE_LIST_PREF.forEach(function (k) {
+var on = !isAll && preferredSubjectKeys.indexOf(k) >= 0;
+html += '<label class="pref-modal-row"><input type="checkbox" class="pref-modal-sub" data-key="' + k + '" ' + (on ? 'checked' : '') + '> ' + escapeHtml(SUBJECT_LABELS[k] || k) + '</label>';
+});
+body.innerHTML = html;
+var allEl = document.getElementById('pref-modal-all');
+if (allEl) {
+allEl.addEventListener('change', function () {
+var subs = body.querySelectorAll('.pref-modal-sub');
+if (allEl.checked) subs.forEach(function (el) { el.checked = false; });
+});
+}
+body.querySelectorAll('.pref-modal-sub').forEach(function (cb) {
+cb.addEventListener('change', function () {
+var a = document.getElementById('pref-modal-all');
+if (a && cb.checked) a.checked = false;
+});
+});
+}
+function openSubjectPrefModal() {
+renderSubjectPrefModalBody();
+var m = document.getElementById('subject-pref-modal');
+if (m) {
+m.classList.remove('hidden');
+m.setAttribute('aria-hidden', 'false');
+}
+}
+function closeSubjectPrefModal() {
+var m = document.getElementById('subject-pref-modal');
+if (m) {
+m.classList.add('hidden');
+m.setAttribute('aria-hidden', 'true');
+}
+}
+function applySubjectPrefModal() {
+var allEl = document.getElementById('pref-modal-all');
+if (allEl && allEl.checked) {
+preferredSubjectKeys = ['all'];
+} else {
+var keys = [];
+document.querySelectorAll('#subject-pref-modal-body .pref-modal-sub:checked').forEach(function (el) {
+keys.push(el.getAttribute('data-key'));
+});
+if (keys.length === 0) {
+alert('「모든 과목」을 켜거나, 과목을 하나 이상 선택하세요.');
+return;
+}
+preferredSubjectKeys = keys;
+}
+savePreferredSubjectsToStorage();
+syncPreferredSubjectUi();
+closeSubjectPrefModal();
+}
+async function populateSessionSelectMerged() {
+var keys = getPreferredSubjectEffectiveKeys();
+var sel = document.getElementById('session-val');
+var startBtn = document.querySelector('#session-select-div .btn-green');
+if (!sel) return;
+sel.innerHTML = '';
+sel.disabled = true;
+if (startBtn) startBtn.disabled = true;
+sel.innerHTML = '<option value="">회차 목록 확인 중…</option>';
+if (!keys.length) {
+sel.innerHTML = '<option value="">모드 화면에서 과목을 선택하세요</option>';
+sel.disabled = false;
+return;
+}
+if (keys.length === 1) {
+return populateSessionSelect(keys[0]);
+}
+var merged = [];
+for (var i = 0; i < keys.length; i++) {
+var sk = keys[i];
+var okRows = await discoverSubjectQuizFiles(sk);
+subjectSessionManifestCache[sk] = okRows;
+for (var j = 0; j < okRows.length; j++) {
+merged.push({ sk: sk, row: okRows[j] });
+}
+}
+merged.sort(function (a, b) { return compareSessionCodeDesc(a.row.code, b.row.code); });
+sel.innerHTML = '';
+if (merged.length === 0) {
+sel.innerHTML = '<option value="">선택한 과목에서 문제 파일을 찾지 못했습니다</option>';
+sel.disabled = false;
+return;
+}
+merged.forEach(function (item) {
+var row = item.row;
+var opt = document.createElement('option');
+opt.value = item.sk + '::' + row.code;
+opt.setAttribute('data-path', row.path);
+opt.setAttribute('data-subject', item.sk);
+opt.setAttribute('data-session-code', row.code);
+opt.textContent = (SUBJECT_LABELS[item.sk] || item.sk) + ' · ' + row.label;
+sel.appendChild(opt);
+});
+sel.disabled = false;
+if (startBtn) startBtn.disabled = false;
+}
 async function populateSessionSelect(subjectKey) {
 const sel = document.getElementById('session-val');
 const startBtn = document.querySelector('#session-select-div .btn-green');
@@ -1342,20 +1618,23 @@ okRows.forEach(function (row) {
 const opt = document.createElement('option');
 opt.value = row.code;
 opt.setAttribute('data-path', row.path);
+opt.setAttribute('data-session-code', row.code);
 opt.textContent = row.label;
 sel.appendChild(opt);
 });
 sel.disabled = false;
 if (startBtn) startBtn.disabled = false;
 }
-/** 선택된 회차에 대응하는 문제 JSON 경로 (드롭다운 data-path 또는 탐색 캐시) */
+/** 선택된 회차에 대응하는 문제 JSON 경로 (data-path·data-subject·캐시) */
 function getSelectedSessionQuizPath(subjectKey) {
-const sk = normalizeSubjectKey(subjectKey);
 const sel = document.getElementById('session-val');
 if (!sel) return '';
 const opt = sel.options[sel.selectedIndex];
 if (opt && opt.getAttribute('data-path')) return opt.getAttribute('data-path');
 const code = sel.value;
+let sk = opt && opt.getAttribute('data-subject');
+if (!sk && subjectKey != null && subjectKey !== '') sk = normalizeSubjectKey(subjectKey);
+if (!sk) return '';
 const rows = subjectSessionManifestCache[sk];
 if (rows) {
 for (let i = 0; i < rows.length; i++) {
@@ -1403,6 +1682,27 @@ return out;
 }
 const rows = await discoverSubjectQuizFiles(sk);
 return rows.map(function (r) { return r.path; });
+}
+/** 클래식·서바이벌·타임어택: 저장된 선호 과목 범위의 전체 문제 파일 경로 */
+async function fetchKingFilesForPreferred() {
+if (preferredSubjectKeys.indexOf('all') >= 0) {
+return fetchKingFilesForSubject('all');
+}
+const keys = getPreferredSubjectEffectiveKeys();
+if (!keys.length) return [];
+const out = [];
+const seen = new Set();
+for (let i = 0; i < keys.length; i++) {
+const rows = await discoverSubjectQuizFiles(keys[i]);
+for (let j = 0; j < rows.length; j++) {
+const p = rows[j].path;
+if (!seen.has(p)) {
+seen.add(p);
+out.push(p);
+}
+}
+}
+return out;
 }
 function kingSubjectLabel(key) {
 if (!key || key === 'all') return '전체 과목 (랜덤)';
@@ -2168,55 +2468,49 @@ kingOpenEntry();
 return;
 }
 document.getElementById('subject-box').classList.remove('hidden');
-document.getElementById('subject-btns').classList.remove('hidden');
-document.getElementById('session-select-div').classList.add('hidden');
-document.getElementById('subject-title').textContent = '과목 선택';
+document.getElementById('subject-pref-summary-wrap').classList.remove('hidden');
+syncPreferredSubjectUi();
 updateSubjectRankHelp();
-}
-
-function onSubjectPick(file) {
-if (mode === 'practice' || mode === 'daily') {
-pendingQuizFile = file;
-document.getElementById('subject-btns').classList.add('hidden');
+if (m === 'practice' || m === 'daily') {
+document.getElementById('subject-quick-start-wrap').classList.add('hidden');
 document.getElementById('session-select-div').classList.remove('hidden');
 document.getElementById('subject-title').textContent = '회차 선택';
-const nsk = normalizeSubjectKey(file);
 document.getElementById('session-subject-label').textContent =
-'선택한 과목: ' + (SUBJECT_LABELS[nsk] || file);
-const wn = document.querySelector('#session-select-div .btn-wrong-note');
+'적용 과목: ' + getPreferredSubjectSummaryHtml();
+var wn = document.querySelector('#session-select-div .btn-wrong-note');
 if (wn) wn.classList.toggle('hidden', mode === 'daily');
-populateSessionSelect(nsk).catch(function () {
-const sel = document.getElementById('session-val');
+populateSessionSelectMerged().catch(function () {
+var sel = document.getElementById('session-val');
 if (sel) sel.innerHTML = '<option value="">회차 목록을 불러오지 못했습니다</option>';
 });
 } else {
-prepareQuiz(normalizeSubjectKey(file));
-}
-}
-function backToSubjectPick() {
-pendingQuizFile = null;
-quizSubjectFile = null;
-wrongNoteOnly = false;
-document.getElementById('subject-btns').classList.remove('hidden');
 document.getElementById('session-select-div').classList.add('hidden');
-document.getElementById('subject-title').textContent = '과목 선택';
+document.getElementById('subject-quick-start-wrap').classList.remove('hidden');
+document.getElementById('subject-title').textContent = '시작하기';
+}
 }
 function startPracticeFromSelection() {
-if (!pendingQuizFile) return;
-const sel = document.getElementById('session-val');
+var sel = document.getElementById('session-val');
 if (!sel || !sel.value) return alert('회차를 선택하세요.');
-prepareQuiz(normalizeSubjectKey(pendingQuizFile));
+var opt = sel.options[sel.selectedIndex];
+if (opt && opt.getAttribute('data-subject')) pendingQuizFile = opt.getAttribute('data-subject');
+else {
+var k = getPreferredSubjectEffectiveKeys();
+pendingQuizFile = k.length ? k[0] : null;
+}
+prepareQuiz();
 }
 function backToModeSelect() {
 kingBackToModeSilently();
 pendingQuizFile = null;
 quizSubjectFile = null;
 wrongNoteOnly = false;
-document.getElementById('subject-btns').classList.remove('hidden');
+document.getElementById('subject-quick-start-wrap').classList.add('hidden');
 document.getElementById('session-select-div').classList.add('hidden');
 document.getElementById('subject-title').textContent = '과목 선택';
 document.getElementById('subject-box').classList.add('hidden');
 document.getElementById('mode-box').classList.remove('hidden');
+syncPreferredSubjectUi();
 }
 
 function subjectStorageKey(file) {
@@ -2277,14 +2571,22 @@ showQuestion();
 }
 async function startWrongNoteQuiz() {
 if (!user || !user.id) return alert('로그인이 필요합니다.');
-if (!pendingQuizFile) return;
 const sel = document.getElementById('session-val');
 if (!sel || !sel.value) return alert('회차를 선택하세요.');
-const pathForNotes = getSelectedSessionQuizPath(normalizeSubjectKey(pendingQuizFile));
-const sk = subjectStorageKey(pathForNotes);
+var opt = sel.options[sel.selectedIndex];
+var sk = pendingQuizFile;
+if (!sk && opt && opt.getAttribute('data-subject')) sk = opt.getAttribute('data-subject');
+if (!sk) {
+var k = getPreferredSubjectEffectiveKeys();
+if (k.length === 1) sk = k[0];
+}
+if (!sk) return alert('과목을 확인할 수 없습니다. 모드 화면에서 과목을 선택하거나 회차를 다시 선택해 주세요.');
+pendingQuizFile = sk;
+const pathForNotes = getSelectedSessionQuizPath(normalizeSubjectKey(sk));
+const wrongNoteStorageKey = subjectStorageKey(pathForNotes);
 let snap;
 try {
-snap = await db.ref('users/' + user.id + '/practice_wrong_notes/' + sk).once('value');
+snap = await db.ref('users/' + user.id + '/practice_wrong_notes/' + wrongNoteStorageKey).once('value');
 } catch (e) {
 return alert('오답 목록을 불러오지 못했습니다.');
 }
@@ -2312,6 +2614,8 @@ const line = (user.name ? user.name + ' · ' : '') + user.id;
 document.getElementById('mode-user-line').textContent = line;
 document.getElementById('login-box').classList.add('hidden');
 document.getElementById('mode-box').classList.remove('hidden');
+loadPreferredSubjectsFromStorage();
+syncPreferredSubjectUi();
 updateBoardCommentsAuthUI();
 renderBoardComments();
 }
@@ -2550,13 +2854,21 @@ alert('가입에 실패했습니다.\n' + (msg || '네트워크 오류'));
 }
 
 // 퀴즈 준비 및 진행 (이전 답변과 로직 동일)
-function prepareQuizSubjectMerged(subjectKey) {
+function startQuizFromPreferredNonDaily() {
+if (mode === 'king') return;
+prepareQuizSubjectMergedFromPreferred();
+}
+function prepareQuizSubjectMergedFromPreferred() {
 wrongNoteOnly = false;
-const sk = normalizeSubjectKey(subjectKey);
-quizSubjectFile = sk;
-fetchKingFilesForSubject(sk).then(function (files) {
+var keys = getPreferredSubjectEffectiveKeys();
+if (!keys.length) {
+alert('모드 화면에서 풀이 과목을 선택해 주세요.');
+return;
+}
+quizSubjectFile = preferredSubjectKeys.indexOf('all') >= 0 ? 'all' : keys.join('+');
+fetchKingFilesForPreferred().then(function (files) {
 if (files.length === 0) {
-alert('이 과목 폴더에서 ' + sk + '_' + 'YY_MM.json 형식의 문제 파일을 찾지 못했습니다.');
+alert('선택한 과목 범위에서 문제 파일을 찾지 못했습니다.');
 return;
 }
 return Promise.all(files.map(function (f) {
@@ -2578,20 +2890,26 @@ startQuiz();
 alert('문제를 불러오지 못했습니다.');
 });
 }
-function prepareQuiz(file) {
+function prepareQuiz() {
 wrongNoteOnly = false;
-const sk = normalizeSubjectKey(file);
 if (mode !== 'practice' && mode !== 'daily') {
-prepareQuizSubjectMerged(sk);
+prepareQuizSubjectMergedFromPreferred();
 return;
 }
-const fetchPath = getSelectedSessionQuizPath(sk);
+const fetchPath = getSelectedSessionQuizPath();
 if (!fetchPath) return alert('회차를 선택하세요.');
 quizSubjectFile = fetchPath;
 fetch(fetchPath).then(r => r.json()).then(data => {
-const sessionVal = document.getElementById('session-val').value;
+const selEl = document.getElementById('session-val');
+const optEl = selEl && selEl.options[selEl.selectedIndex];
+var sessionVal = selEl ? selEl.value : '';
+var sessionCode = optEl && optEl.getAttribute('data-session-code') ? optEl.getAttribute('data-session-code') : sessionVal;
+if (sessionVal && sessionVal.indexOf('::') >= 0) {
+var pv = sessionVal.split('::');
+if (pv.length >= 2) sessionCode = pv[pv.length - 1];
+}
 if (mode === 'practice' || mode === 'daily') {
-quizList = data.filter(p => p.session === sessionVal);
+quizList = data.filter(p => p.session === sessionCode);
 if (quizList.length === 0 && Array.isArray(data) && data.length > 0) {
 quizList = data.slice();
 }
@@ -2878,13 +3196,14 @@ if (wrongNoteOnly) {
 wrongNoteOnly = false;
 document.getElementById('rank-box').classList.add('hidden');
 document.getElementById('subject-box').classList.remove('hidden');
-document.getElementById('subject-btns').classList.add('hidden');
+document.getElementById('subject-pref-summary-wrap').classList.remove('hidden');
+document.getElementById('subject-quick-start-wrap').classList.add('hidden');
 document.getElementById('session-select-div').classList.remove('hidden');
 document.getElementById('subject-title').textContent = '회차 선택';
+document.getElementById('session-subject-label').textContent =
+'적용 과목: ' + getPreferredSubjectSummaryHtml();
 updateSubjectRankHelp();
-if (pendingQuizFile) {
-populateSessionSelect(normalizeSubjectKey(pendingQuizFile)).catch(function () {});
-}
+populateSessionSelectMerged().catch(function () {});
 return;
 }
 document.getElementById('rank-box').classList.remove('hidden');
@@ -3973,6 +4292,8 @@ attachBoardCommentEnterHandlers();
 initBoardCommentsLoginSwipe();
 initLoginTop3SwipeDelegate();
 initRankTop3SwipeDelegate();
+loadPreferredSubjectsFromStorage();
+syncPreferredSubjectUi();
 loadLoginTop3Preview();
 </script>
 </body>
