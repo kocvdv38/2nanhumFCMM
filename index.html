@@ -69,6 +69,8 @@
             display: none;
             flex-direction: column;
             pointer-events: none;
+            --sa-accent: #3d8bfd;
+            --sa-muted: #8b9aab;
         }
         #schattack-overlay:not(.hidden) {
             display: flex;
@@ -123,26 +125,86 @@
             display: block;
             opacity: .95;
         }
-        #schattack-root .sa-region-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
+        /* 지도 PNG 위 클릭 영역(퍼센트 좌표, map_korea.png 레이아웃에 맞게 SA_MAP_HOTSPOTS 에서 조정) */
+        #schattack-root .sa-map-hotspots {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
         }
-        @media (min-width: 480px) {
-            #schattack-root .sa-region-grid { grid-template-columns: repeat(4, 1fr); }
-        }
-        #schattack-root .sa-region-btn {
-            padding: 10px 6px;
-            font-size: 12px;
-            border: 1px solid rgba(61,139,253,.35);
-            background: rgba(61,139,253,.12);
-            color: #e8eef5;
-            border-radius: 10px;
+        #schattack-root .sa-map-hotspot {
+            position: absolute;
+            pointer-events: auto;
+            margin: 0;
+            padding: 0;
+            border: none;
+            background: transparent;
             cursor: pointer;
-            transition: background .15s, transform .1s;
+            border-radius: 6px;
+            transition: background .15s;
         }
-        #schattack-root .sa-region-btn:hover { background: rgba(61,139,253,.28); }
-        #schattack-root .sa-region-btn:active { transform: scale(.98); }
+        #schattack-root .sa-map-hotspot:hover,
+        #schattack-root .sa-map-hotspot:focus-visible {
+            background: rgba(61, 139, 253, 0.22);
+            outline: none;
+        }
+        #schattack-root .sa-map-hint {
+            font-size: 13px;
+            color: var(--sa-muted);
+            margin: 0 0 8px 0;
+            line-height: 1.45;
+        }
+        #schattack-root .sa-school-card-edit {
+            flex-shrink: 0;
+            align-self: center;
+            padding: 8px 10px;
+            font-size: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,.2);
+            background: rgba(255,255,255,.06);
+            color: #e8eef5;
+            cursor: pointer;
+        }
+        #schattack-root .sa-school-card-edit:hover { background: rgba(61,139,253,.25); }
+        #schattack-root .sa-admin-label {
+            display: block;
+            font-size: 12px;
+            color: var(--sa-muted);
+            margin-top: 8px;
+            margin-bottom: 2px;
+        }
+        #schattack-overlay .sa-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 10002;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        #schattack-overlay .sa-modal:not(.hidden) {
+            display: flex;
+        }
+        #schattack-overlay .sa-modal-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,.55);
+        }
+        #schattack-overlay .sa-modal-card {
+            position: relative;
+            max-width: 420px;
+            width: 100%;
+            background: #1a2332;
+            border: 1px solid rgba(255,255,255,.1);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: left;
+            color: #e8eef5;
+            box-shadow: 0 16px 48px rgba(0,0,0,.45);
+        }
+        #schattack-overlay .sa-modal-card h3 { margin: 0 0 12px 0; font-size: 1.1rem; color: var(--sa-accent); }
         #schattack-root .btn.sa-btn {
             padding: 12px 18px;
             border: none;
@@ -158,13 +220,20 @@
         #schattack-root .sa-school-card {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             padding: 12px;
             background: rgba(0,0,0,.25);
             border-radius: 12px;
             border: 1px solid rgba(255,255,255,.08);
             cursor: pointer;
             text-align: left;
+        }
+        #schattack-root .sa-school-card-row {
+            display: flex;
+            flex: 1;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
         }
         #schattack-root .sa-school-card:hover { border-color: rgba(61,139,253,.45); }
         #schattack-root .sa-school-card img {
@@ -1204,11 +1273,15 @@ button {
                 <div class="sa-map-wrap">
                     <img alt="대한민국 지도" id="sa-map-img"
                          onerror="this.style.display='none';var f=document.getElementById('sa-map-fallback');if(f)f.classList.remove('hidden');">
+                    <div id="sa-map-hotspots" class="sa-map-hotspots" aria-hidden="true"></div>
                     <p id="sa-map-fallback" class="hidden sa-sub" style="padding:24px;text-align:center;">map_korea.png 를 <strong>schattack</strong> 폴더에 두었는지 확인하세요.</p>
                 </div>
-                <h2>시·도 선택</h2>
-                <div class="sa-region-grid" id="sa-region-grid"></div>
-                <p class="sa-sub" style="margin-top:12px;">※ 지도 PNG와 겹치는 클릭 영역이 필요하면 <code>&lt;map&gt;</code> 또는 투명 오버레이 좌표를 조정해 확장할 수 있습니다.</p>
+                <p class="sa-map-hint">지도에 표시된 지역 이름을 누르면 해당 시·도 학교 목록으로 이동합니다. (클릭 위치가 어긋나면 스크립트의 <code>SA_MAP_HOTSPOTS</code> 좌표를 조정하세요.)</p>
+                <div id="sa-admin-map-edit-panel" class="sa-admin-panel hidden">
+                    <strong>관리자: 학교 편집</strong>
+                    <p class="sa-sub" style="margin:8px 0 10px 0;">등록된 학교의 이름·소속 지역을 바꿀 수 있습니다.</p>
+                    <button type="button" class="btn sa-btn sa-btn-primary" style="width:100%;" onclick="saOpenAdminSchoolEdit(null)">학교 편집 열기</button>
+                </div>
             </div>
             <div id="sa-view-schools" class="sa-card hidden">
                 <button type="button" class="btn sa-btn sa-btn-ghost" onclick="saShowView('map')" style="margin-bottom:12px;">← 지역 선택</button>
@@ -1243,6 +1316,22 @@ button {
                 <select id="sa-attack-target"></select>
                 <button type="button" class="btn sa-btn sa-btn-danger" style="width:100%;margin-top:8px;" onclick="saStartAttackQuiz()">공격 문제 풀기</button>
                 <div id="sa-attack-quiz" class="sa-quiz-box hidden"></div>
+            </div>
+            <div id="sa-admin-edit-modal" class="sa-modal hidden" role="dialog" aria-modal="true" aria-labelledby="sa-admin-edit-title">
+                <div class="sa-modal-backdrop" onclick="saCloseAdminSchoolEdit()"></div>
+                <div class="sa-modal-card" onclick="event.stopPropagation()">
+                    <h3 id="sa-admin-edit-title">학교 편집</h3>
+                    <label class="sa-admin-label" for="sa-admin-edit-school-id">학교</label>
+                    <select id="sa-admin-edit-school-id"></select>
+                    <label class="sa-admin-label" for="sa-admin-edit-school-name">학교 이름</label>
+                    <input type="text" id="sa-admin-edit-school-name" placeholder="표시 이름" autocomplete="off">
+                    <label class="sa-admin-label" for="sa-admin-edit-school-region">소속 지역</label>
+                    <select id="sa-admin-edit-school-region"></select>
+                    <div class="sa-row" style="margin-top:14px;gap:10px;">
+                        <button type="button" class="btn sa-btn sa-btn-primary" style="flex:1;" onclick="saAdminSaveSchoolEdit()">저장</button>
+                        <button type="button" class="btn sa-btn sa-btn-ghost" style="flex:1;" onclick="saCloseAdminSchoolEdit()">닫기</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -2418,8 +2507,29 @@ button {
                 { code: 'gyeongnam', label: '경남' },
                 { code: 'jeju', label: '제주' }
             ];
-            /** 관리자 Firebase Auth UID — 비우면 관리자 패널 숨김 */
-            var SA_ADMIN_UIDS = [];
+            /**
+             * map_korea.png 기준 클릭 박스(퍼센트). 레이아웃이 맞지 않으면 l,t,w,h 만 조정.
+             * 겹치는 구역은 나중에 그린 버튼이 위에 올라옵니다(작은 시·도를 배열 뒤쪽에 두면 클릭 우선).
+             */
+            var SA_MAP_HOTSPOTS = [
+                { code: 'gyeonggi', l: 38, t: 28, w: 18, h: 14 },
+                { code: 'gangwon', l: 54, t: 18, w: 20, h: 16 },
+                { code: 'chungbuk', l: 44, t: 34, w: 12, h: 10 },
+                { code: 'chungnam', l: 32, t: 40, w: 15, h: 11 },
+                { code: 'gyeongbuk', l: 56, t: 36, w: 16, h: 14 },
+                { code: 'gyeongnam', l: 54, t: 48, w: 17, h: 13 },
+                { code: 'jeonbuk', l: 34, t: 44, w: 14, h: 11 },
+                { code: 'jeonnam', l: 31, t: 52, w: 15, h: 12 },
+                { code: 'jeju', l: 34, t: 78, w: 16, h: 14 },
+                { code: 'incheon', l: 26, t: 22, w: 11, h: 8 },
+                { code: 'seoul', l: 34, t: 26, w: 12, h: 9 },
+                { code: 'sejong', l: 38, t: 34, w: 9, h: 7 },
+                { code: 'daejeon', l: 39, t: 38, w: 11, h: 8 },
+                { code: 'daegu', l: 54, t: 44, w: 12, h: 9 },
+                { code: 'ulsan', l: 62, t: 46, w: 11, h: 8 },
+                { code: 'busan', l: 68, t: 52, w: 13, h: 10 },
+                { code: 'gwangju', l: 30, t: 50, w: 11, h: 9 }
+            ];
 
             var saFs = null;
             var saAuth = null;
@@ -2456,24 +2566,135 @@ button {
                 return code;
             }
 
-            function saBuildRegionGrid() {
-                var g = document.getElementById('sa-region-grid');
-                if (!g) return;
-                g.innerHTML = SA_REGIONS.map(function (r) {
-                    return '<button type="button" class="sa-region-btn" data-code="' + r.code + '">' + r.label + '</button>';
-                }).join('');
-                g.querySelectorAll('.sa-region-btn').forEach(function (btn) {
+            function saNavigateToRegionLabel(label) {
+                saSelectedRegionLabel = label;
+                var t = document.getElementById('sa-schools-region-title');
+                var s = document.getElementById('sa-schools-region-sub');
+                if (t) t.textContent = saSelectedRegionLabel + ' 학교';
+                if (s) s.textContent = 'region 필드가 "' + saSelectedRegionLabel + '" 인 학교만 표시됩니다.';
+                window.saShowView('schools');
+                saLoadSchoolsForRegion(saSelectedRegionLabel);
+            }
+
+            function saBuildMapHotspots() {
+                var host = document.getElementById('sa-map-hotspots');
+                if (!host) return;
+                host.innerHTML = '';
+                SA_MAP_HOTSPOTS.forEach(function (spot) {
+                    var label = saRegionCodeToLabel(spot.code);
+                    var btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'sa-map-hotspot';
+                    btn.setAttribute('aria-label', label + ' 지역 선택');
+                    btn.title = label;
+                    btn.style.left = spot.l + '%';
+                    btn.style.top = spot.t + '%';
+                    btn.style.width = spot.w + '%';
+                    btn.style.height = spot.h + '%';
                     btn.addEventListener('click', function () {
-                        saSelectedRegionLabel = saRegionCodeToLabel(btn.getAttribute('data-code'));
-                        var t = document.getElementById('sa-schools-region-title');
-                        var s = document.getElementById('sa-schools-region-sub');
-                        if (t) t.textContent = saSelectedRegionLabel + ' 학교';
-                        if (s) s.textContent = 'region 필드가 "' + saSelectedRegionLabel + '" 인 학교만 표시됩니다.';
-                        window.saShowView('schools');
-                        saLoadSchoolsForRegion(saSelectedRegionLabel);
+                        saNavigateToRegionLabel(label);
                     });
+                    host.appendChild(btn);
                 });
             }
+
+            var saAdminSchoolsCache = [];
+
+            function saFillRegionSelect(el) {
+                if (!el) return;
+                var cur = el.value;
+                el.innerHTML = SA_REGIONS.map(function (r) {
+                    return '<option value="' + r.label + '">' + escapeHtml(r.label) + '</option>';
+                }).join('');
+                if (cur && SA_REGIONS.some(function (x) { return x.label === cur; })) el.value = cur;
+            }
+
+            function saSyncAdminEditFormFromSelect() {
+                var selSchool = document.getElementById('sa-admin-edit-school-id');
+                var inpName = document.getElementById('sa-admin-edit-school-name');
+                var selReg = document.getElementById('sa-admin-edit-school-region');
+                if (!selSchool || !inpName || !selReg) return;
+                var id = selSchool.value;
+                if (!id) {
+                    inpName.value = '';
+                    return;
+                }
+                var found = null;
+                for (var i = 0; i < saAdminSchoolsCache.length; i++) {
+                    if (saAdminSchoolsCache[i].id === id) {
+                        found = saAdminSchoolsCache[i];
+                        break;
+                    }
+                }
+                if (!found) return;
+                var d = found.data;
+                inpName.value = d.name != null ? String(d.name) : '';
+                var reg = d.region != null ? String(d.region) : '';
+                selReg.value = SA_REGIONS.some(function (x) { return x.label === reg; }) ? reg : '';
+            }
+
+            window.saOpenAdminSchoolEdit = async function (presetId) {
+                if (typeof isAdmin !== 'function' || !isAdmin() || !saFs) return;
+                var modal = document.getElementById('sa-admin-edit-modal');
+                var selSchool = document.getElementById('sa-admin-edit-school-id');
+                var selReg = document.getElementById('sa-admin-edit-school-region');
+                if (!modal || !selSchool || !selReg) return;
+                saFillRegionSelect(selReg);
+                selSchool.innerHTML = '<option value="">불러오는 중…</option>';
+                modal.classList.remove('hidden');
+                try {
+                    var snap = await saFs.collection('schools').get();
+                    saAdminSchoolsCache = [];
+                    selSchool.innerHTML = '<option value="">학교 선택</option>';
+                    snap.forEach(function (doc) {
+                        var d = doc.data();
+                        saAdminSchoolsCache.push({ id: doc.id, data: d });
+                        var opt = document.createElement('option');
+                        opt.value = doc.id;
+                        opt.textContent = (d.name || doc.id) + ' · ' + (d.region || '?');
+                        selSchool.appendChild(opt);
+                    });
+                    if (presetId) selSchool.value = presetId;
+                    saSyncAdminEditFormFromSelect();
+                    selSchool.onchange = saSyncAdminEditFormFromSelect;
+                } catch (e) {
+                    saToast('목록 로드 실패: ' + e.message);
+                    modal.classList.add('hidden');
+                }
+            };
+
+            window.saCloseAdminSchoolEdit = function () {
+                var modal = document.getElementById('sa-admin-edit-modal');
+                if (modal) modal.classList.add('hidden');
+                var selSchool = document.getElementById('sa-admin-edit-school-id');
+                if (selSchool) selSchool.onchange = null;
+            };
+
+            window.saAdminSaveSchoolEdit = async function () {
+                if (typeof isAdmin !== 'function' || !isAdmin() || !saFs) return;
+                var selSchool = document.getElementById('sa-admin-edit-school-id');
+                var inpName = document.getElementById('sa-admin-edit-school-name');
+                var selReg = document.getElementById('sa-admin-edit-school-region');
+                var id = selSchool && selSchool.value;
+                var region = selReg && selReg.value;
+                var name = inpName && inpName.value.trim();
+                if (!id) return saToast('학교를 선택하세요.');
+                if (!region) return saToast('소속 지역을 선택하세요.');
+                try {
+                    var payload = { region: region };
+                    if (name) payload.name = name;
+                    await saFs.collection('schools').doc(id).update(payload);
+                    saToast('저장했습니다.');
+                    saCloseAdminSchoolEdit();
+                    if (saSelectedRegionLabel) await saLoadSchoolsForRegion(saSelectedRegionLabel);
+                } catch (e) {
+                    saToast('저장 실패: ' + e.message);
+                }
+            };
+
+            window.refreshSchAttackAdminUi = function () {
+                saUpdateAdminUi();
+            };
 
             function saSchoolImageUrl(data) {
                 if (data.logoUrl && String(data.logoUrl).trim()) return data.logoUrl;
@@ -2499,14 +2720,31 @@ button {
                         var id = doc.id;
                         var card = document.createElement('div');
                         card.className = 'sa-school-card';
-                        card.innerHTML =
+                        var row = document.createElement('div');
+                        row.className = 'sa-school-card-row';
+                        row.innerHTML =
                             '<img src="' + saSchoolImageUrl(d) + '" alt="">' +
                             '<div class="sa-school-meta">' +
                             '<strong>' + escapeHtml(d.name || id) + '</strong>' +
                             '<span>Lv.' + (d.level || 1) + ' · HP ' + (d.hp != null ? d.hp : '?') + '</span>' +
                             (d.isUnderConstruction ? '<span class="sa-badge">공사중</span>' : '') +
                             '</div>';
-                        card.addEventListener('click', function () { saOpenSchool(id); });
+                        card.appendChild(row);
+                        card.addEventListener('click', function (e) {
+                            if (e.target.closest && e.target.closest('.sa-school-card-edit')) return;
+                            saOpenSchool(id);
+                        });
+                        if (typeof isAdmin === 'function' && isAdmin()) {
+                            var eb = document.createElement('button');
+                            eb.type = 'button';
+                            eb.className = 'sa-school-card-edit';
+                            eb.textContent = '편집';
+                            eb.addEventListener('click', function (e) {
+                                e.stopPropagation();
+                                saOpenAdminSchoolEdit(id);
+                            });
+                            card.appendChild(eb);
+                        }
                         list.appendChild(card);
                     });
                 } catch (e) {
@@ -2516,10 +2754,11 @@ button {
             }
 
             function saUpdateAdminUi() {
+                var adm = typeof isAdmin === 'function' && isAdmin();
                 var panel = document.getElementById('sa-admin-school-panel');
-                if (!panel) return;
-                var show = saCurrentUid && SA_ADMIN_UIDS.indexOf(saCurrentUid) >= 0;
-                panel.classList.toggle('hidden', !show);
+                if (panel) panel.classList.toggle('hidden', !adm);
+                var mapEdit = document.getElementById('sa-admin-map-edit-panel');
+                if (mapEdit) mapEdit.classList.toggle('hidden', !adm);
             }
 
             window.saAdminAddSchool = async function () {
@@ -2806,12 +3045,13 @@ button {
                 });
                 var mapImg = document.getElementById('sa-map-img');
                 if (mapImg) mapImg.src = SA_ASSET_BASE + 'map_korea.png';
-                saBuildRegionGrid();
+                saBuildMapHotspots();
                 saListenSettings();
             };
 
             window.saCleanupSchAttackOverlay = function () {
                 saCleanupSchAttackPlay();
+                if (typeof saCloseAdminSchoolEdit === 'function') saCloseAdminSchoolEdit();
             };
         })();
 
@@ -2819,6 +3059,7 @@ button {
             var wrap = document.getElementById('schattack-overlay');
             if (!wrap) return;
             if (typeof initSchAttackApp === 'function') initSchAttackApp();
+            if (typeof refreshSchAttackAdminUi === 'function') refreshSchAttackAdminUi();
             wrap.classList.remove('hidden');
             wrap.setAttribute('aria-hidden', 'false');
             document.body.style.overflow = 'hidden';
@@ -2991,6 +3232,7 @@ button {
                     document.getElementById('mode-box').classList.remove('hidden');
                     updateBoardCommentsAuthUI();
                     renderBoardComments();
+                    if (typeof refreshSchAttackAdminUi === 'function') refreshSchAttackAdminUi();
                 }
                 else alert("아이디 또는 비밀번호 오류");
             });
