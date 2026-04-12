@@ -389,6 +389,20 @@ button {
         display: block;
         margin-top: 6px;
     }
+    #quiz-box #q-passage.quiz-passage-box:not(.hidden),
+    #king-game-box #king-passage.quiz-passage-box:not(.hidden) {
+        margin: 12px 0;
+        padding: 12px 14px;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        text-align: left;
+        font-size: 15px;
+        line-height: 1.55;
+        white-space: pre-wrap;
+        word-break: break-word;
+        color: #333;
+    }
     .correct { background: #d4edda !important; border-color: #28a745 !important; }
     .wrong { background: #f8d7da !important; border-color: #dc3545 !important; }
     
@@ -1029,6 +1043,7 @@ button {
         </div>
         <p id="king-spectate-banner" class="hidden" style="color:#856404;font-weight:bold;">관전 중 — 풀이는 참가자만 가능합니다.</p>
         <h3 id="king-q-txt"></h3>
+        <div id="king-passage" class="quiz-passage-box hidden" aria-hidden="true"></div>
         <div id="king-q-img"></div>
         <div id="king-q-opts"></div>
         <div id="king-wait-msg" class="hidden" style="margin-top:12px;color:#666;">제출 완료. 다른 참가자 대기 중…</div>
@@ -1107,6 +1122,7 @@ button {
             <div id="progress-display"></div>
         </div>
         <h3 id="q-txt"></h3>
+        <div id="q-passage" class="quiz-passage-box hidden" aria-hidden="true"></div>
         <div id="q-img"></div>
         <div id="q-opts"></div>
 
@@ -1391,6 +1407,7 @@ button {
         function kingStripQuestionForDb(p) {
             return {
                 question: p.question,
+                passage: (p.passage != null && String(p.passage).trim()) ? p.passage : '',
                 options: p.options,
                 answer: p.answer,
                 explanation: p.explanation || '',
@@ -1398,7 +1415,7 @@ button {
             };
         }
         function kingQuestionDedupKey(q) {
-            return (q.question != null ? String(q.question) : '') + '\0' + String(q.answer) + '\0' + String(q.image_file || '');
+            return (q.question != null ? String(q.question) : '') + '\0' + String(q.passage || '') + '\0' + String(q.answer) + '\0' + String(q.image_file || '');
         }
         async function kingFetchQuestionPool(subjectKey) {
             const files = await fetchKingFilesForSubject(subjectKey);
@@ -1785,6 +1802,8 @@ button {
                 document.getElementById('king-spectate-banner').classList.remove('hidden');
                 document.getElementById('king-q-opts').innerHTML = '';
                 document.getElementById('king-q-txt').textContent = '라운드 진행 중 (관전)';
+                document.getElementById('king-passage').classList.add('hidden');
+                document.getElementById('king-passage').textContent = '';
                 document.getElementById('king-q-img').innerHTML = '';
                 return;
             }
@@ -1794,6 +1813,8 @@ button {
                 document.getElementById('king-wait-msg').classList.remove('hidden');
                 document.getElementById('king-q-opts').innerHTML = '';
                 document.getElementById('king-q-txt').textContent = '제출 완료';
+                document.getElementById('king-passage').classList.add('hidden');
+                document.getElementById('king-passage').textContent = '';
                 document.getElementById('king-q-img').innerHTML = '';
                 kingTickTimer();
                 return;
@@ -1904,10 +1925,26 @@ button {
                 btn.textContent = prefix + o;
             }
         }
+        /** passage 없음·빈 문자열·공백만 → 박스 숨김 */
+        function setQuizPassageBox(elementId, p) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            const raw = p && p.passage != null ? String(p.passage) : '';
+            if (!raw.trim()) {
+                el.classList.add('hidden');
+                el.textContent = '';
+                el.setAttribute('aria-hidden', 'true');
+                return;
+            }
+            el.classList.remove('hidden');
+            el.textContent = raw;
+            el.setAttribute('aria-hidden', 'false');
+        }
         function kingRenderKingQuestion() {
             const p = kingQuizLocal[kingGameIdx];
             if (!p) return;
             document.getElementById('king-q-txt').textContent = p.question;
+            setQuizPassageBox('king-passage', p);
             document.getElementById('king-q-img').innerHTML = p.image_file ? '<img src="' + imageSrcForHtmlAttr(p.image_file) + '" style="max-width:100%;">' : '';
             document.getElementById('king-game-progress').textContent = (kingGameIdx + 1) + '/' + kingQuizLocal.length;
             const opt = document.getElementById('king-q-opts');
@@ -1945,6 +1982,8 @@ button {
             document.getElementById('king-wait-msg').classList.remove('hidden');
             document.getElementById('king-q-opts').innerHTML = '';
             document.getElementById('king-q-txt').textContent = '제출 완료 (' + kingRoundCorrect + '/' + KING_Q_PER_ROUND + ')';
+            document.getElementById('king-passage').classList.add('hidden');
+            document.getElementById('king-passage').textContent = '';
         }
         async function kingHostCloseRoundAsync() {
             const ref = db.ref('kingRooms/' + kingRoomId);
@@ -2146,6 +2185,7 @@ button {
             const id = makeWrongNoteId(subjectFile, p);
             const payload = {
                 question: p.question,
+                passage: (p.passage != null && String(p.passage).trim()) ? p.passage : '',
                 answer: p.answer,
                 options: p.options,
                 explanation: p.explanation || '',
@@ -2589,6 +2629,7 @@ button {
             if(currentIdx >= quizList.length) return endGame();
             const p = quizList[currentIdx];
             document.getElementById('q-txt').innerText = p.question;
+            setQuizPassageBox('q-passage', p);
             document.getElementById('q-img').innerHTML = p.image_file ? '<img src="' + imageSrcForHtmlAttr(p.image_file) + '">' : "";
             document.getElementById('explanation-box').style.display = "none";
             document.getElementById('next-btn').classList.add('hidden');
