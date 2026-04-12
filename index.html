@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 배포: 이 내용을 저장소 루트의 index.html 로 쓸 때 manifest.json 의 start_url 을 ./index.html 로 맞추세요(홈 화면 앱 아이콘). -->
     <meta name="theme-color" content="#4a3f6b">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -2135,19 +2136,18 @@ button {
         function updateSubjectRankHelp() {
             var el = document.getElementById('subject-rank-help');
             if (!el) return;
-            var foot = '<p class="sub">로그인한 뒤 플레이한 결과만 반영됩니다. 저장은 보통 <strong>게임 종료</strong> 또는 <strong>그만두기(확인)</strong> 시 이루어집니다.</p>';
             var m = mode;
             var html = '';
             if (m === 'daily') {
-                html = '<h3>📅 데일리 — 랭킹 반영</h3><ul><li>그날 문제를 <strong>1문제 이상</strong> 풀고 <strong>그만두기</strong>로 종료하면 <strong>연속 출석</strong>과 <strong>플레이 시간</strong>이 랭킹에 반영됩니다.</li></ul>' + foot;
+                html = '<h3>📅 데일리 — 랭킹 반영</h3><ul><li>그날 문제를 <strong>1문제 이상</strong> 풀고 <strong>그만두기</strong>로 종료하면 <strong>연속 출석</strong>과 <strong>플레이 시간</strong>이 랭킹에 반영됩니다.</li></ul>';
             } else if (m === 'practice') {
-                html = '<h3>📖 연습하기 — 랭킹 반영</h3><ul><li>회차별 연습에서 각 문제를 <strong>처음 제출</strong>할 때마다 풀이 수가 누적되고, 종료 시 <strong>연습왕(누적 문제 수)</strong> 랭킹에 반영됩니다.</li><li><strong>오답노트</strong>만 풀 때는 랭킹·누적 연습 기록에 반영되지 않습니다.</li></ul>' + foot;
+                html = '<h3>📖 연습하기 — 랭킹 반영</h3><ul><li>회차별 연습에서 각 문제를 <strong>처음 제출</strong>할 때마다 풀이 수가 누적되고, 종료 시 <strong>연습왕(누적 문제 수)</strong> 랭킹에 반영됩니다.</li><li><strong>오답노트</strong>만 풀 때는 랭킹·누적 연습 기록에 반영되지 않습니다.</li></ul>';
             } else if (m === 'classic') {
-                html = '<h3>🏆 클래식 — 랭킹 반영</h3><ul><li>게임이 끝나거나 <strong>그만두기</strong>할 때, <strong>이번 점수</strong>가 본인 <strong>역대 최고점</strong>보다 높을 때만 랭킹 점수가 갱신됩니다.</li></ul>' + foot;
+                html = '<h3>🏆 클래식 — 랭킹 반영</h3><ul><li>게임이 끝나거나 <strong>그만두기</strong>할 때, <strong>이번 점수</strong>가 본인 <strong>역대 최고점</strong>보다 높을 때만 랭킹 점수가 갱신됩니다.</li></ul>';
             } else if (m === 'survival') {
-                html = '<h3>💔 서바이벌 — 랭킹 반영</h3><ul><li>게임이 끝나거나 <strong>그만두기</strong>할 때, <strong>이번 점수</strong>가 본인 <strong>역대 최고점</strong>보다 높을 때만 랭킹 점수가 갱신됩니다.</li></ul>' + foot;
+                html = '<h3>💔 서바이벌 — 랭킹 반영</h3><ul><li>게임이 끝나거나 <strong>그만두기</strong>할 때, <strong>이번 점수</strong>가 본인 <strong>역대 최고점</strong>보다 높을 때만 랭킹 점수가 갱신됩니다.</li></ul>';
             } else if (m === 'timeattack') {
-                html = '<h3>⏱️ 타임 어택 — 랭킹 반영</h3><ul><li>게임이 끝나거나 <strong>그만두기</strong>할 때, <strong>이번 점수</strong>가 본인 <strong>역대 최고점</strong>보다 높을 때만 랭킹 점수가 갱신됩니다.</li></ul>' + foot;
+                html = '<h3>⏱️ 타임 어택 — 랭킹 반영</h3><ul><li>게임이 끝나거나 <strong>그만두기</strong>할 때, <strong>이번 점수</strong>가 본인 <strong>역대 최고점</strong>보다 높을 때만 랭킹 점수가 갱신됩니다.</li></ul>';
             } else {
                 html = '<h3>랭킹 반영</h3><p class="sub">모드를 선택하면 이 안내가 표시됩니다.</p>';
             }
