@@ -144,11 +144,11 @@
     "image_file": null
   },
   {
-    "id": 16,
+    "id": 17,
     "session": "24-01",
     "question": "도면에서 두 종류 이상의 선이 같은 장소에 겹치게 될 경우 우선순위로 옳은 것은?",
-    "options": ["외형선, 숨은선, 절단선, 중심선, 무게중심선", "외형선, 중심선, 절단선, 숨은선, 무게중심선", "외형선, 중심선, 숨은선, 무게중심선, 절단선", "외형선, 절단선, 숨은선, 무게중심선, 중심선"],
-    "answer": 1,
+    "options": ["lathe_24_01_17_op1.png", "lathe_24_01_17_op2.png", "lathe_24_01_17_op3.png", "lathe_24_01_17_op4.png"],
+    "answer": 2,
     "explanation": "",
     "image_file": null
   }        
