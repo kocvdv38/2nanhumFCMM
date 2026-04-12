@@ -382,6 +382,13 @@ button {
         text-align: justify;
         text-justify: inter-word;
     }
+    #quiz-box #q-opts .option-btn .opt-img-inline,
+    #king-game-box #king-q-opts .option-btn .opt-img-inline {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin-top: 6px;
+    }
     .correct { background: #d4edda !important; border-color: #28a745 !important; }
     .wrong { background: #f8d7da !important; border-color: #dc3545 !important; }
     
@@ -1707,6 +1714,22 @@ button {
                 });
             });
         }
+        /** 선지 문자열이 images/ 아래 그림 파일명이면 true (예: lathe_24_01_17_op1.png) */
+        function optionIsImageFilename(s) {
+            if (typeof s !== 'string') return false;
+            const t = s.trim();
+            return /^[\w.-]+\.(png|jpe?g|gif|webp)$/i.test(t) && !/[<>&"]/.test(t);
+        }
+        function setOptionButtonContent(btn, index0, o) {
+            const prefix = (index0 + 1) + '. ';
+            if (optionIsImageFilename(o)) {
+                const name = o.trim();
+                const src = 'images/' + encodeURI(name);
+                btn.innerHTML = '<span class="opt-num">' + escapeHtml(prefix) + '</span><img class="opt-img-inline" src="' + escapeHtml(src) + '" alt="보기 ' + (index0 + 1) + '">';
+            } else {
+                btn.textContent = prefix + o;
+            }
+        }
         function kingRenderKingQuestion() {
             const p = kingQuizLocal[kingGameIdx];
             if (!p) return;
@@ -1718,7 +1741,7 @@ button {
             p.options.forEach((o, i) => {
                 const btn = document.createElement('button');
                 btn.className = 'option-btn';
-                btn.textContent = (i + 1) + '. ' + o;
+                setOptionButtonContent(btn, i, o);
                 btn.onclick = () => kingPickAnswer(i + 1, btn);
                 opt.appendChild(btn);
             });
@@ -2347,7 +2370,8 @@ button {
             const optDiv = document.getElementById('q-opts'); optDiv.innerHTML = "";
             p.options.forEach((o, i) => {
                 const btn = document.createElement('button');
-                btn.className = "option-btn"; btn.innerText = (i+1) + ". " + o;
+                btn.className = "option-btn";
+                setOptionButtonContent(btn, i, o);
                 btn.onclick = () => checkAnswer(i + 1, btn);
                 optDiv.appendChild(btn);
             });
