@@ -14,6 +14,9 @@
     <title>CATCH CERT - School & Game Pro</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
     <style>
 /* 1. 모든 요소의 크기 계산을 테두리 포함으로 고정 */
         * { box-sizing: border-box; }
@@ -57,6 +60,184 @@
             align-items: center;
             justify-content: center;
         }
+        /* 학교 점령전: 메인 HTML 인라인 (이미지는 schattack/ 폴더) */
+        #schattack-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9990;
+            background: linear-gradient(160deg, #0f1419 0%, #1a2744 100%);
+            display: none;
+            flex-direction: column;
+            pointer-events: none;
+        }
+        #schattack-overlay:not(.hidden) {
+            display: flex;
+            pointer-events: auto;
+        }
+        #schattack-overlay .schattack-overlay-bar {
+            flex-shrink: 0;
+            padding: 10px 14px;
+            background: #1a2332;
+            border-bottom: 1px solid rgba(255,255,255,.08);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            text-align: left;
+        }
+        #schattack-root {
+            flex: 1;
+            min-height: 0;
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 16px 16px 28px;
+            text-align: center;
+            color: #e8eef5;
+            --sa-accent: #3d8bfd;
+            --sa-muted: #8b9aab;
+            --sa-card: #1a2332;
+            --sa-danger: #ff6b6b;
+            --sa-ok: #51cf66;
+        }
+        #schattack-root .sa-card {
+            background: var(--sa-card);
+            border-radius: 16px;
+            padding: 18px;
+            max-width: 520px;
+            margin: 0 auto 14px;
+            box-shadow: 0 8px 32px rgba(0,0,0,.35);
+            border: 1px solid rgba(255,255,255,.06);
+            text-align: left;
+        }
+        #schattack-root h1 { font-size: 1.35rem; margin: 0 0 6px 0; color: #e8eef5; }
+        #schattack-root h2 { font-size: 1.1rem; margin: 0 0 12px 0; color: var(--sa-accent); }
+        #schattack-root .sa-sub { font-size: 12px; color: var(--sa-muted); margin-bottom: 14px; line-height: 1.45; }
+        #schattack-root .sa-map-wrap {
+            position: relative;
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #111;
+            margin-bottom: 12px;
+        }
+        #schattack-root .sa-map-wrap img {
+            width: 100%;
+            height: auto;
+            display: block;
+            opacity: .95;
+        }
+        #schattack-root .sa-region-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        @media (min-width: 480px) {
+            #schattack-root .sa-region-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+        #schattack-root .sa-region-btn {
+            padding: 10px 6px;
+            font-size: 12px;
+            border: 1px solid rgba(61,139,253,.35);
+            background: rgba(61,139,253,.12);
+            color: #e8eef5;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background .15s, transform .1s;
+        }
+        #schattack-root .sa-region-btn:hover { background: rgba(61,139,253,.28); }
+        #schattack-root .sa-region-btn:active { transform: scale(.98); }
+        #schattack-root .btn.sa-btn {
+            padding: 12px 18px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        #schattack-root .sa-btn-primary { background: var(--sa-accent); color: #fff; }
+        #schattack-root .sa-btn-ghost { background: transparent; color: var(--sa-muted); border: 1px solid rgba(255,255,255,.15); }
+        #schattack-root .sa-btn-danger { background: var(--sa-danger); color: #fff; }
+        #schattack-root .sa-school-list { display: flex; flex-direction: column; gap: 10px; }
+        #schattack-root .sa-school-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: rgba(0,0,0,.25);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,.08);
+            cursor: pointer;
+            text-align: left;
+        }
+        #schattack-root .sa-school-card:hover { border-color: rgba(61,139,253,.45); }
+        #schattack-root .sa-school-card img {
+            width: 64px;
+            height: 64px;
+            object-fit: contain;
+            border-radius: 8px;
+            background: #0d1117;
+        }
+        #schattack-root .sa-school-meta { flex: 1; min-width: 0; }
+        #schattack-root .sa-school-meta strong { display: block; font-size: 15px; color: #e8eef5; }
+        #schattack-root .sa-school-meta span { font-size: 12px; color: var(--sa-muted); }
+        #schattack-root .sa-hp-bar, #schattack-root .sa-gauge-bar {
+            height: 14px;
+            border-radius: 7px;
+            background: #333;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+        #schattack-root .sa-hp-bar > div { height: 100%; background: linear-gradient(90deg, #ff6b6b, #ffa94d); transition: width .3s; }
+        #schattack-root .sa-gauge-bar > div { height: 100%; background: linear-gradient(90deg, #4dabf7, #9775fa); transition: width .3s; }
+        #schattack-root .sa-badge {
+            display: inline-block;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: rgba(255,193,7,.2);
+            color: #ffc107;
+            margin-left: 6px;
+        }
+        #schattack-root .sa-quiz-box {
+            margin-top: 14px;
+            padding: 14px;
+            background: rgba(0,0,0,.2);
+            border-radius: 12px;
+        }
+        #schattack-root .sa-quiz-box p { margin: 0 0 10px 0; font-size: 15px; color: #e8eef5; }
+        #schattack-root .sa-row { display: flex; gap: 8px; flex-wrap: wrap; }
+        #schattack-root .sa-status-bar { font-size: 12px; color: var(--sa-muted); margin-bottom: 10px; }
+        #schattack-root .sa-admin-panel {
+            margin-top: 12px;
+            padding: 12px;
+            border: 1px dashed rgba(255,193,7,.4);
+            border-radius: 10px;
+            font-size: 12px;
+            color: #e8eef5;
+        }
+        #schattack-root input[type="text"], #schattack-root select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,.15);
+            background: #0d1117;
+            color: #e8eef5;
+            margin: 6px 0;
+        }
+        #sa-toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #222;
+            color: #fff;
+            padding: 10px 18px;
+            border-radius: 999px;
+            font-size: 13px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .25s;
+            z-index: 10001;
+        }
+        #sa-toast.show { opacity: 1; }
+
         #king-celebrate-overlay .king-celebrate-inner {
             background: linear-gradient(145deg, #fffdf5, #ffeecd);
             border: 3px solid #e6b422;
@@ -982,7 +1163,7 @@ button {
         <button class="btn-red" onclick="selectMode('survival')">💔 서바이벌 (목숨 3개)</button>
         <button class="btn-orange" onclick="selectMode('timeattack')">⏱️ 타임 어택 (아이템전)</button>
         <button class="btn-blue" style="background:linear-gradient(135deg,#6f42c1 0%,#007bff 100%);" onclick="selectMode('king')">⚔️ 왕중왕전 (토너먼트)</button>
-        <button type="button" class="btn-gray" style="border:1px solid #adb5bd;background:linear-gradient(135deg,#f8f9fa 0%,#e9ecef 100%);color:#333;" onclick="goSchAttack()">🏫 학교 점령전 (별도 화면)</button>
+        <button type="button" class="btn-gray" style="border:1px solid #adb5bd;background:linear-gradient(135deg,#f8f9fa 0%,#e9ecef 100%);color:#333;" onclick="goSchAttack()">🏫 학교 점령전</button>
         <div class="board-comments" id="board-comments-wrap-mode" aria-label="한줄 댓글">
             <div class="board-comments-head">
                 <p class="board-comments-title">💬 한줄 댓글 <small>(최근 10개)</small></p>
@@ -1008,6 +1189,63 @@ button {
     </div>
 
     <div id="timeattack-toast" class="hidden" role="status" aria-live="polite"></div>
+
+    <!-- 학교 점령전: 인라인 (PNG는 schattack/ 만 배치) -->
+    <div id="schattack-overlay" class="hidden" aria-hidden="true">
+        <div class="schattack-overlay-bar">
+            <button type="button" class="btn-gray" onclick="closeSchAttack()" style="margin:0;">← 모드 선택으로</button>
+        </div>
+        <div id="schattack-root">
+            <div id="sa-toast" role="status" aria-live="polite"></div>
+            <div id="sa-view-map" class="sa-card">
+                <h1>학교 점령전</h1>
+                <p class="sa-sub">지역을 선택한 뒤, 학교에 합류해 내구도를 지키고 강화 게이지를 채우세요. (Firestore + Storage)</p>
+                <div id="sa-global-flags" class="sa-status-bar"></div>
+                <div class="sa-map-wrap">
+                    <img alt="대한민국 지도" id="sa-map-img"
+                         onerror="this.style.display='none';var f=document.getElementById('sa-map-fallback');if(f)f.classList.remove('hidden');">
+                    <p id="sa-map-fallback" class="hidden sa-sub" style="padding:24px;text-align:center;">map_korea.png 를 <strong>schattack</strong> 폴더에 두었는지 확인하세요.</p>
+                </div>
+                <h2>시·도 선택</h2>
+                <div class="sa-region-grid" id="sa-region-grid"></div>
+                <p class="sa-sub" style="margin-top:12px;">※ 지도 PNG와 겹치는 클릭 영역이 필요하면 <code>&lt;map&gt;</code> 또는 투명 오버레이 좌표를 조정해 확장할 수 있습니다.</p>
+            </div>
+            <div id="sa-view-schools" class="sa-card hidden">
+                <button type="button" class="btn sa-btn sa-btn-ghost" onclick="saShowView('map')" style="margin-bottom:12px;">← 지역 선택</button>
+                <h2 id="sa-schools-region-title">학교 선택</h2>
+                <p class="sa-sub" id="sa-schools-region-sub"></p>
+                <div id="sa-school-list" class="sa-school-list"></div>
+                <div id="sa-admin-school-panel" class="sa-admin-panel hidden">
+                    <strong>관리자: 학교 추가</strong>
+                    <input type="text" id="sa-admin-new-school-name" placeholder="학교 이름" autocomplete="off">
+                    <button type="button" class="btn sa-btn sa-btn-primary" style="width:100%;" onclick="saAdminAddSchool()">등록</button>
+                </div>
+            </div>
+            <div id="sa-view-play" class="sa-card hidden">
+                <button type="button" class="btn sa-btn sa-btn-ghost" onclick="saBackFromPlay()" style="margin-bottom:12px;">← 학교 목록</button>
+                <h2 id="sa-play-school-name">학교</h2>
+                <div class="sa-status-bar" id="sa-play-status"></div>
+                <div style="text-align:center;">
+                    <img id="sa-play-school-img" src="" alt="학교" style="max-width:100%;max-height:220px;object-fit:contain;">
+                </div>
+                <p class="sa-sub">레벨 <span id="sa-play-level">1</span> · HP · 강화 게이지</p>
+                <div>HP <span id="sa-hp-label"></span></div>
+                <div class="sa-hp-bar"><div id="sa-hp-fill" style="width:100%;"></div></div>
+                <div>강화 <span id="sa-gauge-label"></span></div>
+                <div class="sa-gauge-bar"><div id="sa-gauge-fill" style="width:0%;"></div></div>
+                <p id="sa-construction-msg" class="sa-sub hidden"></p>
+                <div class="sa-quiz-box">
+                    <p id="sa-quiz-text">문제를 불러오는 중…</p>
+                    <div class="sa-row" id="sa-quiz-actions"></div>
+                </div>
+                <h2 style="margin-top:18px;">다른 학교 공격</h2>
+                <p class="sa-sub">같은 지역의 다른 학교를 골라 정답 시 상대 HP를 깎습니다.</p>
+                <select id="sa-attack-target"></select>
+                <button type="button" class="btn sa-btn sa-btn-danger" style="width:100%;margin-top:8px;" onclick="saStartAttackQuiz()">공격 문제 풀기</button>
+                <div id="sa-attack-quiz" class="sa-quiz-box hidden"></div>
+            </div>
+        </div>
+    </div>
 
     <!-- 3-0. 왕중왕전 -->
     <div id="king-entry-box" class="card hidden">
@@ -2154,8 +2392,445 @@ button {
             el.innerHTML = html;
         }
 
+        /** 학교 점령전: Firestore는 saFs (RTDB db 와 구분). 이미지 경로는 항상 schattack/ */
+        (function () {
+            var SA_ASSET_BASE = 'schattack/';
+            function SCHOOL_LV(n) {
+                var v = Math.max(1, Math.min(5, n | 0));
+                return SA_ASSET_BASE + 'school_lv' + v + '.png';
+            }
+            var SA_REGIONS = [
+                { code: 'seoul', label: '서울' },
+                { code: 'busan', label: '부산' },
+                { code: 'daegu', label: '대구' },
+                { code: 'incheon', label: '인천' },
+                { code: 'gwangju', label: '광주' },
+                { code: 'daejeon', label: '대전' },
+                { code: 'ulsan', label: '울산' },
+                { code: 'sejong', label: '세종' },
+                { code: 'gyeonggi', label: '경기' },
+                { code: 'gangwon', label: '강원' },
+                { code: 'chungbuk', label: '충북' },
+                { code: 'chungnam', label: '충남' },
+                { code: 'jeonbuk', label: '전북' },
+                { code: 'jeonnam', label: '전남' },
+                { code: 'gyeongbuk', label: '경북' },
+                { code: 'gyeongnam', label: '경남' },
+                { code: 'jeju', label: '제주' }
+            ];
+            /** 관리자 Firebase Auth UID — 비우면 관리자 패널 숨김 */
+            var SA_ADMIN_UIDS = [];
+
+            var saFs = null;
+            var saAuth = null;
+            var saInited = false;
+            var saCurrentUid = null;
+            var saSelectedRegionLabel = null;
+            var saCurrentSchoolId = null;
+            var saCurrentSchoolData = null;
+            var saPlayUnsub = null;
+            var saSettingsUnsub = null;
+            var saSettingsCache = { isExamMode: false, isGoldenBell: false };
+
+            function saToast(msg) {
+                var t = document.getElementById('sa-toast');
+                if (!t) return;
+                t.textContent = msg;
+                t.classList.add('show');
+                setTimeout(function () { t.classList.remove('show'); }, 2200);
+            }
+
+            window.saShowView = function (name) {
+                var vm = document.getElementById('sa-view-map');
+                var vs = document.getElementById('sa-view-schools');
+                var vp = document.getElementById('sa-view-play');
+                if (vm) vm.classList.toggle('hidden', name !== 'map');
+                if (vs) vs.classList.toggle('hidden', name !== 'schools');
+                if (vp) vp.classList.toggle('hidden', name !== 'play');
+            };
+
+            function saRegionCodeToLabel(code) {
+                for (var i = 0; i < SA_REGIONS.length; i++) {
+                    if (SA_REGIONS[i].code === code) return SA_REGIONS[i].label;
+                }
+                return code;
+            }
+
+            function saBuildRegionGrid() {
+                var g = document.getElementById('sa-region-grid');
+                if (!g) return;
+                g.innerHTML = SA_REGIONS.map(function (r) {
+                    return '<button type="button" class="sa-region-btn" data-code="' + r.code + '">' + r.label + '</button>';
+                }).join('');
+                g.querySelectorAll('.sa-region-btn').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        saSelectedRegionLabel = saRegionCodeToLabel(btn.getAttribute('data-code'));
+                        var t = document.getElementById('sa-schools-region-title');
+                        var s = document.getElementById('sa-schools-region-sub');
+                        if (t) t.textContent = saSelectedRegionLabel + ' 학교';
+                        if (s) s.textContent = 'region 필드가 "' + saSelectedRegionLabel + '" 인 학교만 표시됩니다.';
+                        window.saShowView('schools');
+                        saLoadSchoolsForRegion(saSelectedRegionLabel);
+                    });
+                });
+            }
+
+            function saSchoolImageUrl(data) {
+                if (data.logoUrl && String(data.logoUrl).trim()) return data.logoUrl;
+                var lv = data.level != null ? Number(data.level) : 1;
+                return SCHOOL_LV(lv);
+            }
+
+            async function saLoadSchoolsForRegion(regionLabel) {
+                var list = document.getElementById('sa-school-list');
+                if (!list || !saFs) return;
+                list.innerHTML = '<p class="sa-sub">불러오는 중…</p>';
+                try {
+                    var q = saFs.collection('schools').where('region', '==', regionLabel);
+                    var snap = await q.get();
+                    if (snap.empty) {
+                        list.innerHTML = '<p class="sa-sub">등록된 학교가 없습니다. 관리자에게 학교 등록을 요청하거나 관리자 계정으로 추가하세요.</p>';
+                        saUpdateAdminUi();
+                        return;
+                    }
+                    list.innerHTML = '';
+                    snap.forEach(function (doc) {
+                        var d = doc.data();
+                        var id = doc.id;
+                        var card = document.createElement('div');
+                        card.className = 'sa-school-card';
+                        card.innerHTML =
+                            '<img src="' + saSchoolImageUrl(d) + '" alt="">' +
+                            '<div class="sa-school-meta">' +
+                            '<strong>' + escapeHtml(d.name || id) + '</strong>' +
+                            '<span>Lv.' + (d.level || 1) + ' · HP ' + (d.hp != null ? d.hp : '?') + '</span>' +
+                            (d.isUnderConstruction ? '<span class="sa-badge">공사중</span>' : '') +
+                            '</div>';
+                        card.addEventListener('click', function () { saOpenSchool(id); });
+                        list.appendChild(card);
+                    });
+                } catch (e) {
+                    list.innerHTML = '<p class="sa-sub" style="color:#ff6b6b;">불러오기 실패: ' + escapeHtml(e.message) + '</p>';
+                }
+                saUpdateAdminUi();
+            }
+
+            function saUpdateAdminUi() {
+                var panel = document.getElementById('sa-admin-school-panel');
+                if (!panel) return;
+                var show = saCurrentUid && SA_ADMIN_UIDS.indexOf(saCurrentUid) >= 0;
+                panel.classList.toggle('hidden', !show);
+            }
+
+            window.saAdminAddSchool = async function () {
+                var inp = document.getElementById('sa-admin-new-school-name');
+                var name = inp && inp.value.trim();
+                if (!name) return saToast('학교 이름을 입력하세요.');
+                if (!saSelectedRegionLabel) return;
+                try {
+                    await saFs.collection('schools').add({
+                        name: name,
+                        region: saSelectedRegionLabel,
+                        logoUrl: '',
+                        level: 1,
+                        hp: 100,
+                        upgradeGauge: 0,
+                        isUnderConstruction: false,
+                        constructionStartTime: null
+                    });
+                    if (inp) inp.value = '';
+                    saToast('학교가 추가되었습니다.');
+                    saLoadSchoolsForRegion(saSelectedRegionLabel);
+                } catch (e) {
+                    saToast('실패: ' + e.message);
+                }
+            };
+
+            async function saOpenSchool(schoolId) {
+                saCurrentSchoolId = schoolId;
+                if (saPlayUnsub) { saPlayUnsub(); saPlayUnsub = null; }
+                window.saShowView('play');
+                var aq = document.getElementById('sa-attack-quiz');
+                if (aq) {
+                    aq.classList.add('hidden');
+                    aq.innerHTML = '';
+                }
+
+                saPlayUnsub = saFs.collection('schools').doc(schoolId).onSnapshot(function (snap) {
+                    if (!snap.exists) {
+                        saToast('학교 문서가 없습니다.');
+                        window.saShowView('schools');
+                        return;
+                    }
+                    saCurrentSchoolData = snap.data();
+                    saRenderPlayView(snap.id, saCurrentSchoolData);
+                    saMaybeCompleteConstruction(schoolId, saCurrentSchoolData);
+                    saLoadAttackTargets(snap.id, saCurrentSchoolData.region);
+                }, function (err) {
+                    saToast(err.message);
+                });
+
+                try {
+                    await saFs.collection('participations').add({
+                        schoolId: schoolId,
+                        uid: saCurrentUid || 'unknown',
+                        at: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                } catch (e) { /* 규칙 미설정 시 무시 */ }
+
+                saBuildQuiz();
+            }
+
+            async function saMaybeCompleteConstruction(schoolId, data) {
+                if (!data || !data.isUnderConstruction || !data.constructionStartTime) return;
+                var start = data.constructionStartTime.toMillis ? data.constructionStartTime.toMillis() : 0;
+                var elapsed = Date.now() - start;
+                if (elapsed < 24 * 60 * 60 * 1000) return;
+                var lv = Number(data.level) || 1;
+                if (lv >= 5) {
+                    await saFs.collection('schools').doc(schoolId).update({
+                        isUnderConstruction: false,
+                        constructionStartTime: null
+                    });
+                    return;
+                }
+                await saFs.collection('schools').doc(schoolId).update({
+                    level: lv + 1,
+                    isUnderConstruction: false,
+                    constructionStartTime: null,
+                    upgradeGauge: 0,
+                    hp: Math.min(100, (data.hp != null ? data.hp : 100) + 10)
+                });
+                saToast('강화 완료! 레벨이 올랐습니다.');
+            }
+
+            function saRenderPlayView(id, data) {
+                document.getElementById('sa-play-school-name').textContent = data.name || id;
+                var hp = data.hp != null ? Number(data.hp) : 100;
+                var g = data.upgradeGauge != null ? Number(data.upgradeGauge) : 0;
+                document.getElementById('sa-play-level').textContent = data.level != null ? data.level : 1;
+                document.getElementById('sa-hp-label').textContent = hp + ' / 100';
+                document.getElementById('sa-hp-fill').style.width = Math.max(0, Math.min(100, hp)) + '%';
+                document.getElementById('sa-gauge-label').textContent = g + ' / 100';
+                document.getElementById('sa-gauge-fill').style.width = Math.max(0, Math.min(100, g)) + '%';
+
+                var img = document.getElementById('sa-play-school-img');
+                img.src = saSchoolImageUrl(data);
+                img.onerror = function () { img.src = SCHOOL_LV(data.level || 1); };
+
+                var cm = document.getElementById('sa-construction-msg');
+                if (data.isUnderConstruction) {
+                    cm.classList.remove('hidden');
+                    cm.textContent = '강화 공사 중입니다. 24시간 후 레벨업이 완료됩니다.';
+                } else {
+                    cm.classList.add('hidden');
+                }
+
+                document.getElementById('sa-play-status').textContent =
+                    '문서 ID: ' + id + (saSettingsCache.isExamMode ? ' · 시험기간' : '');
+            }
+
+            function saBuildQuiz() {
+                var a = Math.floor(Math.random() * 9) + 1;
+                var b = Math.floor(Math.random() * 9) + 1;
+                var ops = ['+', '-'];
+                var op = ops[Math.floor(Math.random() * 2)];
+                var ans = op === '+' ? a + b : a - b;
+                document.getElementById('sa-quiz-text').textContent = a + ' ' + op + ' ' + b + ' = ?';
+                var actions = document.getElementById('sa-quiz-actions');
+                actions.innerHTML = '';
+                var candidates = [ans, ans + 1, ans - 1, ans + 2].filter(function (x, i, arr) {
+                    return arr.indexOf(x) === i && x >= -20 && x <= 30;
+                }).sort(function () { return Math.random() - 0.5; }).slice(0, 3);
+                if (candidates.indexOf(ans) < 0) candidates[0] = ans;
+                candidates.forEach(function (c) {
+                    var btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'btn sa-btn sa-btn-primary';
+                    btn.textContent = String(c);
+                    btn.onclick = function () { saSubmitOwnAnswer(c === ans); };
+                    actions.appendChild(btn);
+                });
+            }
+
+            async function saSubmitOwnAnswer(correct) {
+                if (!saCurrentSchoolId) return;
+                var ref = saFs.collection('schools').doc(saCurrentSchoolId);
+                try {
+                    await saFs.runTransaction(function (transaction) {
+                        return transaction.get(ref).then(function (snap) {
+                            if (!snap.exists) throw new Error('no school');
+                            var d = snap.data();
+                            if (d.isUnderConstruction) {
+                                saToast('공사 중에는 HP/게이지가 변하지 않습니다.');
+                                return;
+                            }
+                            var hp = d.hp != null ? Number(d.hp) : 100;
+                            var g = d.upgradeGauge != null ? Number(d.upgradeGauge) : 0;
+                            var lv = d.level != null ? Number(d.level) : 1;
+                            if (correct) {
+                                hp = Math.min(100, hp + 5);
+                                g = Math.min(100, g + 15);
+                            } else {
+                                hp = Math.max(0, hp - 8);
+                            }
+                            var upd = { hp: hp, upgradeGauge: g };
+                            if (g >= 100 && lv < 5 && !d.isUnderConstruction) {
+                                upd.isUnderConstruction = true;
+                                upd.constructionStartTime = firebase.firestore.FieldValue.serverTimestamp();
+                                upd.upgradeGauge = 0;
+                            }
+                            transaction.update(ref, upd);
+                        });
+                    });
+                    saToast(correct ? '정답! 아군 지원' : '오답! HP 감소');
+                    saBuildQuiz();
+                } catch (e) {
+                    saToast(e.message);
+                }
+            }
+
+            async function saLoadAttackTargets(selfId, region) {
+                var sel = document.getElementById('sa-attack-target');
+                sel.innerHTML = '<option value="">공격할 학교 선택</option>';
+                if (!region) return;
+                var snap = await saFs.collection('schools').where('region', '==', region).get();
+                snap.forEach(function (doc) {
+                    if (doc.id === selfId) return;
+                    var d = doc.data();
+                    var o = document.createElement('option');
+                    o.value = doc.id;
+                    o.textContent = (d.name || doc.id) + ' (HP ' + (d.hp != null ? d.hp : '?') + ')';
+                    sel.appendChild(o);
+                });
+            }
+
+            var saAttackAns = 0;
+            window.saStartAttackQuiz = function () {
+                var tid = document.getElementById('sa-attack-target').value;
+                if (!tid) return saToast('공격 대상 학교를 선택하세요.');
+                var x = Math.floor(Math.random() * 5) + 2;
+                saAttackAns = x * x;
+                var box = document.getElementById('sa-attack-quiz');
+                box.classList.remove('hidden');
+                box.innerHTML = '<p>' + x + ' × ' + x + ' = ?</p><div class="sa-row" id="sa-attack-btns"></div>';
+                [saAttackAns, saAttackAns + 1, saAttackAns - 2].filter(function (v, i, a) { return a.indexOf(v) === i; }).sort(function () { return Math.random() - 0.5 }).forEach(function (v) {
+                    var b = document.createElement('button');
+                    b.type = 'button';
+                    b.className = 'btn sa-btn sa-btn-danger';
+                    b.textContent = String(v);
+                    b.onclick = function () { saSubmitAttack(tid, v === saAttackAns); };
+                    document.getElementById('sa-attack-btns').appendChild(b);
+                });
+            };
+
+            async function saSubmitAttack(targetId, correct) {
+                if (!correct) {
+                    saToast('공격 실패(오답)');
+                    return;
+                }
+                var tref = saFs.collection('schools').doc(targetId);
+                try {
+                    await saFs.runTransaction(function (transaction) {
+                        return transaction.get(tref).then(function (snap) {
+                            if (!snap.exists) throw new Error('대상 없음');
+                            var d = snap.data();
+                            var hp = d.hp != null ? Number(d.hp) : 100;
+                            hp = Math.max(0, hp - 12);
+                            transaction.update(tref, { hp: hp });
+                        });
+                    });
+                    saToast('공격 성공! 상대 HP 감소');
+                    document.getElementById('sa-attack-quiz').classList.add('hidden');
+                    saLoadAttackTargets(saCurrentSchoolId, saCurrentSchoolData && saCurrentSchoolData.region);
+                } catch (e) {
+                    saToast(e.message);
+                }
+            }
+
+            window.saBackFromPlay = function () {
+                if (saPlayUnsub) { saPlayUnsub(); saPlayUnsub = null; }
+                saCurrentSchoolId = null;
+                saCurrentSchoolData = null;
+                window.saShowView('schools');
+                if (saSelectedRegionLabel) saLoadSchoolsForRegion(saSelectedRegionLabel);
+            };
+
+            function saListenSettings() {
+                if (saSettingsUnsub) {
+                    try { saSettingsUnsub(); } catch (e) {}
+                    saSettingsUnsub = null;
+                }
+                saSettingsUnsub = saFs.collection('setting').doc('main').onSnapshot(function (snap) {
+                    var d = snap.data() || {};
+                    saSettingsCache.isExamMode = !!d.isExamMode;
+                    saSettingsCache.isGoldenBell = !!d.isGoldenBell;
+                    var el = document.getElementById('sa-global-flags');
+                    if (el) {
+                        var bits = [];
+                        if (saSettingsCache.isExamMode) bits.push('시험 기간');
+                        if (saSettingsCache.isGoldenBell) bits.push('골든벨');
+                        el.textContent = bits.length ? '· ' + bits.join(' · ') : '· 일반 모드';
+                    }
+                }, function () {
+                    saSettingsCache = { isExamMode: false, isGoldenBell: false };
+                });
+            }
+
+            function saCleanupSchAttackPlay() {
+                if (saPlayUnsub) { saPlayUnsub(); saPlayUnsub = null; }
+                saCurrentSchoolId = null;
+                saCurrentSchoolData = null;
+                window.saShowView('map');
+            }
+
+            window.initSchAttackApp = function () {
+                if (saInited) return;
+                saInited = true;
+                try {
+                    saFs = firebase.firestore();
+                    saAuth = firebase.auth();
+                    firebase.storage();
+                } catch (e) {
+                    console.warn(e);
+                    saToast('Firestore 초기화 실패');
+                    return;
+                }
+                saAuth.onAuthStateChanged(function (user) {
+                    saCurrentUid = user ? user.uid : null;
+                    saUpdateAdminUi();
+                });
+                saAuth.signInAnonymously().catch(function (e) {
+                    console.warn(e);
+                    saToast('익명 로그인 실패: ' + (e.message || e));
+                });
+                var mapImg = document.getElementById('sa-map-img');
+                if (mapImg) mapImg.src = SA_ASSET_BASE + 'map_korea.png';
+                saBuildRegionGrid();
+                saListenSettings();
+            };
+
+            window.saCleanupSchAttackOverlay = function () {
+                saCleanupSchAttackPlay();
+            };
+        })();
+
         function goSchAttack() {
-            window.location.href = 'schattack/index.html';
+            var wrap = document.getElementById('schattack-overlay');
+            if (!wrap) return;
+            if (typeof initSchAttackApp === 'function') initSchAttackApp();
+            wrap.classList.remove('hidden');
+            wrap.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeSchAttack() {
+            if (typeof saCleanupSchAttackOverlay === 'function') saCleanupSchAttackOverlay();
+            var wrap = document.getElementById('schattack-overlay');
+            if (wrap) {
+                wrap.classList.add('hidden');
+                wrap.setAttribute('aria-hidden', 'true');
+            }
+            document.body.style.overflow = '';
         }
 
         function selectMode(m) {
