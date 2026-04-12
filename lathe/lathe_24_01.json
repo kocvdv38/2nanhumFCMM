@@ -304,5 +304,23 @@
     "answer": 2,
     "explanation": "",
     "image_file": null
-  }                         
+  },
+  {
+    "id": 35,
+    "session": "24-01",
+    "question": "화학적 가공의 일반적인 특징에 대한 설명으로 옳지 않은 것은?",
+    "options": ["가공경화나 표면의 변질층이 생긴다.", "재료의 표면 전체를 동시에 가공할 수 있다.", "재료의 경도나 강도에 관계없이 가공할 수 있다.", "변형이나 거스러미가 발생하지 않는다."],
+    "answer": 1,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 36,
+    "session": "24-01",
+    "question": "소재의 불필요한 부분을 칩(Chip)의 형태로 제거하여 원하는 최종 형상을 만드는 가공법은?",
+    "options": ["소성가공법", "접합가공법", "절삭가공법", "분말야금법"],
+    "answer": 3,
+    "explanation": "",
+    "image_file": null
+  }                           
 ]
