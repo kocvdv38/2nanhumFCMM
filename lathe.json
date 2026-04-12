@@ -178,5 +178,14 @@
     "answer": 4,
     "explanation": "6-형식번호, 3-치수기호, 02-안지름 번호",
     "image_file": null
+  }
+  {
+    "id": 21,
+    "session": "24-01",
+    "question": "다음 그림과 같은 도면에서 (     )안에 들어갈 치수는?",
+    "options": ["74", "70", "62", "60"],
+    "answer": 1,
+    "explanation": "",
+    "image_file": "lathe_24_01_21.png"
   }         
 ]
