@@ -232,5 +232,23 @@
     "answer": 2,
     "explanation": "",
     "image_file": null
+  },
+  {
+    "id": 27,
+    "session": "24-01",
+    "question": "연삭가공의 일반적인 특징에 대한 설명으로 옳지 않은 것은?",
+    "options": ["치수 정밀도가 높다.", "칩의 크기가 매우 작다.", "가공면의 표면거칠기가 불량하다.", "경화된 강과 같은 단단한 재료를 가공할 수 있다."],
+    "answer": 3,
+    "explanation": "연삭가공은 정밀도가 높고, 표면거칠기가 우수한 다듬질면을 가공할 수 있다.",
+    "image_file": null
+  },
+  {
+    "id": 28,
+    "session": "24-01",
+    "question": "다음 중 각도 측정용 게이지가 아닌 것은?",
+    "options": ["옵티컬 플랫", "사인바", "콤비네이션 세트", "오토 콜리메이터"],
+    "answer": 1,
+    "explanation": "",
+    "image_file": null
   }            
 ]
