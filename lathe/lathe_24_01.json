@@ -457,5 +457,116 @@
     "answer": 3,
     "explanation": "",
     "image_file": null
-  },  
+  },
+{
+    "id": 52,
+    "session": "24-01",
+    "question": "머시닝센터 프로그램에 관한 설명으로 옳지 않은 것은?",
+    "options": [
+      "절대 명령은 G90으로 지령한다.",
+      "증분 명령은 G92로 지령한다.",
+      "증분 명령은 공구 이동 시작점부터 끝점까지의 이동량(거리)으로 명령하는 방법이다.",
+      "절대 명령은 공구 이동 끝점의 위치를 공작물 좌표계의 원점을 기준으로 명령하는 방법이다."
+    ],
+    "answer": 2,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 53,
+    "session": "24-01",
+    "question": "CNC 기계가공 중 충돌사고가 발생할 위험이 있을 때, 응급처치로 가장 옳은 것은?",
+    "options": [
+      "선택적 정지(Optional Stop) 버튼을 누른다.",
+      "원상 복귀(Reset) 버튼을 누른다.",
+      "가공 시작(Cycle Start) 버튼을 누른다.",
+      "비상 정지(Emergency Stop) 버튼을 누른다."
+    ],
+    "answer": 4,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 54,
+    "session": "24-01",
+    "question": "머시닝센터 프로그램에서 고정 사이클을 취소하는 준비기능은?",
+    "options": ["G76", "G80", "G83", "G87"],
+    "answer": 2,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 55,
+    "session": "24-01",
+    "question": "CNC 프로그램에서 EOB의 뜻은?",
+    "options": ["블록의 종료", "프로그램의 종료", "주축의 정지", "보조기능의 정지"],
+    "answer": 1,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 56,
+    "session": "24-01",
+    "question": "공구의 최후 위치만 제어하는 것으로, 도중의 경로는 무시되는 G코드는?",
+    "options": ["G00", "G01", "G02", "G03"],
+    "answer": 1,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 57,
+    "session": "24-01",
+    "question": "CNC 공작기계에서 정보 흐름의 순서가 옳은 것은?",
+    "options": [
+      "지령 펄스열 → 서보 구동 → 수치 정보 → 가공물",
+      "지령 펄스열 → 수치 정보 → 서보 구동 → 가공물",
+      "수치 정보 → 지령 펄스열 → 서보 구동 → 가공물",
+      "수치 정보 → 서보 구동 → 지령 펄스열 → 가공물"
+    ],
+    "answer": 3,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 58,
+    "session": "24-01",
+    "question": "머시닝센터 조작판에서 ‘DRY RUN’ 기능에 대한 설명으로 옳은 것은?",
+    "options": [
+      "‘DRY RUN’ 스위치가 ON 되면 회전당 이송속도로 변한다.",
+      "‘DRY RUN’ 스위치가 ON 되면 이송속도가 약간 빨라진다.",
+      "‘DRY RUN’ 스위치가 ON 되면 프로그램의 이송속도를 무시하고 조작판의 이송속도로 이송한다.",
+      "‘DRY RUN’ 스위치가 ON 되면 이송속도가 최고 속도로 변한다."
+    ],
+    "answer": 3,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 59,
+    "session": "24-01",
+    "question": "기계가공을 하고자 할 때 유의사항으로 옳지 않은 것은?",
+    "options": [
+      "복장을 단정히 한다.",
+      "공작물을 기계에 단단히 고정시킨다.",
+      "정밀가공은 문을 열고 한다.",
+      "기계를 사용하기 전에 이상 유무를 확인한다."
+    ],
+    "answer": 3,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 60,
+    "session": "24-01",
+    "question": "다음 중 CNC 공작기계의 안전에 관한 사항으로 옳지 않은 것은?",
+    "options": [
+      "절삭가공 시 절삭조건을 알맞게 설정한다.",
+      "공정도와 공구 세팅 시트를 작성 후 검토하고 입력한다.",
+      "공구경로 확인은 보조기능(M기능)이 작동(ON)된 상태에서 한다.",
+      "기계 가동 전에 비상 정지 버튼의 위치를 반드시 확인한다."
+    ],
+    "answer": 3,
+    "explanation": "",
+    "image_file": null
+  }  
 ]
