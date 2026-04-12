@@ -178,7 +178,7 @@
     "answer": 4,
     "explanation": "6-형식번호, 3-치수기호, 02-안지름 번호",
     "image_file": null
-  }
+  },
   {
     "id": 21,
     "session": "24-01",
@@ -187,5 +187,23 @@
     "answer": 1,
     "explanation": "",
     "image_file": "lathe_24_01_21.png"
+  },
+  {
+    "id": 22,
+    "session": "24-01",
+    "question": "치수에 사용되는 치수 보조기호의 설명으로 틀린 것은?",
+    "options": ["Sø: 원의 지름", "R: 반지름", "ㅁ: 정사각형의 변", "C: 45° 모따기"],
+    "answer": 1,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 23,
+    "session": "24-01",
+    "question": "다음 도시된 단면도의 명칭은?",
+    "options": ["전단면도", "한쪽단면도", "부분단면도", "회전도시단면도"],
+    "answer": 4,
+    "explanation": "",
+    "image_file": "lathe_24_01_23.png"
   }         
 ]
