@@ -371,7 +371,7 @@
   {
     "id": 42,
     "session": "24-01",
-    "question": "다음 중 윤활제의 사용목적이 아닌 것은??",
+    "question": "다음 중 윤활제의 사용목적이 아닌 것은?",
     "options": ["냉각작용", "마모작용", "방청작용", "청정작용"],
     "answer": 2,
     "explanation": "",
@@ -385,5 +385,68 @@
     "answer": 1,
     "explanation": "",
     "image_file": "lathe/24_01/lathe_24_01_43.png"
+  },
+  {
+    "id": 44,
+    "session": "24-01",
+    "question": "다음 중 CAD/CAM 시스템의 하드웨어에 해당하는 것은?",
+    "options": ["운영체제(OS)", "입출력장치", "응용 소프트웨어", "데이터베이스 시스템"],
+    "answer": 2,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 45,
+    "session": "24-01",
+    "question": "머시닝센터의 고정 사이클 지령방법 'G_ X_ Y_ Z_ R_ Q_ P_ F_ K_ 또는 L_;'에서 'K 또는 L'의 의미는?",
+    "options": ["고정 사이클 반복 횟수 지정", "절삭 이송속도 지정", "구멍 바닥에서 드웰시간 지정", "초기점의 위치 지정"],
+    "answer": 1,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 46,
+    "session": "24-01",
+    "question": "다음 중 NC의 서보기구에 대한 설명으로 옳은 것은?",
+    "options": ["NC 기계의 움직임을 전기적 신호로 표시하는 회전 피드백 장치", "NC Tape에 기록된 언어(정보)를 받아서 펄스화시키는 기구", "구동모터의 회전속도와 위치를 피드백시켜 입력량과 출력량이 같아지도록 제어할 수 있는 구동 기구", "여러 대의 NC 공작기계를 한 대의 컴퓨터에 결합시켜 제어하는 시스템"],
+    "answer": 3,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 47,
+    "session": "24-01",
+    "question": "CNC 프로그램의 끝과 관련이 없는 보조기능은?",
+    "options": ["M99", "M02", "M30", "M98"],
+    "answer": 4,
+    "explanation": "M99 - 보조프로그램 종료, M02 - 프로그램 끝, M30 - 프로그램 끝 & 리셋, M98 - 보조프로그램 호출",
+    "image_file": null
+  },
+  {
+    "id": 48,
+    "session": "24-01",
+    "question": "G코드에 대한 설명으로 옳지 않은 것은?",
+    "options": ["G코드가 다른 그룹(Group)이면 몇 개라도 동일 블록에 지령하여 실행시킬 수 있다.", "동일 그룹에 속하는 G코드는 같은 블록에 2개이상 지령하면 나중에 지령한 G코드만 유효하거나 경보가 발생한다.", "00 그룹의 G코드는 연속 유효(Model) G코드이다.", "G코드 일람표에 없는 G코드를 지령하면 경보가 발생한다."],
+    "answer": 3,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 49,
+    "session": "24-01",
+    "question": "CNC 공작기계에서 이송기능에 사용되는 주소(Address)는?",
+    "options": ["M", "G", "T", "F"],
+    "answer": 4,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 50,
+    "session": "24-01",
+    "question": "CNC 공작기계에서 전원을 투입한 후 일반적으로 제일 처음하는 것은?",
+    "options": ["좌표계 설정", "기계원점 복귀", "제2원점 복귀", "자동 공구 교환"],
+    "answer": 2,
+    "explanation": "",
+    "image_file": null
   }                            
 ]
