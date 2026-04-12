@@ -147,7 +147,7 @@
     "id": 17,
     "session": "24-01",
     "question": "도면에서 두 종류 이상의 선이 같은 장소에 겹치게 될 경우 우선순위로 옳은 것은?",
-    "options": ["lathe_24_01_17_op1.png", "lathe_24_01_17_op2.png", "lathe_24_01_17_op3.png", "lathe_24_01_17_op4.png"],
+    "options": ["images/lathe/24_01/lathe_24_01_17_op1.png", "images/lathe/24_01/lathe_24_01_17_op2.png", "images/lathe/24_01/lathe_24_01_17_op3.png", "images/lathe/24_01/lathe_24_01_17_op4.png"],
     "answer": 2,
     "explanation": "",
     "image_file": null
@@ -186,7 +186,7 @@
     "options": ["74", "70", "62", "60"],
     "answer": 1,
     "explanation": "",
-    "image_file": "lathe_24_01_21.png"
+    "image_file": "images/lathe/24_01/lathe_24_01_21.png"
   },
   {
     "id": 22,
@@ -204,6 +204,6 @@
     "options": ["전단면도", "한쪽단면도", "부분단면도", "회전도시단면도"],
     "answer": 4,
     "explanation": "",
-    "image_file": "lathe_24_01_23.png"
+    "image_file": "images/lathe/24_01/lathe_24_01_23.png"
   }         
 ]
