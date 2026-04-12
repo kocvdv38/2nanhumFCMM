@@ -473,6 +473,31 @@ button {
     }
     .rank-my-box strong { color: #007bff; }
 
+    /* 과목 선택: 모드별 랭킹 안내 */
+    .subject-rank-help {
+        text-align: left;
+        font-size: 12px;
+        line-height: 1.55;
+        color: #444;
+        background: #f4f8fc;
+        border: 1px solid #d0e3f5;
+        border-radius: 10px;
+        padding: 12px 14px;
+        margin: 0 0 14px 0;
+    }
+    .subject-rank-help h3 {
+        margin: 0 0 8px 0;
+        font-size: 13px;
+        font-weight: 700;
+        color: #1a5fb4;
+    }
+    .subject-rank-help ul {
+        margin: 0;
+        padding-left: 1.15em;
+    }
+    .subject-rank-help li { margin: 0.35em 0; }
+    .subject-rank-help .sub { font-size: 11px; color: #666; margin-top: 8px; }
+
     /* 로그인 화면: 모드별 TOP3 미리보기 */
     .login-top3-wrap {
         margin-top: 14px;
@@ -1091,6 +1116,16 @@ button {
 
     <!-- 4. 과목 및 회차 선택 (연습: 과목 → 회차 순) -->
     <div id="subject-box" class="card hidden">
+        <div id="subject-rank-help" class="subject-rank-help" aria-label="모드별 랭킹 반영 안내">
+            <h3>모드별 랭킹 기록(요약)</h3>
+            <ul>
+                <li><strong>데일리</strong> — 그날 문제를 1문제 이상 풀고 <strong>그만두기</strong>로 종료하면 연속 출석·시간이 반영됩니다.</li>
+                <li><strong>연습하기</strong> — 회차별 연습에서 각 문제를 <strong>처음 제출</strong>할 때마다 풀이 수가 누적되고, 종료 시 랭킹에 반영됩니다. (오답노트만 풀 때는 반영되지 않습니다.)</li>
+                <li><strong>클래식 · 서바이벌 · 타임어택</strong> — 게임이 끝나거나 <strong>그만두기</strong>할 때 <strong>이번 점수</strong>가 본인 <strong>역대 최고점</strong>보다 높을 때만 점수가 갱신됩니다.</li>
+                <li><strong>왕중왕</strong> — 한 게임을 시작할 때 <strong>참가자가 5명 이상</strong>인 방에서 <strong>우승</strong>한 경우에만 인증 횟수가 올라갑니다.</li>
+            </ul>
+            <p class="sub">로그인한 뒤 플레이한 결과만 저장되며, 저장은 보통 <strong>게임 종료</strong> 또는 <strong>그만두기(확인)</strong> 시 이루어집니다.</p>
+        </div>
         <h2 id="subject-title">과목 선택</h2>
         <div id="subject-btns">
             <button class="btn-blue" onclick="onSubjectPick('drawing')">전산응용기계제도기능사</button>
