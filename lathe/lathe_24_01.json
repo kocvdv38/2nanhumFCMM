@@ -322,5 +322,68 @@
     "answer": 3,
     "explanation": "",
     "image_file": null
-  }                           
+  },
+  {
+    "id": 37,
+    "session": "24-01",
+    "question": "다음 등각투상도를 화살표 방향으로 투상한 정면도는?",
+    "options": ["lathe/24_01/lathe_24_01_37_op1.png", "lathe/24_01/lathe_24_01_37_op2.png", "lathe/24_01/lathe_24_01_37_op3.png", "lathe/24_01/lathe_24_01_37_op4.png"],
+    "answer": 1,
+    "explanation": "lathe/24_01/lathe_24_01_37.png",
+    "image_file": null
+  },
+  {
+    "id": 38,
+    "session": "24-01",
+    "question": "슬로팅 절삭장치를 설치하기 가장 적당한 곳은?",
+    "options": ["니형 밀링머신의 테이블", "니형 밀링머신의 새들", "니형 밀링머신의 주축", "니형 밀링머신의 칼럼면"],
+    "answer": 4,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 39,
+    "session": "24-01",
+    "question": "다음 중 공작기계를 절삭운동 방식에 따라 분류할 때 일감의 운동이 다른 것은??",
+    "options": ["선반", "보링머신", "밀링머신", "플레이너"],
+    "answer": 1,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 40,
+    "session": "24-01",
+    "question": "다음 중 수나사를 가공하는 공구는?",
+    "options": ["탭", "줄", "리머", "다이스"],
+    "answer": 4,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 41,
+    "session": "24-01",
+    "question": "센터리스 연삭기의 장점이 아닌 것은?",
+    "options": ["연삭 여유가 작아도 된다.", "대형이나 중량물의 연삭에 적합하다.", "대량 생산에 적합하다.", "긴 축 재료의 연삭이 가능하다."],
+    "answer": 2,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 42,
+    "session": "24-01",
+    "question": "다음 중 윤활제의 사용목적이 아닌 것은??",
+    "options": ["냉각작용", "마모작용", "방청작용", "청정작용"],
+    "answer": 2,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 43,
+    "session": "24-01",
+    "question": "다음 표는 머시닝센터의 공구를 나타낸 것이다. CNC 프로그램에서 H02 보정값으로 알맞은 것은?",
+    "options": ["-30mm", "20mm", "30mm", "50mm"],
+    "answer": 1,
+    "explanation": "",
+    "image_file": "lathe/24_01/lathe_24_01_43.png"
+  }                            
 ]
