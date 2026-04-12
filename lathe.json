@@ -250,5 +250,59 @@
     "answer": 1,
     "explanation": "",
     "image_file": null
-  }            
+  },
+  {
+    "id": 29,
+    "session": "24-01",
+    "question": "수평 밀링머신의 플레인 커터작업에서 하향절삭의 장점이 아닌 것은?",
+    "options": ["공작물의 고정이 쉽다.", "날의 마멸이 적고, 수명이 길다.", "날 자리의 간격이 짧고, 가공면이 깨끗하다.", "백래시 제거장치가 필요 없다."],
+    "answer": 4,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 30,
+    "session": "24-01",
+    "question": "밀링커터를 매분 220rpm으로 회전시켜 절삭속도 110m/min로 공작물을 절삭하려 할 때 밀링커터의 직경은 약 몇 mm인가?",
+    "options": ["150", "160", "170", "180"],
+    "answer": 2,
+    "explanation": "V= πDN / 1000, D= 1000V / πN = 1000x110m/min / π x 220rpm = 159.2rpm",
+    "image_file": null
+  },
+  {
+    "id": 31,
+    "session": "24-01",
+    "question": "절삭가공할 때 절삭온도를 측정하는 방법이 아닌 것은?",
+    "options": ["손으로 측정한다.", "열전대로 측정한다.", "칩의 색깔로 측정한다.", "칼로리미터로 측정한다."],
+    "answer": 1,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 32,
+    "session": "24-01",
+    "question": "연삭가공 중 숫돌바퀴의 질이 균일하지 못하거나 일감의 영향을 받으면 숫돌바퀴의 모양이 점차 변한다. 이렇게 변형된 숫돌을 정확한 모양으로 바르게 고치는 작업은?",
+    "options": ["드레싱", "밸런싱", "채터링", "트루잉"],
+    "answer": 4,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 33,
+    "session": "24-01",
+    "question": "측정량이 증가 또는 감소하는 방향이 달라서 생기는 동일 치수에 대한 지시량의 차는?",
+    "options": ["개인오차", "우연오차", "후퇴오차", "접촉오차"],
+    "answer": 3,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 34,
+    "session": "24-01",
+    "question": "일반적으로 드릴링 머신에서 가공하기 곤란한 작업은?",
+    "options": ["카운터 싱킹", "스플라인 홈", "스폿 페이싱", "리밍"],
+    "answer": 2,
+    "explanation": "",
+    "image_file": null
+  }                         
 ]
