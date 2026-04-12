@@ -975,14 +975,14 @@ button {
         <label class="profile-field-label profile-field-label--first" for="king-subject-select">방 주제(과목) — 방 만들 때 1회 선택</label>
         <select id="king-subject-select">
             <option value="all">전체 과목 (랜덤)</option>
-            <option value="drawing.json">전산응용기계제도기능사</option>
-            <option value="lathe.json">컴퓨터응용선반기능사</option>
-            <option value="milling.json">컴퓨터응용밀링기능사</option>
-            <option value="assembly.json">기계조립기능사</option>
-            <option value="maintenance.json">설비보전기능사</option>
-            <option value="automation.json">자동화설비기능사</option>
-            <option value="3dprint.json">3D프린터운용기능사</option>
-            <option value="welding.json">피복아크용접기능사</option>
+            <option value="drawing">전산응용기계제도기능사</option>
+            <option value="lathe">컴퓨터응용선반기능사</option>
+            <option value="milling">컴퓨터응용밀링기능사</option>
+            <option value="assembly">기계조립기능사</option>
+            <option value="maintenance">설비보전기능사</option>
+            <option value="automation">자동화설비기능사</option>
+            <option value="3dprint">3D프린터운용기능사</option>
+            <option value="welding">피복아크용접기능사</option>
         </select>
         <button type="button" class="btn-green" onclick="kingCreateRoom()">방 만들기</button>
         <hr style="margin:18px 0;border:none;border-top:1px solid #eee;">
@@ -1003,14 +1003,14 @@ button {
             <label class="profile-field-label" for="king-lobby-subject">과목 (방장만 변경)</label>
             <select id="king-lobby-subject" onchange="kingLobbySubjectChange(this.value)">
                 <option value="all">전체 과목 (랜덤)</option>
-                <option value="drawing.json">전산응용기계제도기능사</option>
-                <option value="lathe.json">컴퓨터응용선반기능사</option>
-                <option value="milling.json">컴퓨터응용밀링기능사</option>
-                <option value="assembly.json">기계조립기능사</option>
-                <option value="maintenance.json">설비보전기능사</option>
-                <option value="automation.json">자동화설비기능사</option>
-                <option value="3dprint.json">3D프린터운용기능사</option>
-                <option value="welding.json">피복아크용접기능사</option>
+                <option value="drawing">전산응용기계제도기능사</option>
+                <option value="lathe">컴퓨터응용선반기능사</option>
+                <option value="milling">컴퓨터응용밀링기능사</option>
+                <option value="assembly">기계조립기능사</option>
+                <option value="maintenance">설비보전기능사</option>
+                <option value="automation">자동화설비기능사</option>
+                <option value="3dprint">3D프린터운용기능사</option>
+                <option value="welding">피복아크용접기능사</option>
             </select>
         </div>
         <p id="king-lobby-hint" style="font-size:13px;color:#666;"></p>
@@ -1078,19 +1078,19 @@ button {
     <div id="subject-box" class="card hidden">
         <h2 id="subject-title">과목 선택</h2>
         <div id="subject-btns">
-            <button class="btn-blue" onclick="onSubjectPick('drawing.json')">전산응용기계제도기능사</button>
-            <button class="btn-blue" onclick="onSubjectPick('lathe.json')">컴퓨터응용선반기능사</button>
-            <button class="btn-blue" onclick="onSubjectPick('milling.json')">컴퓨터응용밀링기능사</button>
-            <button class="btn-blue" onclick="onSubjectPick('assembly.json')">기계조립기능사</button>
-            <button class="btn-blue" onclick="onSubjectPick('maintenance.json')">설비보전기능사</button>
-            <button class="btn-blue" onclick="onSubjectPick('automation.json')">자동화설비기능사</button>
-            <button class="btn-blue" onclick="onSubjectPick('3dprint.json')">3D프린터운용기능사</button>
-            <button class="btn-blue" onclick="onSubjectPick('welding.json')">피복아크용접기능사</button>
+            <button class="btn-blue" onclick="onSubjectPick('drawing')">전산응용기계제도기능사</button>
+            <button class="btn-blue" onclick="onSubjectPick('lathe')">컴퓨터응용선반기능사</button>
+            <button class="btn-blue" onclick="onSubjectPick('milling')">컴퓨터응용밀링기능사</button>
+            <button class="btn-blue" onclick="onSubjectPick('assembly')">기계조립기능사</button>
+            <button class="btn-blue" onclick="onSubjectPick('maintenance')">설비보전기능사</button>
+            <button class="btn-blue" onclick="onSubjectPick('automation')">자동화설비기능사</button>
+            <button class="btn-blue" onclick="onSubjectPick('3dprint')">3D프린터운용기능사</button>
+            <button class="btn-blue" onclick="onSubjectPick('welding')">피복아크용접기능사</button>
         </div>
         <div id="session-select-div" class="hidden">
             <p id="session-subject-label" style="font-size:14px;color:#555;margin:0 0 10px 0;"></p>
             <button type="button" class="btn-orange btn-wrong-note" onclick="startWrongNoteQuiz()">📕 오답노트</button>
-            <select id="session-val" aria-label="회차 선택"><option value="25-01">2025년 1회차</option><option value="24-01">2024년 1회차</option><option value="24-04">2024년 4회차</option></select>
+            <select id="session-val" aria-label="회차 선택"><option value="">과목을 먼저 선택하세요</option></select>
             <button type="button" class="btn-green" onclick="startPracticeFromSelection()">이 회차로 시작</button>
             <button type="button" class="btn-gray" onclick="backToSubjectPick()">과목 다시 선택</button>
         </div>
@@ -1185,19 +1185,169 @@ button {
         let pendingProfilePhotoData = null;
         let removeProfilePhotoPending = false;
         const SUBJECT_LABELS = {
-            'drawing.json': '전산응용기계제도기능사',
-            'lathe.json': '컴퓨터응용선반기능사',
-            'milling.json': '컴퓨터응용밀링기능사',
-            'assembly.json': '기계조립기능사',
-            'maintenance.json': '설비보전기능사',
-            'automation.json': '자동화설비기능사',
-            '3dprint.json': '3D프린터운용기능사',
-            'welding.json': '피복아크용접기능사'
+            drawing: '전산응용기계제도기능사',
+            lathe: '컴퓨터응용선반기능사',
+            milling: '컴퓨터응용밀링기능사',
+            assembly: '기계조립기능사',
+            maintenance: '설비보전기능사',
+            automation: '자동화설비기능사',
+            '3dprint': '3D프린터운용기능사',
+            welding: '피복아크용접기능사'
         };
+        /**
+         * 각 과목 폴더에 sessions.json 을 두고, 그 안에 있는 회차만 드롭다운에 표시합니다.
+         * 폴더 구조는 자유롭게 path 또는 file 로 지정 (아래 fetchSubjectSessionPaths 주석 참고).
+         */
+        /** 예전 방·저장값: *.json 과목 문자열 → 현재 과목 키 */
+        function normalizeSubjectKey(key) {
+            if (key == null || key === '' || key === 'all') return key;
+            const legacy = {
+                'lathe.json': 'lathe',
+                'drawing.json': 'drawing',
+                'milling.json': 'milling',
+                'assembly.json': 'assembly',
+                'maintenance.json': 'maintenance',
+                'automation.json': 'automation',
+                '3dprint.json': '3dprint',
+                'welding.json': 'welding'
+            };
+            if (legacy[key]) return legacy[key];
+            return String(key).replace(/\.json$/i, '');
+        }
+        /** sessions.json 없을 때만 쓰는 관례 경로 (폴더/과목_YY_MM.json) */
+        function sessionToSubjectJsonPath(subjectKey, sessionVal) {
+            const k = normalizeSubjectKey(subjectKey);
+            return k + '/' + k + '_' + String(sessionVal || '').replace(/-/g, '_') + '.json';
+        }
+        function formatSessionLabel(sessionCode) {
+            const m = /^(\d{2})-(\d{2})$/.exec(String(sessionCode || '').trim());
+            if (!m) return sessionCode;
+            const yy = parseInt(m[1], 10);
+            const round = parseInt(m[2], 10);
+            return (2000 + yy) + '년 ' + round + '회차';
+        }
+        /**
+         * 과목 폴더의 sessions.json 파싱. 예:
+         * { "sessions": [ { "path": "lathe/lathe_25_01.json", "code": "25-01" },
+         *   { "file": "2024/04/quiz.json", "code": "24-04", "label": "2024년 4회차" } ] }
+         * - path: 사이트 루트 기준 전체 경로
+         * - file: 해당 과목 폴더 기준 상대 경로 (연도/회차 하위 폴더 가능)
+         * - code: 문제 JSON의 session 필터와 맞출 값 (보통 "25-01" 형태)
+         */
+        function normalizeManifestEntry(entry, subjectFolder) {
+            if (!entry || typeof entry !== 'object') return null;
+            const code = entry.code != null ? String(entry.code).trim() : (entry.session != null ? String(entry.session).trim() : '');
+            if (!code) return null;
+            let path = entry.path != null ? String(entry.path).trim() : '';
+            if (!path && entry.file != null) {
+                path = subjectFolder + '/' + String(entry.file).trim().replace(/^\/+/, '');
+            }
+            if (!path) return null;
+            path = path.replace(/\\/g, '/').replace(/^\//, '');
+            const label = entry.label != null ? String(entry.label) : formatSessionLabel(code);
+            return { code: code, path: path, label: label };
+        }
+        function compareSessionCodeDesc(a, b) {
+            const ma = /^(\d{2})-(\d{2})$/.exec(String(a)), mb = /^(\d{2})-(\d{2})$/.exec(String(b));
+            if (ma && mb) {
+                const ya = parseInt(ma[1], 10), ra = parseInt(ma[2], 10);
+                const yb = parseInt(mb[1], 10), rb = parseInt(mb[2], 10);
+                if (ya !== yb) return yb - ya;
+                return rb - ra;
+            }
+            return String(b).localeCompare(String(a));
+        }
+        async function fetchSubjectSessionPaths(subjectKey) {
+            const sk = normalizeSubjectKey(subjectKey);
+            if (!sk || sk === 'all') return [];
+            try {
+                const r = await fetch(sk + '/sessions.json', { cache: 'no-cache' });
+                if (!r.ok) return [];
+                const data = await r.json();
+                const raw = Array.isArray(data) ? data : (data.sessions || data.items || []);
+                const out = [];
+                for (let i = 0; i < raw.length; i++) {
+                    const row = normalizeManifestEntry(raw[i], sk);
+                    if (row) out.push(row);
+                }
+                return out;
+            } catch (e) {
+                return [];
+            }
+        }
+        async function checkFileExists(path) {
+            try {
+                let r = await fetch(path, { method: 'HEAD', cache: 'no-cache' });
+                if (r.ok) return true;
+                if (r.status === 405 || r.status === 501) {
+                    r = await fetch(path, { method: 'GET', cache: 'no-cache' });
+                    return r.ok;
+                }
+                return false;
+            } catch (e) {
+                return false;
+            }
+        }
+        async function populateSessionSelect(subjectKey) {
+            const sel = document.getElementById('session-val');
+            const startBtn = document.querySelector('#session-select-div .btn-green');
+            const sk = normalizeSubjectKey(subjectKey);
+            sel.innerHTML = '';
+            sel.disabled = true;
+            if (startBtn) startBtn.disabled = true;
+            sel.innerHTML = '<option value="">회차 목록 불러오는 중…</option>';
+            const manifestRows = await fetchSubjectSessionPaths(sk);
+            if (manifestRows.length === 0) {
+                subjectSessionManifestCache[sk] = [];
+                sel.innerHTML = '<option value="">' + sk + '/sessions.json 이 없거나 비어 있습니다. 과목 폴더에 sessions.json 을 두고 회차를 등록하세요.</option>';
+                sel.disabled = false;
+                return;
+            }
+            const verified = await Promise.all(manifestRows.map(async function (row) {
+                const ok = await checkFileExists(row.path);
+                return ok ? row : null;
+            }));
+            const okRows = verified.filter(Boolean);
+            okRows.sort(function (a, b) { return compareSessionCodeDesc(a.code, b.code); });
+            subjectSessionManifestCache[sk] = okRows;
+            sel.innerHTML = '';
+            if (okRows.length === 0) {
+                sel.innerHTML = '<option value="">sessions.json에 적은 문제 파일이 서버에서 열리지 않습니다 (경로 확인)</option>';
+                sel.disabled = false;
+                return;
+            }
+            okRows.forEach(function (row) {
+                const opt = document.createElement('option');
+                opt.value = row.code;
+                opt.setAttribute('data-path', row.path);
+                opt.textContent = row.label;
+                sel.appendChild(opt);
+            });
+            sel.disabled = false;
+            if (startBtn) startBtn.disabled = false;
+        }
+        /** 선택된 회차에 대응하는 문제 JSON 경로 (sessions.json + data-path) */
+        function getSelectedSessionQuizPath(subjectKey) {
+            const sk = normalizeSubjectKey(subjectKey);
+            const sel = document.getElementById('session-val');
+            if (!sel) return '';
+            const opt = sel.options[sel.selectedIndex];
+            if (opt && opt.getAttribute('data-path')) return opt.getAttribute('data-path');
+            const code = sel.value;
+            const rows = subjectSessionManifestCache[sk];
+            if (rows) {
+                for (let i = 0; i < rows.length; i++) {
+                    if (rows[i].code === code) return rows[i].path;
+                }
+            }
+            return sessionToSubjectJsonPath(sk, code);
+        }
         let lives=3, timeLeft=60, totalTime=0, timerInterval, isShieldActive=false, isTimeFrozen=false;
         let sessionPracticeSolved = 0;
         /** 연습 중 로드된 JSON 파일명 (오답 저장·오답 연습에 사용) */
         let quizSubjectFile = null;
+        /** 과목별 마지막으로 채운 회차 목록 (경로 조회용) */
+        let subjectSessionManifestCache = {};
         /** 오답노트만 풀 때 true — 랭킹·누적 연습 기록에는 반영하지 않음 */
         let wrongNoteOnly = false;
         let items = { hint: 0, shield: 0, time: 0 }, streak = 0, isIdCheck = false, lastId = "";
@@ -1211,9 +1361,31 @@ button {
         /** 랭킹 반영: 이 인원 이상이었던 방에서 우승한 경우만 king_score 증가 */
         const KING_MIN_PARTICIPANTS_FOR_RANK = 5;
         const KING_SUBJECT_FILE_LIST = Object.keys(SUBJECT_LABELS);
+        /** 왕중왕·클래식 등: sessions.json에 나온 문제 JSON 경로 목록 */
+        async function fetchKingFilesForSubject(subjectKey) {
+            const sk = normalizeSubjectKey(subjectKey);
+            if (sk === 'all') {
+                const out = [];
+                const seen = new Set();
+                for (let i = 0; i < KING_SUBJECT_FILE_LIST.length; i++) {
+                    const rows = await fetchSubjectSessionPaths(KING_SUBJECT_FILE_LIST[i]);
+                    for (let j = 0; j < rows.length; j++) {
+                        const p = rows[j].path;
+                        if (!seen.has(p)) {
+                            seen.add(p);
+                            out.push(p);
+                        }
+                    }
+                }
+                return out;
+            }
+            const rows = await fetchSubjectSessionPaths(sk);
+            return rows.map(function (r) { return r.path; });
+        }
         function kingSubjectLabel(key) {
             if (!key || key === 'all') return '전체 과목 (랜덤)';
-            return SUBJECT_LABELS[key] || key;
+            const sk = normalizeSubjectKey(key);
+            return SUBJECT_LABELS[sk] || key;
         }
         let kingRoomId = null;
         let kingQuizLocal = [];
@@ -1249,7 +1421,7 @@ button {
             return (q.question != null ? String(q.question) : '') + '\0' + String(q.answer) + '\0' + String(q.image_file || '');
         }
         async function kingFetchQuestionPool(subjectKey) {
-            const files = subjectKey === 'all' ? KING_SUBJECT_FILE_LIST : [subjectKey];
+            const files = await fetchKingFilesForSubject(subjectKey);
             const seen = new Set();
             const pool = [];
             for (const f of files) {
@@ -1937,12 +2109,17 @@ button {
                 document.getElementById('subject-btns').classList.add('hidden');
                 document.getElementById('session-select-div').classList.remove('hidden');
                 document.getElementById('subject-title').textContent = '회차 선택';
+                const nsk = normalizeSubjectKey(file);
                 document.getElementById('session-subject-label').textContent =
-                    '선택한 과목: ' + (SUBJECT_LABELS[file] || file);
+                    '선택한 과목: ' + (SUBJECT_LABELS[nsk] || file);
                 const wn = document.querySelector('#session-select-div .btn-wrong-note');
                 if (wn) wn.classList.toggle('hidden', mode === 'daily');
+                populateSessionSelect(nsk).catch(function () {
+                    const sel = document.getElementById('session-val');
+                    if (sel) sel.innerHTML = '<option value="">회차 목록을 불러오지 못했습니다</option>';
+                });
             } else {
-                prepareQuiz(file);
+                prepareQuiz(normalizeSubjectKey(file));
             }
         }
         function backToSubjectPick() {
@@ -1955,7 +2132,9 @@ button {
         }
         function startPracticeFromSelection() {
             if (!pendingQuizFile) return;
-            prepareQuiz(pendingQuizFile);
+            const sel = document.getElementById('session-val');
+            if (!sel || !sel.value) return alert('회차를 선택하세요.');
+            prepareQuiz(normalizeSubjectKey(pendingQuizFile));
         }
         function backToModeSelect() {
             kingBackToModeSilently();
@@ -2027,7 +2206,10 @@ button {
         async function startWrongNoteQuiz() {
             if (!user || !user.id) return alert('로그인이 필요합니다.');
             if (!pendingQuizFile) return;
-            const sk = subjectStorageKey(pendingQuizFile);
+            const sel = document.getElementById('session-val');
+            if (!sel || !sel.value) return alert('회차를 선택하세요.');
+            const pathForNotes = getSelectedSessionQuizPath(normalizeSubjectKey(pendingQuizFile));
+            const sk = subjectStorageKey(pathForNotes);
             let snap;
             try {
                 snap = await db.ref('users/' + user.id + '/practice_wrong_notes/' + sk).once('value');
@@ -2039,7 +2221,7 @@ button {
             const rows = Object.values(val).filter(r => r && Array.isArray(r.options) && r.answer != null);
             if (rows.length === 0) return alert('유효한 오답 데이터가 없습니다.');
             quizList = rows.sort(() => Math.random() - 0.5);
-            quizSubjectFile = pendingQuizFile;
+            quizSubjectFile = pathForNotes;
             mode = 'practice';
             wrongNoteOnly = true;
             document.getElementById('session-select-div').classList.add('hidden');
@@ -2296,15 +2478,56 @@ button {
         }
 
         // 퀴즈 준비 및 진행 (이전 답변과 로직 동일)
+        function prepareQuizSubjectMerged(subjectKey) {
+            wrongNoteOnly = false;
+            const sk = normalizeSubjectKey(subjectKey);
+            quizSubjectFile = sk;
+            fetchKingFilesForSubject(sk).then(function (files) {
+                if (files.length === 0) {
+                    alert('이 과목의 sessions.json에 등록된 회차가 없거나 비어 있습니다.');
+                    return;
+                }
+                return Promise.all(files.map(function (f) {
+                    return fetch(f).then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; });
+                }));
+            }).then(function (parts) {
+                if (!parts) return;
+                let data = [];
+                parts.forEach(function (p) {
+                    if (Array.isArray(p)) data = data.concat(p);
+                });
+                if (data.length === 0) {
+                    alert('문제를 불러오지 못했습니다. sessions.json 경로와 문제 파일을 확인하세요.');
+                    return;
+                }
+                quizList = data.sort(function () { return Math.random() - 0.5; });
+                startQuiz();
+            }).catch(function () {
+                alert('문제를 불러오지 못했습니다.');
+            });
+        }
         function prepareQuiz(file) {
             wrongNoteOnly = false;
-            quizSubjectFile = file;
-            fetch(file).then(r => r.json()).then(data => {
-                quizList = (mode === 'practice' || mode === 'daily')
-                    ? data.filter(p => p.session === document.getElementById('session-val').value)
-                    : data.sort(() => Math.random() - 0.5);
+            const sk = normalizeSubjectKey(file);
+            if (mode !== 'practice' && mode !== 'daily') {
+                prepareQuizSubjectMerged(sk);
+                return;
+            }
+            const fetchPath = getSelectedSessionQuizPath(sk);
+            if (!fetchPath) return alert('회차를 선택하세요.');
+            quizSubjectFile = fetchPath;
+            fetch(fetchPath).then(r => r.json()).then(data => {
+                const sessionVal = document.getElementById('session-val').value;
+                if (mode === 'practice' || mode === 'daily') {
+                    quizList = data.filter(p => p.session === sessionVal);
+                    if (quizList.length === 0 && Array.isArray(data) && data.length > 0) {
+                        quizList = data.slice();
+                    }
+                } else {
+                    quizList = data.sort(() => Math.random() - 0.5);
+                }
                 startQuiz();
-            }).catch(e => alert("파일 로드 실패"));
+            }).catch(e => alert('파일 로드 실패'));
         }
         function startQuiz() {
             document.getElementById('subject-box').classList.add('hidden');
@@ -2585,6 +2808,9 @@ button {
                 document.getElementById('subject-btns').classList.add('hidden');
                 document.getElementById('session-select-div').classList.remove('hidden');
                 document.getElementById('subject-title').textContent = '회차 선택';
+                if (pendingQuizFile) {
+                    populateSessionSelect(normalizeSubjectKey(pendingQuizFile)).catch(function () {});
+                }
                 return;
             }
             document.getElementById('rank-box').classList.remove('hidden');
