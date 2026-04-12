@@ -16,5 +16,242 @@
     "answer": 4,
     "explanation": "",
     "image_file": null
+  },
+  {
+    "id": 3,
+    "session": "24-02",
+    "question": "용융온도가 3,400℃ 정도로 높은 고용융점 금속으로 전구의 필라멘트 등에 쓰이는 금속재료는?",
+    "options": ["납", "금", "텅스텐", "망간"],
+    "answer": 3,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 4,
+    "session": "24-02",
+    "question": "금속에 있어서 대표적인 결정격자와 관계없는 것은?",
+    "options": ["체심입방격자", "면심입방격자", "조밀입방격자", "조밀육방격자"],
+    "answer": 3,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 5,
+    "session": "24-02",
+    "question": "재료를 상온에서 다른 형상으로 변형시킨 후 원래 모양으로 회복되는 온도로 가열하면 원래 모양으로 돌아오는 것은?",
+    "options": ["제진합금", "형상기억합금", "비정질합금", "초전도합금"],
+    "answer": 2,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 6,
+    "session": "24-02",
+    "question": "탄소강에 인(P)이 주는 영향이 아닌 것은?",
+    "options": ["연신율 증가", "충격치 감소", "강도 및 경도 증가", "가공 시 균열"],
+    "answer": 1,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 7,
+    "session": "24-02",
+    "question": "일반 탄소강보다 P, S의 함유량을 많게 하거나 Pb, Se, Zr 등을 첨가하여 제조한 강은?",
+    "options": ["스프링 강", "쾌삭강", "구조용 탄소강", "탄소 공구강"],
+    "answer": 2,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 8,
+    "session": "24-02",
+    "question": "3,140N·mm의 비틀림 모멘트를 받는 실체 축의 지름은 약 몇 mm인가? (단, 허용전단응력 Tₐ = 2N/mm²이다)",
+    "options": ["10mm", "12.5mm", "16.7mm", "20mm"],
+    "answer": 4,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 9,
+    "session": "24-02",
+    "question": "수나사 중심선의 편심을 방지하는 목적으로 사용되는 너트는?",
+    "options": ["플레이트 너트", "슬리브 너트", "나비 너트", "플랜지 너트"],
+    "answer": 2,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 10,
+    "session": "24-02",
+    "question": "안전율(S) 크기의 개념에 대한 식으로 옳은 것은?",
+    "options": ["S > 1", "S < 1", "S ≥ 1", "S ≤ 1"],
+    "answer": 1,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 11,
+    "session": "24-02",
+    "question": "모듈이 2이고, 잇수가 각각 36, 74개인 두 기어가 맞물려 있을 때 축간거리는 몇 mm인가?",
+    "options": ["100mm", "110mm", "120mm", "130mm"],
+    "answer": 2,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 12,
+    "session": "24-02",
+    "question": "유체가 나사의 접촉면 사이의 틈새나 볼트의 구멍으로 흘러나오는 것을 방지할 필요가 있을 때 사용하는 너트는?",
+    "options": ["캡 너트", "홈붙이 너트", "플랜지 너트", "슬리브 너트"],
+    "answer": 1,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 13,
+    "session": "24-02",
+    "question": "키의 너비만큼 축을 평행하게 가공하고, 안장키보다 약간 큰 토크 전달이 가능하게 제작된 키는?",
+    "options": ["접선키", "평 키", "원뿔키", "둥근키"],
+    "answer": 2,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 14,
+    "session": "24-02",
+    "question": "다음 보기의 내용은 무엇에 대한 설명인가?",
+    "passage": "\n[보기]\n2개의 축이 평행하지만 축 선의 위치가 어긋나 있을 때 사용한다. 한 개의 원판 앞뒤에 서로 직각 방향으로 키 모양의 돌기를 만들어 이것을 양 축 사이의 플랜지 사이에 끼워 놓아 한쪽의 축을 회전시키면 중앙의 원판이 홈에 따라서 미끄러지며 다른 쪽의 축에 회전력을 전달시키는 축 이음방법이다.",
+    "options": ["셀러 커플링", "유니버설 커플링", "올덤 커플링", "마찰 클러치"],
+    "answer": 3,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 15,
+    "session": "24-02",
+    "question": "다음 그림과 같은 제3각법 정투상도에서 우측면도로 가장 적합한 것은?",
+    "options": ["", "", "", ""],
+    "answer": 4,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 16,
+    "session": "24-02",
+    "question": "기준 원 위에서 원판을 굴릴 때 원판 위의 1점이 그리는 궤적으로 나타내는 선은?",
+    "options": ["쌍곡선", "포물선", "인벌류트 곡선", "사이클로이드 곡선"],
+    "answer": 4,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 17,
+    "session": "24-02",
+    "question": "기어를 제도할 때 피치원을 표시하는 선은?",
+    "options": ["가는 1점쇄선", "가는 파선", "가는 2점쇄선", "가는 실선"],
+    "answer": 1,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 18,
+    "session": "24-02",
+    "question": "스프링의 도시법에서 스프링의 종류 및 모양만 간략도로 도시하는 경우에 사용하는 스프링 재료의 중심선은?",
+    "options": ["가는 1점 쇄선", "가는 2점 쇄선", "가는 실선", "굵은 실선"],
+    "answer": 4,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 19,
+    "session": "24-02",
+    "question": "다음 그림에서 a는 표면거칠기의 지시사항 중 어느 것에 해당하는가?",
+    "options": ["가공방법", "줄무늬 방향의 기호", "표면거칠기의 지시값", "표면파상도"],
+    "answer": 3,
+    "explanation": "",
+    "image_file": "lathe/24_02/lathe_24_02_19.png"
+  },
+  {
+    "id": 20,
+    "session": "24-02",
+    "question": "다음 중 자세공차의 종류로만 짝지어진 것은?",
+    "options": [
+      "진직도 공차, 진원도 공차",
+      "평행도 공차, 경사도 공차",
+      "원통도 공차, 대칭도 공차",
+      "윤곽도 공차, 온 흔들림 공차"
+    ],
+    "answer": 2,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 21,
+    "session": "24-02",
+    "question": "기계제도에서 가는 실선이 사용되지 않는 것은?",
+    "options": ["외형선", "치수선", "지시선", "치수보조선"],
+    "answer": 1,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 22,
+    "session": "24-02",
+    "question": "다음 중 보조투상도를 사용해야 될 곳으로 가장 적합한 경우는?",
+    "options": [
+      "가공 전후의 모양을 투상할 때 사용한다.",
+      "특정 부분의 형상이 작아 이를 확대하여 자세하게 나타낼 때 사용한다.",
+      "물체 경사면의 실형을 나타낼 때 사용한다.",
+      "물체에 대한 단면은 90° 회전하여 나타낼 때 사용한다."
+    ],
+    "answer": 3,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 23,
+    "session": "24-02",
+    "question": "개개의 치수에 주어진 치수공차가 축차로 누적되어도 좋은 경우에 사용하는 치수의 배치법은?",
+    "options": ["직렬치수기입법", "병렬치수기입법", "좌표치수기입법", "누진치수기입법"],
+    "answer": 1,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 24,
+    "session": "24-02",
+    "question": "축과 구멍의 끼워맞춤에서 최대틈새는?",
+    "options": [
+      "구멍의 최대허용치수 - 축의 최소허용치수",
+      "구멍의 최소허용치수 - 축의 최대허용치수",
+      "축의 최대허용치수 - 축의 최소허용치수",
+      "구멍의 최소허용치수 - 구멍의 최대허용치수"
+    ],
+    "answer": 1,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 25,
+    "session": "24-02",
+    "question": "도형이 대칭인 경우 대칭 중심선의 한쪽 도형만 작도할 때 중심선의 양 끝부분의 작도방법은?",
+    "options": [
+      "짧은 2개의 평행한 굵은 1점쇄선",
+      "짧은 2개의 평행한 가는 1점쇄선",
+      "짧은 2개의 평행한 굵은 실선",
+      "짧은 2개의 평행한 가는 실선"
+    ],
+    "answer": 4,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 26,
+    "session": "24-02",
+    "question": "다음 중 절삭공구용 재료가 가져야 할 기계적 성질 중 옳은 것을 모두 고르면?\n㉠ 고온경도(Hot Hardness)\n㉡ 취성(Brittleness)\n㉢ 내마모성(Resistance To Wear)\n㉣ 강인성(Toughness)",
+    "options": ["㉠, ㉡, ㉢", "㉠, ㉡, ㉣", "㉠, ㉢, ㉣", "㉡, ㉢, ㉣"],
+    "answer": 3,
+    "explanation": "",
+    "image_file": null
   }
 ]
