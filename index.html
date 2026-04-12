@@ -870,7 +870,7 @@ button {
         </div>
         <footer class="login-footer">
             문의 및 요청: <a href="mailto:zx48xz@naver.com">zx48xz@naver.com</a><br>
-            © 2026. 이난흠 All rights reserved.
+            © 2026. 주용호 All rights reserved.
         </footer>
     </div>
 
@@ -3134,6 +3134,29 @@ button {
             });
         }
 
+        /** Cloud Functions 배치가 쓰는 meta/top3_login_cache.modes → 카드 HTML (users 전체 없이 표시) */
+        function buildTop3CardHtmlListFromServerCache(modesObj) {
+            if (!modesObj) return [];
+            return LOGIN_TOP3_MODES.map(function (m) {
+                var rows = modesObj[m.key];
+                if (!Array.isArray(rows)) rows = [];
+                var lines = rows.length
+                    ? rows.map(function (u, i) {
+                        var id = u && u.id != null ? String(u.id) : '';
+                        var school = u && u.school != null && String(u.school).trim() !== '' ? String(u.school) : '학교 없음';
+                        return '<div class="login-top3-line"><span class="login-top3-rank" title="' + (i + 1) + '등">' + topRankIcon(i) + '</span>' + escapeHtml(id) + ' <span class="login-top3-muted">·</span> ' + escapeHtml(school) + '</div>';
+                    }).join('')
+                    : '<div class="login-top3-empty">기록 없음</div>';
+                return '<div class="login-top3-card ' + m.cardClass + '" role="region" aria-label="' + escapeHtml(m.label) + ' 순위">' +
+                    '<div class="login-top3-card-head">' +
+                    '<span class="login-top3-mode-icon" aria-hidden="true">' + m.icon + '</span>' +
+                    '<span class="login-top3-mode-title">' + escapeHtml(m.label) + ' TOP3</span>' +
+                    '</div>' +
+                    '<div class="login-top3-card-body">' + lines + '</div>' +
+                    '</div>';
+            });
+        }
+
         function computeTop3SnapshotModes(arr, defs) {
             var modes = {};
             defs.forEach(function (def) {
@@ -3439,12 +3462,88 @@ button {
             });
         }
 
+        /** 직전 방문 시 TOP3 (로컬) — 네트워크 전 표시 */
+        const LOGIN_TOP3_PREVIEW_LS_KEY = 'catch_cert_login_top3_preview_v1';
+
+        function tryPaintLoginTop3FromLocalCache(el) {
+            try {
+                var raw = localStorage.getItem(LOGIN_TOP3_PREVIEW_LS_KEY);
+                if (!raw) return false;
+                var o = JSON.parse(raw);
+                if (!o || !Array.isArray(o.cards) || o.cards.length === 0) return false;
+                loginTop3CardHtmlList = o.cards;
+                loginTop3ModeIndex = 0;
+                var secHint = Math.round(LOGIN_TOP3_ROTATE_MS / 1000);
+                var hintRow = typeof o.hintRowHtml === 'string' && o.hintRowHtml.length
+                    ? o.hintRowHtml
+                    : buildLoginTop3HintRow(secHint, []);
+                el.innerHTML =
+                    '<div class="login-top3-rotator-wrap">' +
+                    hintRow +
+                    '<div class="login-top3-rotator-inner" id="login-top3-rotator-inner"></div>' +
+                    '<div class="login-top3-rotator-dots" id="login-top3-rotator-dots" aria-hidden="true"></div>' +
+                    '</div>';
+                paintLoginTop3Slide();
+                startLoginTop3Rotation();
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        function saveLoginTop3PreviewLocalCache(cards, hintRowHtml) {
+            try {
+                localStorage.setItem(LOGIN_TOP3_PREVIEW_LS_KEY, JSON.stringify({
+                    v: 1,
+                    savedAt: Date.now(),
+                    cards: cards,
+                    hintRowHtml: hintRowHtml
+                }));
+            } catch (err) {
+                /* 할당량 초과 등 */
+            }
+        }
+
+        function paintLoginTop3Shell(el, hintRow) {
+            el.innerHTML =
+                '<div class="login-top3-rotator-wrap">' +
+                hintRow +
+                '<div class="login-top3-rotator-inner" id="login-top3-rotator-inner"></div>' +
+                '<div class="login-top3-rotator-dots" id="login-top3-rotator-dots" aria-hidden="true"></div>' +
+                '</div>';
+            paintLoginTop3Slide();
+            startLoginTop3Rotation();
+        }
+
         async function loadLoginTop3Preview() {
             const el = document.getElementById('login-top3-preview');
             if (!el) return;
             stopLoginTop3Rotation();
             loginTop3CardHtmlList = [];
-            el.innerHTML = '<p class="login-top3-loading">순위 불러오는 중...</p>';
+            var paintedFast = false;
+            const secHint = Math.round(LOGIN_TOP3_ROTATE_MS / 1000);
+
+            try {
+                var cacheSnap = await db.ref('meta/top3_login_cache').once('value');
+                var cacheVal = cacheSnap.val();
+                if (cacheVal && cacheVal.v === 1 && cacheVal.modes) {
+                    var fromServer = buildTop3CardHtmlListFromServerCache(cacheVal.modes);
+                    if (fromServer.length) {
+                        loginTop3CardHtmlList = fromServer;
+                        loginTop3ModeIndex = 0;
+                        paintLoginTop3Shell(el, buildLoginTop3HintRow(secHint, []));
+                        paintedFast = true;
+                    }
+                }
+            } catch (e1) {
+                /* 규칙 미설정·노드 없음 등 */
+            }
+
+            if (!paintedFast) {
+                if (tryPaintLoginTop3FromLocalCache(el)) paintedFast = true;
+                else el.innerHTML = '<p class="login-top3-loading">순위 불러오는 중...</p>';
+            }
+
             try {
                 const snap = await db.ref('users').once('value');
                 const arr = [];
@@ -3460,19 +3559,14 @@ button {
                 var recentEvents = await fetchTop3EventsLast48h();
                 loginTop3CardHtmlList = buildTop3CardHtmlList(arr);
                 loginTop3ModeIndex = 0;
-                const secHint = Math.round(LOGIN_TOP3_ROTATE_MS / 1000);
                 var hintRow = buildLoginTop3HintRow(secHint, recentEvents);
-                el.innerHTML =
-                    '<div class="login-top3-rotator-wrap">' +
-                    hintRow +
-                    '<div class="login-top3-rotator-inner" id="login-top3-rotator-inner"></div>' +
-                    '<div class="login-top3-rotator-dots" id="login-top3-rotator-dots" aria-hidden="true"></div>' +
-                    '</div>';
-                paintLoginTop3Slide();
-                startLoginTop3Rotation();
+                paintLoginTop3Shell(el, hintRow);
+                saveLoginTop3PreviewLocalCache(loginTop3CardHtmlList, hintRow);
             } catch (e) {
-                loginTop3CardHtmlList = [];
-                el.innerHTML = '<p class="login-top3-err">순위를 불러오지 못했습니다.</p>';
+                if (!paintedFast) {
+                    loginTop3CardHtmlList = [];
+                    el.innerHTML = '<p class="login-top3-err">순위를 불러오지 못했습니다.</p>';
+                }
             }
         }
 
