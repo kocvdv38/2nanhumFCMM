@@ -1198,7 +1198,6 @@ button {
         let timeAttackToastShowTimer = null;
         let timeAttackToastHideTimer = null;
 
-        const KING_SESSION_FILTER = '25-01';
         const KING_ROUND_MS = 180000;
         const KING_AUTO_NEXT_MS = 3000;
         const KING_Q_PER_ROUND = 5;
@@ -1239,15 +1238,25 @@ button {
                 image_file: p.image_file || ''
             };
         }
+        function kingQuestionDedupKey(q) {
+            return (q.question != null ? String(q.question) : '') + '\0' + String(q.answer) + '\0' + String(q.image_file || '');
+        }
         async function kingFetchQuestionPool(subjectKey) {
             const files = subjectKey === 'all' ? KING_SUBJECT_FILE_LIST : [subjectKey];
-            let pool = [];
+            const seen = new Set();
+            const pool = [];
             for (const f of files) {
                 try {
                     const r = await fetch(f);
                     const data = await r.json();
                     const arr = Array.isArray(data) ? data : [];
-                    arr.filter(q => q && q.session === KING_SESSION_FILTER && Array.isArray(q.options)).forEach(q => pool.push(q));
+                    for (const q of arr) {
+                        if (!q || !Array.isArray(q.options)) continue;
+                        const k = kingQuestionDedupKey(q);
+                        if (seen.has(k)) continue;
+                        seen.add(k);
+                        pool.push(q);
+                    }
                 } catch (e) { /* skip file */ }
             }
             return kingShuffle(pool);
@@ -1547,7 +1556,7 @@ button {
             const subjectKey = val.subjectKey || 'all';
             const pool = await kingFetchQuestionPool(subjectKey);
             if (pool.length < KING_Q_PER_ROUND) {
-                if (!quiet) alert('문제 풀이 부족(회차 ' + KING_SESSION_FILTER + '). JSON을 확인하세요.');
+                if (!quiet) alert('해당 과목에서 출제할 문제가 부족합니다. JSON을 확인하세요.');
                 return false;
             }
             const pick = pool.slice(0, KING_Q_PER_ROUND).map(kingStripQuestionForDb);
