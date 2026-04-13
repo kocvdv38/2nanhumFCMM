@@ -304,5 +304,270 @@
     "answer": 2,
     "explanation": "",
     "image_file": null
-  }                         
+  },
+  {
+    "id": 35,
+    "session": "24-01",
+    "question": "화학적 가공의 일반적인 특징에 대한 설명으로 옳지 않은 것은?",
+    "options": ["가공경화나 표면의 변질층이 생긴다.", "재료의 표면 전체를 동시에 가공할 수 있다.", "재료의 경도나 강도에 관계없이 가공할 수 있다.", "변형이나 거스러미가 발생하지 않는다."],
+    "answer": 1,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 36,
+    "session": "24-01",
+    "question": "소재의 불필요한 부분을 칩(Chip)의 형태로 제거하여 원하는 최종 형상을 만드는 가공법은?",
+    "options": ["소성가공법", "접합가공법", "절삭가공법", "분말야금법"],
+    "answer": 3,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 37,
+    "session": "24-01",
+    "question": "다음 등각투상도를 화살표 방향으로 투상한 정면도는?",
+    "options": ["lathe/24_01/lathe_24_01_37_op1.png", "lathe/24_01/lathe_24_01_37_op2.png", "lathe/24_01/lathe_24_01_37_op3.png", "lathe/24_01/lathe_24_01_37_op4.png"],
+    "answer": 1,
+    "explanation": "lathe/24_01/lathe_24_01_37.png",
+    "image_file": null
+  },
+  {
+    "id": 38,
+    "session": "24-01",
+    "question": "슬로팅 절삭장치를 설치하기 가장 적당한 곳은?",
+    "options": ["니형 밀링머신의 테이블", "니형 밀링머신의 새들", "니형 밀링머신의 주축", "니형 밀링머신의 칼럼면"],
+    "answer": 4,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 39,
+    "session": "24-01",
+    "question": "다음 중 공작기계를 절삭운동 방식에 따라 분류할 때 일감의 운동이 다른 것은??",
+    "options": ["선반", "보링머신", "밀링머신", "플레이너"],
+    "answer": 1,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 40,
+    "session": "24-01",
+    "question": "다음 중 수나사를 가공하는 공구는?",
+    "options": ["탭", "줄", "리머", "다이스"],
+    "answer": 4,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 41,
+    "session": "24-01",
+    "question": "센터리스 연삭기의 장점이 아닌 것은?",
+    "options": ["연삭 여유가 작아도 된다.", "대형이나 중량물의 연삭에 적합하다.", "대량 생산에 적합하다.", "긴 축 재료의 연삭이 가능하다."],
+    "answer": 2,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 42,
+    "session": "24-01",
+    "question": "다음 중 윤활제의 사용목적이 아닌 것은?",
+    "options": ["냉각작용", "마모작용", "방청작용", "청정작용"],
+    "answer": 2,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 43,
+    "session": "24-01",
+    "question": "다음 표는 머시닝센터의 공구를 나타낸 것이다. CNC 프로그램에서 H02 보정값으로 알맞은 것은?",
+    "options": ["-30mm", "20mm", "30mm", "50mm"],
+    "answer": 1,
+    "explanation": "",
+    "image_file": "lathe/24_01/lathe_24_01_43.png"
+  },
+  {
+    "id": 44,
+    "session": "24-01",
+    "question": "다음 중 CAD/CAM 시스템의 하드웨어에 해당하는 것은?",
+    "options": ["운영체제(OS)", "입출력장치", "응용 소프트웨어", "데이터베이스 시스템"],
+    "answer": 2,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 45,
+    "session": "24-01",
+    "question": "머시닝센터의 고정 사이클 지령방법 'G_ X_ Y_ Z_ R_ Q_ P_ F_ K_ 또는 L_;'에서 'K 또는 L'의 의미는?",
+    "options": ["고정 사이클 반복 횟수 지정", "절삭 이송속도 지정", "구멍 바닥에서 드웰시간 지정", "초기점의 위치 지정"],
+    "answer": 1,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 46,
+    "session": "24-01",
+    "question": "다음 중 NC의 서보기구에 대한 설명으로 옳은 것은?",
+    "options": ["NC 기계의 움직임을 전기적 신호로 표시하는 회전 피드백 장치", "NC Tape에 기록된 언어(정보)를 받아서 펄스화시키는 기구", "구동모터의 회전속도와 위치를 피드백시켜 입력량과 출력량이 같아지도록 제어할 수 있는 구동 기구", "여러 대의 NC 공작기계를 한 대의 컴퓨터에 결합시켜 제어하는 시스템"],
+    "answer": 3,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 47,
+    "session": "24-01",
+    "question": "CNC 프로그램의 끝과 관련이 없는 보조기능은?",
+    "options": ["M99", "M02", "M30", "M98"],
+    "answer": 4,
+    "explanation": "M99 - 보조프로그램 종료, M02 - 프로그램 끝, M30 - 프로그램 끝 & 리셋, M98 - 보조프로그램 호출",
+    "image_file": null
+  },
+  {
+    "id": 48,
+    "session": "24-01",
+    "question": "G코드에 대한 설명으로 옳지 않은 것은?",
+    "options": ["G코드가 다른 그룹(Group)이면 몇 개라도 동일 블록에 지령하여 실행시킬 수 있다.", "동일 그룹에 속하는 G코드는 같은 블록에 2개이상 지령하면 나중에 지령한 G코드만 유효하거나 경보가 발생한다.", "00 그룹의 G코드는 연속 유효(Model) G코드이다.", "G코드 일람표에 없는 G코드를 지령하면 경보가 발생한다."],
+    "answer": 3,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 49,
+    "session": "24-01",
+    "question": "CNC 공작기계에서 이송기능에 사용되는 주소(Address)는?",
+    "options": ["M", "G", "T", "F"],
+    "answer": 4,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 50,
+    "session": "24-01",
+    "question": "CNC 공작기계에서 전원을 투입한 후 일반적으로 제일 처음하는 것은?",
+    "options": ["좌표계 설정", "기계원점 복귀", "제2원점 복귀", "자동 공구 교환"],
+    "answer": 2,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 51,
+    "session": "24-01",
+    "question": "머시닝센터에서 ∅12-2날 초경합금 엔드밀을 이용하여 절삭속도 35m/min, 이송 0.05mm/날, 절삭 깊이 7mm의 절삭조건으로 가공하고자 할 때 다음 프로그램의 ( ) 안에 들어갈 적합한 데이터는?",
+    "passage": "G01 G91 X200.0 F(    );",
+    "options": ["12.25", "35.0", "92.8", "928.0"],
+    "answer": 3,
+    "explanation": "",
+    "image_file": null
+  },
+{
+    "id": 52,
+    "session": "24-01",
+    "question": "머시닝센터 프로그램에 관한 설명으로 옳지 않은 것은?",
+    "options": [
+      "절대 명령은 G90으로 지령한다.",
+      "증분 명령은 G92로 지령한다.",
+      "증분 명령은 공구 이동 시작점부터 끝점까지의 이동량(거리)으로 명령하는 방법이다.",
+      "절대 명령은 공구 이동 끝점의 위치를 공작물 좌표계의 원점을 기준으로 명령하는 방법이다."
+    ],
+    "answer": 2,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 53,
+    "session": "24-01",
+    "question": "CNC 기계가공 중 충돌사고가 발생할 위험이 있을 때, 응급처치로 가장 옳은 것은?",
+    "options": [
+      "선택적 정지(Optional Stop) 버튼을 누른다.",
+      "원상 복귀(Reset) 버튼을 누른다.",
+      "가공 시작(Cycle Start) 버튼을 누른다.",
+      "비상 정지(Emergency Stop) 버튼을 누른다."
+    ],
+    "answer": 4,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 54,
+    "session": "24-01",
+    "question": "머시닝센터 프로그램에서 고정 사이클을 취소하는 준비기능은?",
+    "options": ["G76", "G80", "G83", "G87"],
+    "answer": 2,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 55,
+    "session": "24-01",
+    "question": "CNC 프로그램에서 EOB의 뜻은?",
+    "options": ["블록의 종료", "프로그램의 종료", "주축의 정지", "보조기능의 정지"],
+    "answer": 1,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 56,
+    "session": "24-01",
+    "question": "공구의 최후 위치만 제어하는 것으로, 도중의 경로는 무시되는 G코드는?",
+    "options": ["G00", "G01", "G02", "G03"],
+    "answer": 1,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 57,
+    "session": "24-01",
+    "question": "CNC 공작기계에서 정보 흐름의 순서가 옳은 것은?",
+    "options": [
+      "지령 펄스열 → 서보 구동 → 수치 정보 → 가공물",
+      "지령 펄스열 → 수치 정보 → 서보 구동 → 가공물",
+      "수치 정보 → 지령 펄스열 → 서보 구동 → 가공물",
+      "수치 정보 → 서보 구동 → 지령 펄스열 → 가공물"
+    ],
+    "answer": 3,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 58,
+    "session": "24-01",
+    "question": "머시닝센터 조작판에서 ‘DRY RUN’ 기능에 대한 설명으로 옳은 것은?",
+    "options": [
+      "‘DRY RUN’ 스위치가 ON 되면 회전당 이송속도로 변한다.",
+      "‘DRY RUN’ 스위치가 ON 되면 이송속도가 약간 빨라진다.",
+      "‘DRY RUN’ 스위치가 ON 되면 프로그램의 이송속도를 무시하고 조작판의 이송속도로 이송한다.",
+      "‘DRY RUN’ 스위치가 ON 되면 이송속도가 최고 속도로 변한다."
+    ],
+    "answer": 3,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 59,
+    "session": "24-01",
+    "question": "기계가공을 하고자 할 때 유의사항으로 옳지 않은 것은?",
+    "options": [
+      "복장을 단정히 한다.",
+      "공작물을 기계에 단단히 고정시킨다.",
+      "정밀가공은 문을 열고 한다.",
+      "기계를 사용하기 전에 이상 유무를 확인한다."
+    ],
+    "answer": 3,
+    "explanation": "",
+    "image_file": null
+  },
+  {
+    "id": 60,
+    "session": "24-01",
+    "question": "다음 중 CNC 공작기계의 안전에 관한 사항으로 옳지 않은 것은?",
+    "options": [
+      "절삭가공 시 절삭조건을 알맞게 설정한다.",
+      "공정도와 공구 세팅 시트를 작성 후 검토하고 입력한다.",
+      "공구경로 확인은 보조기능(M기능)이 작동(ON)된 상태에서 한다.",
+      "기계 가동 전에 비상 정지 버튼의 위치를 반드시 확인한다."
+    ],
+    "answer": 3,
+    "explanation": "",
+    "image_file": null
+  }  
 ]
