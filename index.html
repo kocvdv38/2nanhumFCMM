@@ -1376,7 +1376,15 @@ min-height: 108px;
 <p id="schoolwar-status" style="font-size:13px;color:#666;margin:8px 0;">학교를 선택하세요.</p>
 <div style="display:flex;gap:8px;align-items:center;justify-content:center;margin:6px 0 10px 0;">
 <label for="schoolwar-color" style="font-size:13px;color:#555;">내 점령 색상</label>
-<input type="color" id="schoolwar-color" value="#20c997" style="width:44px;height:32px;padding:0;border:1px solid #ddd;border-radius:6px;">
+<select id="schoolwar-color" style="width:auto;min-width:130px;padding:6px 8px;border:1px solid #ddd;border-radius:6px;">
+<option value="#ff4d4f">빨강</option>
+<option value="#ff922b">주황</option>
+<option value="#ffd43b">노랑</option>
+<option value="#51cf66">초록</option>
+<option value="#4dabf7">파랑</option>
+<option value="#364fc7">남색</option>
+<option value="#ae3ec9">보라</option>
+</select>
 <button type="button" class="btn-gray" style="width:auto;padding:8px 12px;margin:0;" onclick="saveSchoolWarColor()">색상 저장</button>
 </div>
 <div id="schoolwar-map" style="display:grid;grid-template-columns:repeat(50, 1fr);gap:1px;max-width:520px;margin:0 auto 10px auto;background:#e9ecef;border:1px solid #dee2e6;padding:4px;border-radius:8px;"></div>
@@ -1497,6 +1505,7 @@ let schoolWarCellsHandler = null;
 let schoolWarUserNames = {};
 let schoolWarUserColors = {};
 let schoolWarUserSchools = {};
+const SCHOOL_WAR_ALLOWED_COLORS = ['#ff4d4f', '#ff922b', '#ffd43b', '#51cf66', '#4dabf7', '#364fc7', '#ae3ec9'];
 let schoolWarTodayLimit = 10;
 let schoolWarCorrectCount = 0;
 let schoolWarWrongCount = 0;
@@ -3415,11 +3424,15 @@ if (quickStartBtn) quickStartBtn.disabled = on;
 }
 function schoolWarCellColor(ownerUid) {
 if (!ownerUid) return '#f8f9fa';
-if (schoolWarUserColors && schoolWarUserColors[String(ownerUid)]) return schoolWarUserColors[String(ownerUid)];
-let h = 0;
-const s = String(ownerUid);
-for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 360;
-return 'hsl(' + h + ', 62%, 70%)';
+const uid = String(ownerUid);
+if (user && String(user.id) === uid) {
+const mine = schoolWarUserColors && schoolWarUserColors[uid];
+if (mine && SCHOOL_WAR_ALLOWED_COLORS.indexOf(String(mine).toLowerCase()) >= 0) return mine;
+return '#4dabf7';
+}
+const ownerSchool = schoolWarUserSchools[uid] || '';
+if (schoolWarSchool && ownerSchool && String(ownerSchool) === String(schoolWarSchool)) return '#d9f3ff';
+return '#ff69b4';
 }
 function initSchoolWarMapUi() {
 const mapEl = document.getElementById('schoolwar-map');
@@ -3530,7 +3543,8 @@ s.forEach(function (c) {
 const v = c.val() || {};
 const uid = String(v.id != null ? v.id : c.key);
 out[uid] = (v.name && String(v.name).trim()) ? String(v.name).trim() : uid;
-if (v.schoolwar_color && /^#[0-9a-fA-F]{6}$/.test(String(v.schoolwar_color))) colors[uid] = String(v.schoolwar_color);
+const savedColor = String(v.schoolwar_color || '').trim().toLowerCase();
+if (SCHOOL_WAR_ALLOWED_COLORS.indexOf(savedColor) >= 0) colors[uid] = savedColor;
 schools[uid] = (v.school && String(v.school).trim()) ? String(v.school).trim() : '학교 정보 없음';
 });
 schoolWarUserNames = out;
@@ -3541,8 +3555,8 @@ schoolWarUserSchools = schools;
 async function saveSchoolWarColor() {
 if (!user || !user.id) return alert('로그인이 필요합니다.');
 const el = document.getElementById('schoolwar-color');
-const c = el ? String(el.value || '').trim() : '';
-if (!/^#[0-9a-fA-F]{6}$/.test(c)) return alert('색상을 선택해 주세요.');
+const c = el ? String(el.value || '').trim().toLowerCase() : '';
+if (SCHOOL_WAR_ALLOWED_COLORS.indexOf(c) < 0) return alert('빨강/주황/노랑/초록/파랑/남색/보라 중에서 선택해 주세요.');
 try {
 await db.ref('users/' + user.id + '/schoolwar_color').set(c);
 schoolWarUserColors[String(user.id)] = c;
@@ -3585,9 +3599,11 @@ renderSchoolWarMap();
 renderSchoolWarStats();
 }
 loadSchoolWarUserNames().then(renderSchoolWarStats);
-if (user && user.schoolwar_color && /^#[0-9a-fA-F]{6}$/.test(String(user.schoolwar_color))) {
 const cEl = document.getElementById('schoolwar-color');
-if (cEl) cEl.value = String(user.schoolwar_color);
+const savedMyColor = String(user && user.schoolwar_color || '').trim().toLowerCase();
+if (cEl) {
+if (SCHOOL_WAR_ALLOWED_COLORS.indexOf(savedMyColor) >= 0) cEl.value = savedMyColor;
+else cEl.value = '#4dabf7';
 }
 }
 document.getElementById('schoolwar-school-select').addEventListener('change', function () {
@@ -3912,6 +3928,12 @@ nextBtn.disabled = currentIdx >= quizList.length - 1;
 nextBtn.textContent = '다음 문제';
 nextBtn.classList.remove('hidden');
 nextBtn.disabled = false;
+} else if (mode === 'practice' || mode === 'daily') {
+nextBtn.textContent = '다음 문제';
+if (currentIdx < quizList.length - 1) {
+nextBtn.classList.remove('hidden');
+nextBtn.disabled = false;
+}
 }
 const submitBtn = document.getElementById('mock-submit-btn');
 if (submitBtn) submitBtn.classList.toggle('hidden', mode !== 'mock');
