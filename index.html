@@ -1494,12 +1494,14 @@ let schoolWarCellsRef = null;
 let schoolWarCellsHandler = null;
 let schoolWarUserNames = {};
 let schoolWarUserColors = {};
+let schoolWarUserSchools = {};
 let schoolWarTodayLimit = 10;
 let schoolWarCorrectCount = 0;
 let schoolWarWrongCount = 0;
 let schoolWarSelectionMode = false;
 let schoolWarCaptureQuota = 0;
 let schoolWarSelectedCells = {};
+let schoolWarPendingLoseCount = 0;
 let currentRankMode = 'daily';
 let pendingQuizFile = null;
 /** 개인정보: 프로필 사진(data URL) 저장 전 대기 */
@@ -3327,7 +3329,8 @@ updateSchoolWarSelectionUi();
 return;
 }
 if (!ownerUid) return;
-alert('점령자 아이디: ' + ownerUid);
+const ownerSchool = schoolWarUserSchools[String(ownerUid)] || '학교 정보 없음';
+alert('점령자 아이디: ' + ownerUid + '\n학교: ' + ownerSchool);
 });
 mapEl.appendChild(c);
 }
@@ -3399,14 +3402,17 @@ try {
 const s = await db.ref('users').once('value');
 const out = {};
 const colors = {};
+const schools = {};
 s.forEach(function (c) {
 const v = c.val() || {};
 const uid = String(v.id != null ? v.id : c.key);
 out[uid] = (v.name && String(v.name).trim()) ? String(v.name).trim() : uid;
 if (v.schoolwar_color && /^#[0-9a-fA-F]{6}$/.test(String(v.schoolwar_color))) colors[uid] = String(v.schoolwar_color);
+schools[uid] = (v.school && String(v.school).trim()) ? String(v.school).trim() : '학교 정보 없음';
 });
 schoolWarUserNames = out;
 schoolWarUserColors = colors;
+schoolWarUserSchools = schools;
 } catch (e) {}
 }
 async function saveSchoolWarColor() {
@@ -3831,7 +3837,17 @@ schoolWarSelectionMode = schoolWarCaptureQuota > 0;
 updateSchoolWarSelectionUi();
 renderSchoolWarMap();
 if (!schoolWarSelectionMode) {
+if ((schoolWarPendingLoseCount || 0) > 0) {
+schoolWarAutoLoseCells(schoolWarPendingLoseCount).then(function (lost) {
+alert('점령 선택 없이 종료되었습니다.\n오답에 의한 자동 상실: ' + lost + '칸');
+schoolWarPendingLoseCount = 0;
+renderSchoolWarMap();
+renderSchoolWarStats();
+updateUI();
+});
+} else {
 alert('이번 문제풀이에서 점령 가능한 칸이 없습니다.');
+}
 }
 }
 async function applySchoolWarSelections() {
@@ -3854,9 +3870,13 @@ if (ok) done++;
 schoolWarSelectionMode = false;
 schoolWarCaptureQuota = 0;
 schoolWarSelectedCells = {};
+const lost = await schoolWarAutoLoseCells(schoolWarPendingLoseCount || 0);
+schoolWarPendingLoseCount = 0;
 updateSchoolWarSelectionUi();
 renderSchoolWarMap();
-alert('점령 적용 완료: ' + done + '칸');
+renderSchoolWarStats();
+updateUI();
+alert('점령 적용 완료: ' + done + '칸\n오답에 의한 자동 상실: ' + lost + '칸');
 }
 async function prepareSchoolWarQuiz() {
 const files = await fetchKingFilesForPreferred();
@@ -4173,13 +4193,13 @@ schoolwar_daily_used: nextUsed
 await refreshUserFromDb();
 } catch (e) {}
 }
-const lost = await schoolWarAutoLoseCells(schoolWarWrongCount);
 document.getElementById('rank-box').classList.add('hidden');
 document.getElementById('schoolwar-box').classList.remove('hidden');
 const todayInfo = getLocalDateStringForDaily(new Date());
 const usedInfo = (String(user && user.schoolwar_daily_date || '') === todayInfo) ? (Number(user && user.schoolwar_daily_used) || 0) : 0;
 const leftInfo = Math.max(0, 10 - usedInfo);
-document.getElementById('schoolwar-status').textContent = '선택 학교: ' + (schoolWarSchool || '-') + ' · 오늘 남은 문제: ' + leftInfo + '개 · 정답 ' + schoolWarCorrectCount + '개 / 오답 ' + schoolWarWrongCount + '개 (오답으로 ' + lost + '칸 상실)';
+schoolWarPendingLoseCount = Math.max(0, Number(schoolWarWrongCount) || 0);
+document.getElementById('schoolwar-status').textContent = '선택 학교: ' + (schoolWarSchool || '-') + ' · 오늘 남은 문제: ' + leftInfo + '개 · 정답 ' + schoolWarCorrectCount + '개 / 오답 ' + schoolWarWrongCount + '개';
 beginSchoolWarSelection(schoolWarCorrectCount);
 updateSubjectRankHelp();
 return;
