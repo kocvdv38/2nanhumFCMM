@@ -2833,7 +2833,7 @@ const newUser = {
 id, pw, school, name:n, student_id: s, birth:b,
 hide_name_in_ranking: false,
 practice_count:0, classic_score:0, survival_score:0, timeattack_score:0, king_score:0,
-daily_streak:0, daily_best_streak:0, daily_last_date:'', daily_time:'--:--'
+daily_streak:0, daily_best_streak:0, daily_last_date:'', daily_time:'--:--', daily_time_seconds:0
 };
 if (emailRaw) newUser.email = emailRaw;
 if (phoneRaw) newUser.phone = phoneRaw;
@@ -3142,6 +3142,23 @@ d.setDate(d.getDate() - 1);
 return getLocalDateStringForDaily(d);
 }
 
+/** 데일리 누적 시간: 기존 문자열(MM:SS) 또는 초 단위 필드 → 초 */
+function parseDailyTimeToSeconds(str) {
+if (str == null || str === '' || str === '--:--') return 0;
+const t = String(str).trim();
+const mmss = t.match(/^(\d{1,3}):(\d{2})$/);
+if (mmss) return parseInt(mmss[1], 10) * 60 + parseInt(mmss[2], 10);
+const secOnly = t.match(/^(\d+)s$/i);
+if (secOnly) return parseInt(secOnly[1], 10);
+return 0;
+}
+function formatSecondsToMmSs(sec) {
+const n = Math.max(0, Math.floor(Number(sec) || 0));
+const m = String(Math.floor(n / 60)).padStart(2, '0');
+const s = String(n % 60).padStart(2, '0');
+return m + ':' + s;
+}
+
 // 결과 및 랭킹
 async function refreshUserFromDb() {
 if(!user || !user.id) return;
@@ -3214,7 +3231,14 @@ updates[`users/${user.id}/practice_count`] = (user.practice_count || 0) + sessio
 updates[`users/${user.id}/practice_time`] = timeStr;
 } else if (mode === 'daily') {
 if (sessionPracticeSolved >= 1) {
-updates[`users/${user.id}/daily_time`] = timeStr;
+await refreshUserFromDb();
+const sessionSec = Math.max(0, Math.round(Number(totalTime) || 0));
+const prevSec = (user.daily_time_seconds != null && !isNaN(Number(user.daily_time_seconds)))
+? Number(user.daily_time_seconds)
+: parseDailyTimeToSeconds(user.daily_time);
+const cumSec = prevSec + sessionSec;
+updates[`users/${user.id}/daily_time_seconds`] = cumSec;
+updates[`users/${user.id}/daily_time`] = formatSecondsToMmSs(cumSec);
 const todayStr = getLocalDateStringForDaily(new Date());
 const yestStr = getYesterdayLocalDateStringForDaily();
 const last = String(user.daily_last_date || '').trim();
