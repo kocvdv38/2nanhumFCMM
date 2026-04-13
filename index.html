@@ -1257,8 +1257,8 @@ min-height: 108px;
 <select id="king-lobby-subject" onchange="kingLobbySubjectChange(this.value)">
 <option value="all">전체 과목 (랜덤)</option>
 <option value="drawing">전산응용기계제도기능사</option>
-<option value="lathe">컴퓨터응용선반기능사</option>
-<option value="milling">컴퓨터응용밀링기능사</option>
+<option value="lathe">컴퓨터응용선반기능사(밀링동일)</option>
+<option value="milling">컴퓨터응용밀링기능사(선반동일)</option>
 <option value="assembly">기계조립기능사</option>
 <option value="maintenance">설비보전기능사</option>
 <option value="automation">자동화설비기능사</option>
@@ -1921,7 +1921,8 @@ if (mode === 'mock') {
 var randOpt = document.createElement('option');
 randOpt.value = '__mock_random_session__';
 randOpt.textContent = '랜덤 회차 자동 선택';
-sel.appendChild(randOpt);
+sel.insertBefore(randOpt, sel.firstChild);
+if (!sel.value) sel.value = '__mock_random_session__';
 }
 merged.forEach(function (item) {
 var row = item.row;
