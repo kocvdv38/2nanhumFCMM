@@ -295,7 +295,7 @@
     "question": "다음 그림과 같은 테이퍼를 선반에서 깎으려 한다. 심압대를 편위시켜 가공하려면 심압대를 몇 mm 이동시켜야 하는가?",
     "options": ["5", "6", "8", "10"],
     "answer": 1,
-    "explanation": "편위량 $e = \\frac{(D-d) \\times L}{2l} = \\frac{(44-40) \\times 500}{2 \\times 200} = 5mm$ 입니다.",
+    "explanation": "편위량 e = {(D-d) x L} / 2l = {(44-40) x 500} / {2 x 200} = 5mm 입니다.",
     "image_file": "assembly/24_04/assembly_24_04_26.png"
   },
   {
@@ -304,7 +304,7 @@
     "question": "재질이 연강이고, 지름 50mm, 길이 800mm인 환봉을 이송 0.4mm/rev, 절삭속도 50m/min으로 선반에서 1회 가공하는 데 소요되는 시간은?(단, 가공 길이는 환봉의 길이인 800mm로 계산한다)",
     "options": ["약 1분 18초", "약 3분 23초", "약 6분 17초", "약 9분 49초"],
     "answer": 3,
-    "explanation": "회전수 $n = \\frac{1,000V}{\\pi D} \\approx 318rpm$, 가공시간 $T = \\frac{L}{ns} = \\frac{800}{318 \\times 0.4} \\approx 6.28$분으로 약 6분 17초가 소요됩니다.",
+    "explanation": "회전수 n = 1,000V / πD = 318rpm, \n가공시간 T = {L / ns} x ί(min) = {800 / 318rpm x 0.4/rev} x 1회 ≒ 6.28min = 약 6분 17초",
     "image_file": null
   },
   {
@@ -349,7 +349,7 @@
     "question": "선반에서 지름 60mm의 공작물을 절삭속도 100m/min으로 가공하려 할 때 회전수는 약 몇 rpm인가?",
     "options": ["5", "530", "1,667", "5,305"],
     "answer": 2,
-    "explanation": "회전수 $n = \\frac{1000V}{\\pi D} = \\frac{1000 \\times 100}{\\pi \\times 60} \\approx 530rpm$ 입니다.",
+    "explanation": "회전수 n = 1000V / πd = (1000 x 100m/min) /  π x 60min ≒ 530rpm 입니다.",
     "image_file": null
   },
   {
@@ -358,7 +358,7 @@
     "question": "구멍수가 24개인 분할판에서 직접 분할법으로 12등분을 할 때, 직접 분할판의 회전 구멍수는?",
     "options": ["2", "3", "4", "5"],
     "answer": 1,
-    "explanation": "직접 분할법 회전수 $x = \\frac{24}{N} = \\frac{24}{12} = 2$구멍씩 회전시킵니다.",
+    "explanation": "직접 분할법 회전수 x = 24 / N = 24 / 12 = 2 \n 따라서, 직접분할판에서 2구멍씩 이동시키면서 가공하면 12등분이 된다.",
     "image_file": null
   },
   {
@@ -569,7 +569,7 @@
     "question": "속도비가 1/3이고, 원동차의 잇수가 25개, 모듈이 4인 표준 스퍼기어의 외접 연결에서 중심거리는?",
     "options": ["75mm", "100mm", "150mm", "200mm"],
     "answer": 4,
-    "explanation": "속도비 $i = \\frac{Z_1}{Z_2} = \\frac{1}{3}$ 이므로 종동차 잇수 $Z_2 = 75$. 중심거리 $C = \\frac{m(Z_1+Z_2)}{2} = \\frac{4(25+75)}{2} = 200mm$ 입니다.",
+    "explanation": "속도비 i = N₁ / N₂ = Z₂ / Z₁ = 1 / 3 = 25 / Z₁ -> Z₁ = 75 \n중심거리 C = D₁ + D₂ / 2 = m(Z₁ + Z₂) / 2 = 4(75+25) / 2 = 200mm 입니다.",
     "image_file": null
   },
   {
