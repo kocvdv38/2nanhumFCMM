@@ -1533,6 +1533,115 @@ yearFrom: 18,
 yearTo: 30,
 roundParts: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
 };
+const QUIZ_JSON_CACHE_STORAGE_KEY = 'catch_cert_quiz_json_cache_v1';
+const FILE_EXISTS_CACHE_STORAGE_KEY = 'catch_cert_file_exists_cache_v1';
+const SUBJECT_MANIFEST_CACHE_STORAGE_KEY = 'catch_cert_subject_manifest_cache_v1';
+const QUIZ_JSON_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const FILE_EXISTS_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const SUBJECT_MANIFEST_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const QUIZ_JSON_CACHE_MAX_ENTRIES = 16;
+const FILE_EXISTS_CACHE_MAX_ENTRIES = 600;
+const SUBJECT_MANIFEST_CACHE_MAX_ENTRIES = 24;
+let quizJsonCacheMem = null;
+let fileExistsCacheMem = null;
+let subjectManifestCacheMem = null;
+function cloneJson(v) {
+return v == null ? v : JSON.parse(JSON.stringify(v));
+}
+function readLocalObjectCache(key) {
+try {
+var raw = localStorage.getItem(key);
+if (!raw) return {};
+var o = JSON.parse(raw);
+return (o && typeof o === 'object') ? o : {};
+} catch (e) {
+return {};
+}
+}
+function writeLocalObjectCache(key, value) {
+try {
+localStorage.setItem(key, JSON.stringify(value));
+} catch (e) {}
+}
+function ensureQuizJsonCacheMem() {
+if (!quizJsonCacheMem) quizJsonCacheMem = readLocalObjectCache(QUIZ_JSON_CACHE_STORAGE_KEY);
+return quizJsonCacheMem;
+}
+function ensureFileExistsCacheMem() {
+if (!fileExistsCacheMem) fileExistsCacheMem = readLocalObjectCache(FILE_EXISTS_CACHE_STORAGE_KEY);
+return fileExistsCacheMem;
+}
+function ensureSubjectManifestCacheMem() {
+if (!subjectManifestCacheMem) subjectManifestCacheMem = readLocalObjectCache(SUBJECT_MANIFEST_CACHE_STORAGE_KEY);
+return subjectManifestCacheMem;
+}
+function pruneCacheMapBySize(map, maxEntries) {
+var keys = Object.keys(map || {});
+if (keys.length <= maxEntries) return;
+keys.sort(function (a, b) {
+var ta = map[a] && map[a].t ? map[a].t : 0;
+var tb = map[b] && map[b].t ? map[b].t : 0;
+return ta - tb;
+});
+for (var i = 0; i < keys.length - maxEntries; i++) delete map[keys[i]];
+}
+function getCachedQuizJson(path) {
+var now = Date.now();
+var map = ensureQuizJsonCacheMem();
+var hit = map[path];
+if (hit && hit.t && (now - hit.t) <= QUIZ_JSON_CACHE_TTL_MS && hit.data != null) return cloneJson(hit.data);
+if (hit) delete map[path];
+return null;
+}
+function setCachedQuizJson(path, data) {
+if (data == null) return;
+var map = ensureQuizJsonCacheMem();
+map[path] = { t: Date.now(), data: data };
+pruneCacheMapBySize(map, QUIZ_JSON_CACHE_MAX_ENTRIES);
+writeLocalObjectCache(QUIZ_JSON_CACHE_STORAGE_KEY, map);
+}
+async function fetchQuizJsonCached(path) {
+var cached = getCachedQuizJson(path);
+if (cached != null) return cached;
+var r = await fetch(path, { cache: 'no-cache' });
+if (!r.ok) throw new Error('파일 로드 실패');
+var data = await r.json();
+setCachedQuizJson(path, data);
+return cloneJson(data);
+}
+function getCachedFileExists(path) {
+var now = Date.now();
+var map = ensureFileExistsCacheMem();
+var hit = map[path];
+if (hit && hit.t && (now - hit.t) <= FILE_EXISTS_CACHE_TTL_MS && typeof hit.ok === 'boolean') return hit.ok;
+if (hit) delete map[path];
+return null;
+}
+function setCachedFileExists(path, ok) {
+var map = ensureFileExistsCacheMem();
+map[path] = { t: Date.now(), ok: !!ok };
+pruneCacheMapBySize(map, FILE_EXISTS_CACHE_MAX_ENTRIES);
+writeLocalObjectCache(FILE_EXISTS_CACHE_STORAGE_KEY, map);
+}
+function getProbeCacheSignature() {
+return [SESSION_QUIZ_FILE_PROBE.yearFrom, SESSION_QUIZ_FILE_PROBE.yearTo, SESSION_QUIZ_FILE_PROBE.roundParts.join(',')].join('|');
+}
+function getCachedSubjectManifest(subjectKey) {
+var now = Date.now();
+var map = ensureSubjectManifestCacheMem();
+var hit = map[subjectKey];
+if (hit && hit.t && hit.sig === getProbeCacheSignature() && (now - hit.t) <= SUBJECT_MANIFEST_CACHE_TTL_MS && Array.isArray(hit.rows)) {
+return cloneJson(hit.rows);
+}
+if (hit) delete map[subjectKey];
+return null;
+}
+function setCachedSubjectManifest(subjectKey, rows) {
+var map = ensureSubjectManifestCacheMem();
+map[subjectKey] = { t: Date.now(), sig: getProbeCacheSignature(), rows: rows };
+pruneCacheMapBySize(map, SUBJECT_MANIFEST_CACHE_MAX_ENTRIES);
+writeLocalObjectCache(SUBJECT_MANIFEST_CACHE_STORAGE_KEY, map);
+}
 /** 예전 방·저장값: *.json 과목 문자열 → 현재 과목 키 */
 function normalizeSubjectKey(key) {
 if (key == null || key === '' || key === 'all') return key;
@@ -1575,6 +1684,8 @@ return String(b).localeCompare(String(a));
 async function discoverSubjectQuizFiles(subjectKey) {
 const k = normalizeSubjectKey(subjectKey);
 if (!k || k === 'all') return [];
+var cachedRows = getCachedSubjectManifest(k);
+if (cachedRows) return cachedRows;
 const candidates = [];
 for (let yy = SESSION_QUIZ_FILE_PROBE.yearFrom; yy <= SESSION_QUIZ_FILE_PROBE.yearTo; yy++) {
 const ys = String(yy).padStart(2, '0');
@@ -1595,18 +1706,27 @@ return ok ? row : null;
 }));
 const okRows = results.filter(Boolean);
 okRows.sort(function (a, b) { return compareSessionCodeDesc(a.code, b.code); });
+setCachedSubjectManifest(k, okRows);
 return okRows;
 }
 async function checkFileExists(path) {
+var cached = getCachedFileExists(path);
+if (typeof cached === 'boolean') return cached;
 try {
 let r = await fetch(path, { method: 'HEAD', cache: 'no-cache' });
-if (r.ok) return true;
+if (r.ok) {
+setCachedFileExists(path, true);
+return true;
+}
 if (r.status === 405 || r.status === 501) {
 r = await fetch(path, { method: 'GET', cache: 'no-cache' });
+setCachedFileExists(path, r.ok);
 return r.ok;
 }
+setCachedFileExists(path, false);
 return false;
 } catch (e) {
+setCachedFileExists(path, false);
 return false;
 }
 }
@@ -2148,8 +2268,7 @@ const seen = new Set();
 const pool = [];
 for (const f of files) {
 try {
-const r = await fetch(f);
-const data = await r.json();
+const data = await fetchQuizJsonCached(f);
 const arr = Array.isArray(data) ? data : [];
 for (const q of arr) {
 if (!q || !Array.isArray(q.options)) continue;
@@ -3499,7 +3618,7 @@ alert('선택한 과목 범위에서 문제 파일을 찾지 못했습니다.');
 return;
 }
 return Promise.all(files.map(function (f) {
-return fetch(f).then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; });
+return fetchQuizJsonCached(f).then(function (d) { return Array.isArray(d) ? d : []; }).catch(function () { return []; });
 }));
 }).then(function (parts) {
 if (!parts) return;
@@ -3611,7 +3730,7 @@ setQuizLoadingUi(false);
 return alert('회차를 선택하세요.');
 }
 quizSubjectFile = fetchPath;
-fetch(fetchPath).then(r => r.json()).then(data => {
+fetchQuizJsonCached(fetchPath).then(data => {
 const selEl = document.getElementById('session-val');
 const optEl = selEl && selEl.options[selEl.selectedIndex];
 var sessionVal = selEl ? selEl.value : '';
@@ -3882,7 +4001,7 @@ async function prepareSchoolWarQuiz() {
 const files = await fetchKingFilesForPreferred();
 if (!files || !files.length) throw new Error('no_files');
 const parts = await Promise.all(files.map(function (f) {
-return fetch(f).then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; });
+return fetchQuizJsonCached(f).then(function (d) { return Array.isArray(d) ? d : []; }).catch(function () { return []; });
 }));
 let data = [];
 parts.forEach(function (p) { if (Array.isArray(p)) data = data.concat(p); });
@@ -3893,6 +4012,9 @@ function checkAnswer(ans, btn) {
 if (mode === 'mock') return;
 const p = quizList[currentIdx];
 const idx = currentIdx;
+if ((mode === 'practice' || mode === 'daily') && !wrongNoteOnly && practiceFirstSubmit[idx]) {
+return;
+}
 const canRevise = (mode === 'practice' || mode === 'daily' || mode === 'classic') && !wrongNoteOnly;
 if (canRevise && lastAnswerCorrect[idx] === true) {
 score -= 10;
@@ -3933,6 +4055,10 @@ if (!practiceFirstSubmit[idx]) {
 practiceFirstSubmit[idx] = true;
 sessionPracticeSolved++;
 }
+document.querySelectorAll('#q-opts .option-btn').forEach(function (el) {
+el.disabled = true;
+el.style.pointerEvents = 'none';
+});
 }
 updateUI();
 })().catch(function () {});
