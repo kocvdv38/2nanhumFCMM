@@ -1861,7 +1861,7 @@ preferredSubjectKeys = keys;
 }
 savePreferredSubjectsToStorage();
 syncPreferredSubjectUi();
-if ((mode === 'practice' || mode === 'daily') && !document.getElementById('session-select-div').classList.contains('hidden')) {
+if ((mode === 'practice' || mode === 'daily' || mode === 'mock') && !document.getElementById('session-select-div').classList.contains('hidden')) {
 var labelEl = document.getElementById('session-subject-label');
 if (labelEl) labelEl.textContent = '적용 과목: ' + getPreferredSubjectSummaryHtml();
 populateSessionSelectMerged().catch(function () {
@@ -1888,7 +1888,15 @@ updateResumeStudyButtonVisibility();
 return;
 }
 if (keys.length === 1) {
-return populateSessionSelect(keys[0]);
+await populateSessionSelect(keys[0]);
+if (mode === 'mock') {
+var r1 = document.createElement('option');
+r1.value = '__mock_random_session__';
+r1.textContent = '랜덤 회차 자동 선택';
+sel.insertBefore(r1, sel.firstChild);
+if (!sel.value) sel.value = '__mock_random_session__';
+}
+return;
 }
 var merged = [];
 for (var i = 0; i < keys.length; i++) {
@@ -1911,8 +1919,8 @@ return;
 }
 if (mode === 'mock') {
 var randOpt = document.createElement('option');
-randOpt.value = '__mock_random__';
-randOpt.textContent = '랜덤 60문제 (선택 과목 전체)';
+randOpt.value = '__mock_random_session__';
+randOpt.textContent = '랜덤 회차 자동 선택';
 sel.appendChild(randOpt);
 }
 merged.forEach(function (item) {
@@ -2784,7 +2792,7 @@ function updateSubjectRankHelp() {
     } else if (m === 'classic') {
         html = '<h3>🏆 클래식 도전 — 랭킹 반영</h3><ul><li>게임이 끝나거나 <strong>그만두기</strong>할 때, <strong>이번 점수</strong>가 본인 <strong>역대 최고점</strong>보다 높을 때만 랭킹 점수가 갱신됩니다.</li></ul>';
     } else if (m === 'mock') {
-        html = '<h3>📝 모의고사 — 랭킹 반영</h3><ul><li><strong>60문제 · 60분</strong> 제한이며, 제출 시 정답 수를 <strong>100점 만점 환산(소수 둘째 자리)</strong>으로 저장합니다.</li><li>랭킹은 개인의 <strong>상위 3회 환산점수</strong>를 순서대로 비교해 정해집니다.</li></ul>';
+        html = '<h3>📝 모의고사 — 랭킹 반영</h3><ul><li><strong>60문제 · 60분</strong> 제한이며, 제출 시 정답 수를 <strong>100점 만점 환산(소수 둘째 자리)</strong>으로 계산합니다.</li><li>환산점수별 포인트: <strong>100점=3점, 80~99점=2점, 60~79점=1점</strong>. 누적 포인트로 랭킹이 결정됩니다.</li></ul>';
     } else if (m === 'survival') {
         html = '<h3>💔 서바이벌 — 랭킹 반영</h3><ul><li>게임이 끝나거나 <strong>그만두기</strong>할 때, <strong>이번 점수</strong>가 본인 <strong>역대 최고점</strong>보다 높을 때만 랭킹 점수가 갱신됩니다.</li></ul>';
     } else if (m === 'timeattack') {
@@ -3260,36 +3268,24 @@ function prepareQuiz() {
 wrongNoteOnly = false;
 if (mode === 'mock') {
 const sel = document.getElementById('session-val');
-const picked = sel ? sel.value : '';
+let picked = sel ? sel.value : '';
 if (!picked) {
 setQuizLoadingUi(false);
 return alert('회차를 선택하세요.');
 }
-if (picked === '__mock_random__') {
-return fetchKingFilesForPreferred().then(function (files) {
-if (!files || files.length === 0) {
-setQuizLoadingUi(false);
-alert('선택한 과목 범위에서 문제 파일을 찾지 못했습니다.');
-return;
+if (picked === '__mock_random_session__') {
+const candidates = [];
+for (let i = 0; i < sel.options.length; i++) {
+const v = String(sel.options[i].value || '');
+if (v && v !== '__mock_random_session__') candidates.push(sel.options[i]);
 }
-return Promise.all(files.map(function (f) {
-return fetch(f).then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; });
-}));
-}).then(function (parts) {
-if (!parts) return;
-let data = [];
-parts.forEach(function (p) { if (Array.isArray(p)) data = data.concat(p); });
-if (data.length < 60) {
+if (!candidates.length) {
 setQuizLoadingUi(false);
-alert('모의고사에는 최소 60문제가 필요합니다.');
-return;
+return alert('랜덤으로 선택할 회차가 없습니다.');
 }
-quizList = data.sort(function () { return Math.random() - 0.5; }).slice(0, 60);
-startQuiz();
-}).catch(function () {
-setQuizLoadingUi(false);
-alert('문제를 불러오지 못했습니다.');
-});
+const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+sel.value = chosen.value;
+picked = chosen.value;
 }
 const fetchPathMock = getSelectedSessionQuizPath();
 if (!fetchPathMock) {
