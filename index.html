@@ -3160,7 +3160,7 @@ return Promise.reject(new Error('__identity_dup'));
 const newUser = {
 id, pw, school, name:n, student_id: s, birth:b,
 hide_name_in_ranking: false,
-practice_count:0, classic_score:0, survival_score:0, timeattack_score:0, king_score:0,
+practice_count:0, practice_time:'00:00', practice_time_seconds:0, practice_score:0, classic_score:0, survival_score:0, timeattack_score:0, king_score:0,
 daily_streak:0, daily_best_streak:0, daily_last_date:'', daily_time:'--:--', daily_time_seconds:0
 };
 if (emailRaw) newUser.email = emailRaw;
@@ -3512,6 +3512,32 @@ const m = String(Math.floor(n / 60)).padStart(2, '0');
 const s = String(n % 60).padStart(2, '0');
 return m + ':' + s;
 }
+function getPracticeCumulativeSeconds(u) {
+if (!u) return 0;
+if (u.practice_time_seconds != null && !isNaN(Number(u.practice_time_seconds))) {
+return Math.max(0, Math.floor(Number(u.practice_time_seconds)));
+}
+return parseDailyTimeToSeconds(u.practice_time);
+}
+function computePracticeScore(practiceCount, practiceSeconds) {
+const cnt = Math.max(0, Number(practiceCount) || 0);
+const sec = Math.max(0, Number(practiceSeconds) || 0);
+const expectedSec = cnt * 20;
+if (sec >= expectedSec) return cnt;
+return Math.max(0, cnt - ((expectedSec - sec) / 20));
+}
+function getPracticeScoreFromUser(u) {
+if (u && u.practice_score != null && !isNaN(Number(u.practice_score))) {
+return Math.max(0, Number(u.practice_score));
+}
+const cnt = u && u.practice_count != null ? Number(u.practice_count) : 0;
+const sec = getPracticeCumulativeSeconds(u);
+return computePracticeScore(cnt, sec);
+}
+function formatPracticeScore(score) {
+const rounded = Math.round((Math.max(0, Number(score) || 0)) * 10) / 10;
+return rounded.toFixed(1).replace(/\.0$/, '');
+}
 
 // 결과 및 랭킹
 async function refreshUserFromDb() {
@@ -3542,8 +3568,10 @@ extra = ` · <span style="color:#856404;">이 모드 기록 없음 — 순위 �
 }
 if(rankMode === 'practice') {
 const cnt = user.practice_count != null ? user.practice_count : 0;
-const t = user.practice_time || '--:--';
-el.innerHTML = `<div class="rank-my-box"><b>나의 기록</b> · 누적 <strong>${cnt}</strong>문제 · 시간 ${t}${extra}</div>`;
+const sec = getPracticeCumulativeSeconds(user);
+const t = formatSecondsToMmSs(sec);
+const ps = formatPracticeScore(getPracticeScoreFromUser(user));
+el.innerHTML = `<div class="rank-my-box"><b>나의 기록</b> · 누적 <strong>${cnt}</strong>문제 (${t}) → <strong>${ps}</strong>점${extra}</div>`;
 } else if (rankMode === 'king') {
 const wins = user.king_score != null ? user.king_score : 0;
 el.innerHTML = `<div class="rank-my-box"><b>나의 기록</b> · 인증 우승 <strong>${wins}</strong>회 <span style="color:#666;font-size:12px;">(한 게임당 처음 시작할 때 참가자 5명 이상인 방 우승만 집계)</span>${extra}</div>`;
@@ -3589,8 +3617,16 @@ document.getElementById('rank-box').classList.remove('hidden');
 const timeStr = document.getElementById('timer-text').innerText;
 const updates = {};
 if(mode === 'practice') {
-updates[`users/${user.id}/practice_count`] = (user.practice_count || 0) + sessionPracticeSolved;
-updates[`users/${user.id}/practice_time`] = timeStr;
+await refreshUserFromDb();
+const sessionSec = Math.max(0, Math.round(Number(totalTime) || 0));
+const prevCnt = Number(user.practice_count) || 0;
+const newCnt = prevCnt + sessionPracticeSolved;
+const prevSec = getPracticeCumulativeSeconds(user);
+const cumSec = prevSec + sessionSec;
+updates[`users/${user.id}/practice_count`] = newCnt;
+updates[`users/${user.id}/practice_time_seconds`] = cumSec;
+updates[`users/${user.id}/practice_time`] = formatSecondsToMmSs(cumSec);
+updates[`users/${user.id}/practice_score`] = Math.round(computePracticeScore(newCnt, cumSec) * 10) / 10;
 } else if (mode === 'daily') {
 if (sessionPracticeSolved >= 1) {
 await refreshUserFromDb();
@@ -3702,7 +3738,7 @@ try { await refreshUserFromDb(); } catch(e) {}
 }
 updateRankBackButton();
 const field = rankMode === 'practice'
-? 'practice_count'
+? 'practice_score'
 : (rankMode === 'king' ? 'king_score' : (rankMode === 'daily' ? 'daily_streak' : rankMode + '_score'));
 try {
 const snap = await db.ref('users').once('value');
@@ -3712,10 +3748,13 @@ const v = c.val();
 if(!v) return;
 arr.push({ ...v, id: v.id != null ? v.id : c.key });
 });
-const arrWithRecord = arr.filter(u => (Number(u[field]) || 0) > 0);
+const arrWithRecord = arr.filter(u => {
+if (rankMode === 'practice') return getPracticeScoreFromUser(u) > 0;
+return (Number(u[field]) || 0) > 0;
+});
 arrWithRecord.sort((a, b) => {
-const va = Number(a[field]) || 0;
-const vb = Number(b[field]) || 0;
+const va = rankMode === 'practice' ? getPracticeScoreFromUser(a) : (Number(a[field]) || 0);
+const vb = rankMode === 'practice' ? getPracticeScoreFromUser(b) : (Number(b[field]) || 0);
 if (vb !== va) return vb - va;
 if (rankMode === 'daily') {
 const da = String(a.daily_last_date || '');
@@ -3746,7 +3785,7 @@ const titleLine = hideName
 ? `<b>${u.id || ''}</b>`
 : `<b>${u.name || ''} <small style="color:#999;">(${u.id})</small></b>`;
 const valStr = rankMode === 'practice'
-? ('누적 ' + (u.practice_count != null ? u.practice_count : 0) + '문제')
+? ('누적 ' + (u.practice_count != null ? u.practice_count : 0) + '문제 (' + formatSecondsToMmSs(getPracticeCumulativeSeconds(u)) + ') → ' + formatPracticeScore(getPracticeScoreFromUser(u)) + '점')
 : rankMode === 'king'
 ? ('인증 우승 ' + (u.king_score != null ? u.king_score : 0) + '회')
 : rankMode === 'daily'
@@ -3754,6 +3793,8 @@ const valStr = rankMode === 'practice'
 : ((u[field] != null ? u[field] : 0) + '점');
 const timeStr = rankMode === 'king'
 ? '—'
+: rankMode === 'practice'
+? ''
 : rankMode === 'daily'
 ? (u.daily_time || '--:--')
 : (u[rankMode + '_time'] || u['classic_time'] || '--:--');
@@ -3775,7 +3816,7 @@ return `
                            <div class="rank-school">${u.school || "학교 정보 없음"}</div>
                            <small style="color:#dc3545; font-weight:bold;">
                                ${valStr}
-                               (${timeStr})
+                               ${timeStr ? '(' + timeStr + ')' : ''}
                            </small>
                        </div>
                    </div>
@@ -4135,7 +4176,7 @@ const LOGIN_TOP3_ROTATE_MS = 5000;
 /** 로그인 화면 TOP3 미리보기·스냅샷 공통 (key는 Firebase meta/top3_snapshot.modes 와 동일) */
 const LOGIN_TOP3_MODES = [
 { key: 'daily', field: 'daily_streak', label: '데일리', icon: '📅', cardClass: 'login-top3-card--daily' },
-{ key: 'practice', field: 'practice_count', label: '연습왕', icon: '📚', cardClass: 'login-top3-card--practice' },
+{ key: 'practice', field: 'practice_score', label: '연습왕', icon: '📚', cardClass: 'login-top3-card--practice' },
 { key: 'classic', field: 'classic_score', label: '클래식', icon: '🎯', cardClass: 'login-top3-card--classic' },
 { key: 'survival', field: 'survival_score', label: '서바이벌', icon: '💔', cardClass: 'login-top3-card--survival' },
 { key: 'timeattack', field: 'timeattack_score', label: '타임어택', icon: '⏱️', cardClass: 'login-top3-card--timeattack' },
@@ -4169,10 +4210,14 @@ return db.localeCompare(da);
 });
 } else {
 sorted.sort(function (a, b) {
+if (def.key === 'practice') return getPracticeScoreFromUser(b) - getPracticeScoreFromUser(a);
 return (Number(b[def.field]) || 0) - (Number(a[def.field]) || 0);
 });
 }
-return sorted.filter(function (u) { return (Number(u[def.field]) || 0) > 0; }).slice(0, 3);
+return sorted.filter(function (u) {
+if (def.key === 'practice') return getPracticeScoreFromUser(u) > 0;
+return (Number(u[def.field]) || 0) > 0;
+}).slice(0, 3);
 }
 
 /** 로그인·랭킹 화면 TOP3 카드 HTML 목록 (동일 데이터 소스) */
