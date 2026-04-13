@@ -548,7 +548,8 @@ transform: translateX(-50%) translateY(0) scale(1);
 #quiz-box #q-txt,
 #king-game-box #king-q-txt {
 text-align: justify;
-text-justify: inter-word;
+text-justify: inter-character;
+word-break: break-all;
 }
 #quiz-box #q-img,
 #king-game-box #king-q-img {
@@ -566,7 +567,8 @@ text-align: justify;
 #quiz-box #q-opts .option-btn,
 #king-game-box #king-q-opts .option-btn {
 text-align: justify;
-text-justify: inter-word;
+text-justify: inter-character;
+word-break: break-all;
 }
 #quiz-box #q-opts .option-btn .opt-img-inline,
 #king-game-box #king-q-opts .option-btn .opt-img-inline {
@@ -1079,10 +1081,10 @@ padding: 12px;
 }
 #quiz-box h3 {
 font-size: 1.05rem;
-word-break: keep-all;
+word-break: break-all;
 line-height: 1.45;
 text-align: justify;
-text-justify: inter-word;
+text-justify: inter-character;
 }
 .rank-item {
 font-size: 13px;
