@@ -466,10 +466,10 @@
     "id": 44,
     "session": "23-03",
     "question": "다음 중 보조가스 용기에 대한 기호는?",
-    "options": ["①", "②", "③", "④"],
+    "options": ["maintenance_23_03_44_op1.png", "maintenance_23_03_44_op2.png", "maintenance_23_03_44_op3.png", "maintenance_23_03_44_op4.png"],
     "answer": 2,
     "explanation": "항상 세로형으로 표시하며 어큐뮬레이터와 조합하여 사용하는 보급용 가스 용기이다.",
-    "image_file": "image_acc24f.jpg"
+    "image_file": null
   },
   {
     "id": 45,
