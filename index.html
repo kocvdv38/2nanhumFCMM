@@ -1385,7 +1385,7 @@ min-height: 108px;
 <option value="#364fc7">남색</option>
 <option value="#ae3ec9">보라</option>
 </select>
-<button type="button" class="btn-gray" style="width:auto;padding:8px 12px;margin:0;" onclick="saveSchoolWarColor()">저장</button>
+<button type="button" class="btn-gray" style="width:auto;padding:8px 12px;margin:0;" onclick="saveSchoolWarColor()"> 저장</button>
 </div>
 <div id="schoolwar-map" style="display:grid;grid-template-columns:repeat(50, 1fr);gap:1px;max-width:520px;margin:0 auto 10px auto;background:#e9ecef;border:1px solid #dee2e6;padding:4px;border-radius:8px;"></div>
 <div id="schoolwar-stats" style="text-align:left;font-size:13px;background:#f8f9fa;border:1px solid #e9ecef;border-radius:8px;padding:8px;min-height:46px;margin-bottom:10px;">점령 현황이 여기에 표시됩니다.</div>
@@ -1393,6 +1393,13 @@ min-height: 108px;
 <button type="button" id="schoolwar-apply-btn" class="btn-blue hidden" onclick="applySchoolWarSelections()" style="margin-bottom:10px;">선택 점령 확정</button>
 <button type="button" class="btn-green" onclick="startSchoolWarQuiz()">문제 풀기 시작</button>
 <button type="button" class="btn-gray" onclick="backToModeSelect()">← 모드 선택으로</button>
+</div>
+<div id="schoolwar-owner-modal" class="hidden" style="position:fixed;inset:0;z-index:10060;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,0.35);">
+<div role="dialog" aria-modal="true" aria-labelledby="schoolwar-owner-modal-title" style="width:100%;max-width:360px;background:#fff;border-radius:14px;padding:16px 16px 12px 16px;box-shadow:0 16px 40px rgba(0,0,0,0.2);text-align:left;">
+<h3 id="schoolwar-owner-modal-title" style="margin:0 0 10px 0;font-size:17px;color:#212529;">점령 칸 정보</h3>
+<div id="schoolwar-owner-modal-body" style="font-size:14px;line-height:1.55;color:#343a40;"></div>
+<button type="button" class="btn-blue" onclick="closeSchoolWarOwnerInfoModal()" style="margin-top:14px;">확인</button>
+</div>
 </div>
 
 <div id="subject-pref-modal" class="subject-pref-modal hidden" aria-hidden="true">
@@ -3434,6 +3441,21 @@ const ownerSchool = schoolWarUserSchools[uid] || '';
 if (schoolWarSchool && ownerSchool && String(ownerSchool) === String(schoolWarSchool)) return '#d9f3ff';
 return '#ff69b4';
 }
+function openSchoolWarOwnerInfoModal(ownerName, ownerUid, ownerSchool) {
+var modal = document.getElementById('schoolwar-owner-modal');
+var body = document.getElementById('schoolwar-owner-modal-body');
+if (!modal || !body) return;
+body.innerHTML =
+'<div><strong style="display:inline-block;min-width:72px;">이름</strong>' + escapeHtml(ownerName || '-') + '</div>' +
+'<div><strong style="display:inline-block;min-width:72px;">아이디</strong>' + escapeHtml(ownerUid || '-') + '</div>' +
+'<div><strong style="display:inline-block;min-width:72px;">학교</strong>' + escapeHtml(ownerSchool || '-') + '</div>';
+modal.classList.remove('hidden');
+}
+function closeSchoolWarOwnerInfoModal() {
+var modal = document.getElementById('schoolwar-owner-modal');
+if (!modal) return;
+modal.classList.add('hidden');
+}
 function initSchoolWarMapUi() {
 const mapEl = document.getElementById('schoolwar-map');
 if (!mapEl || mapEl.childElementCount === 2500) return;
@@ -3465,8 +3487,9 @@ updateSchoolWarSelectionUi();
 return;
 }
 if (!ownerUid) return;
+const ownerName = schoolWarUserNames[String(ownerUid)] || ownerUid;
 const ownerSchool = schoolWarUserSchools[String(ownerUid)] || '학교 정보 없음';
-alert('점령자 아이디: ' + ownerUid + '\n학교: ' + ownerSchool);
+openSchoolWarOwnerInfoModal(ownerName, ownerUid, ownerSchool);
 });
 mapEl.appendChild(c);
 }
@@ -3502,7 +3525,13 @@ el.style.outlineOffset = '-2px';
 el.style.outline = '';
 }
 el.setAttribute('data-owner-uid', ownerUid);
-el.title = ownerUid ? ('점령자: ' + ownerUid) : '빈칸';
+if (ownerUid) {
+const ownerName = schoolWarUserNames[String(ownerUid)] || ownerUid;
+const ownerSchool = schoolWarUserSchools[String(ownerUid)] || '학교 정보 없음';
+el.title = '점령자: ' + ownerName + ' (' + ownerUid + ') · ' + ownerSchool;
+} else {
+el.title = '빈칸';
+}
 }
 }
 function renderSchoolWarStats() {
