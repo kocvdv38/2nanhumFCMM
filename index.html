@@ -1253,7 +1253,7 @@ min-height: 108px;
 <select id="session-val" aria-label="회차 선택"><option value="">과목을 먼저 선택하세요</option></select>
 <button type="button" class="btn-green" onclick="startPracticeFromSelection()">이 회차로 시작</button>
 <button type="button" id="btn-resume-study" class="btn-blue hidden" onclick="void(resumePracticeDailyFromStorage())">이어 공부하기</button>
-<p id="resume-study-hint" class="hidden" style="font-size:13px;color:#555;margin:6px 0 0 0;">저장된 진행이 있으면 이어서, 없으면 선택한 회차의 첫 문제부터 시작합니다.</p>
+<p id="resume-study-hint" class="hidden" style="font-size:13px;color:#555;margin:6px 0 0 0;">같은 과목에 저장된 진행이 있으면 저장된 회차·문제부터 이어갑니다. 다른 회차를 새로 풀려면 「이 회차로 시작」을 누르세요.</p>
 </div>
 <button type="button" class="btn-gray" onclick="backToModeSelect()" style="margin-top:12px;">← 모드 선택으로</button>
 </div>
@@ -1372,7 +1372,8 @@ welding: '피복아크용접기능사'
 const KING_SUBJECT_FILE_LIST_PREF = Object.keys(SUBJECT_LABELS);
 const PREF_SUBJECTS_STORAGE_KEY = 'catch_cert_pref_subjects_v1';
 /** 연습·데일리 이어하기: users/{uid}_practice | _daily */
-const PRACTICE_DAILY_RESUME_STORAGE_PREFIX = 'catch_cert_resume_v1_';
+const PRACTICE_DAILY_RESUME_STORAGE_PREFIX = 'catch_cert_resume_v2_';
+const PRACTICE_DAILY_RESUME_LEGACY_V1_PREFIX = 'catch_cert_resume_v1_';
 /** 'all' 단독이거나 SUBJECT_LABELS 키 여러 개. 왕중왕전을 제외한 모드의 출제 범위 */
 let preferredSubjectKeys = ['all'];
 /**
@@ -1483,39 +1484,118 @@ localStorage.setItem(PREF_SUBJECTS_STORAGE_KEY, JSON.stringify(preferredSubjectK
 function practiceDailyResumeStorageKey(uid, m) {
 return PRACTICE_DAILY_RESUME_STORAGE_PREFIX + String(uid || '') + '_' + m;
 }
-function getParsedPracticeDailyResume(m) {
+function practiceDailyResumeLegacyV1Key(uid, m) {
+return PRACTICE_DAILY_RESUME_LEGACY_V1_PREFIX + String(uid || '') + '_' + m;
+}
+/** 드롭다운 옵션 또는 단일 과목 선택에서 과목 키 */
+function resolveSessionOptionSubjectKey(opt) {
+if (opt && opt.getAttribute('data-subject')) return normalizeSubjectKey(opt.getAttribute('data-subject'));
+var k = getPreferredSubjectEffectiveKeys();
+if (k.length === 1) return normalizeSubjectKey(k[0]);
+return '';
+}
+/** 퀴즈 진행 중 저장·삭제용 과목 키 */
+function inferSubjectKeyFromQuizContext() {
+var sk = normalizeSubjectKey(pendingQuizFile || '');
+if (sk && sk !== 'all') return sk;
+var path = quizSubjectFile || '';
+var pm = /^([^/]+)\//.exec(path);
+if (pm) return normalizeSubjectKey(pm[1]);
+return '';
+}
+function loadPracticeResumeBag(m) {
 if (!user || !user.id) return null;
+var key2 = practiceDailyResumeStorageKey(user.id, m);
 try {
-var raw = localStorage.getItem(practiceDailyResumeStorageKey(user.id, m));
-if (!raw) return null;
-var o = JSON.parse(raw);
-if (!o || o.v !== 1 || o.userId !== user.id || o.mode !== m) return null;
-return o;
-} catch (e) {
-return null;
+var raw2 = localStorage.getItem(key2);
+if (raw2) {
+var o2 = JSON.parse(raw2);
+if (o2 && o2.v === 2 && o2.userId === user.id && o2.mode === m && o2.bySubject && typeof o2.bySubject === 'object') {
+return o2;
 }
 }
-function clearPracticeDailyResume(m) {
-if (!user || !user.id) return;
-try {
-localStorage.removeItem(practiceDailyResumeStorageKey(user.id, m));
+var raw1 = localStorage.getItem(practiceDailyResumeLegacyV1Key(user.id, m));
+if (raw1) {
+var o1 = JSON.parse(raw1);
+if (o1 && o1.v === 1 && o1.userId === user.id && o1.mode === m) {
+var sk = normalizeSubjectKey(o1.pendingQuizFile || '');
+if (!sk) {
+var pth = o1.quizSubjectFile || '';
+var pm = /^([^/]+)\//.exec(pth);
+if (pm) sk = normalizeSubjectKey(pm[1]);
+}
+if (sk) {
+var entry = {};
+var copyKeys = ['preferredSubjectKeys', 'sessionSelectValue', 'quizSubjectFile', 'sessionCode', 'pendingQuizFile', 'currentIdx', 'quizListLength', 'totalTime', 'sessionPracticeSolved', 'score', 'lastAnswerCorrect', 'practiceFirstSubmit', 'savedAt'];
+for (var ci = 0; ci < copyKeys.length; ci++) {
+var ck = copyKeys[ci];
+if (o1[ck] !== undefined) entry[ck] = o1[ck];
+}
+entry.savedAt = entry.savedAt || Date.now();
+var bagM = { v: 2, userId: user.id, mode: m, bySubject: {} };
+bagM.bySubject[sk] = entry;
+localStorage.setItem(key2, JSON.stringify(bagM));
+localStorage.removeItem(practiceDailyResumeLegacyV1Key(user.id, m));
+return bagM;
+}
+}
+}
 } catch (e) {}
+return { v: 2, userId: user.id, mode: m, bySubject: {} };
+}
+function savePracticeResumeBag(m, bag) {
+if (!user || !user.id || !bag) return;
+try {
+if (!bag.bySubject || Object.keys(bag.bySubject).length === 0) {
+localStorage.removeItem(practiceDailyResumeStorageKey(user.id, m));
+return;
+}
+bag.v = 2;
+bag.userId = user.id;
+bag.mode = m;
+localStorage.setItem(practiceDailyResumeStorageKey(user.id, m), JSON.stringify(bag));
+} catch (e) {}
+}
+function getResumePayloadForSubject(m, subjectKey) {
+if (!user || !user.id || !subjectKey) return null;
+var sk = normalizeSubjectKey(subjectKey);
+if (!sk) return null;
+var bag = loadPracticeResumeBag(m);
+if (!bag || !bag.bySubject) return null;
+return bag.bySubject[sk] || null;
+}
+function clearResumeForSubject(m, subjectKey) {
+if (!user || !user.id || !subjectKey) return;
+var sk = normalizeSubjectKey(subjectKey);
+if (!sk) return;
+var bag = loadPracticeResumeBag(m);
+if (!bag || !bag.bySubject || !bag.bySubject[sk]) return;
+delete bag.bySubject[sk];
+savePracticeResumeBag(m, bag);
+}
+function clearPracticeDailyResumeForCurrentSelection() {
+if (!user || !user.id) return;
+if (mode !== 'practice' && mode !== 'daily') return;
+var sel = document.getElementById('session-val');
+if (!sel || !sel.value) return;
+var opt = sel.options[sel.selectedIndex];
+var sk = resolveSessionOptionSubjectKey(opt);
+if (sk) clearResumeForSubject(mode, sk);
 }
 function savePracticeDailyResumeFromCurrentState() {
 if (!user || !user.id) return;
 if (mode !== 'practice' && mode !== 'daily') return;
 if (!quizList || !quizList.length) return;
 if (currentIdx >= quizList.length) return;
+var sk = inferSubjectKeyFromQuizContext();
+if (!sk) return;
 var sessionSel = document.getElementById('session-val');
 var payload = {
-v: 1,
-userId: user.id,
-mode: mode,
 preferredSubjectKeys: preferredSubjectKeys.slice(),
 sessionSelectValue: sessionSel ? sessionSel.value : '',
 quizSubjectFile: quizSubjectFile || '',
 sessionCode: lastLoadedSessionCode || '',
-pendingQuizFile: pendingQuizFile || '',
+pendingQuizFile: pendingQuizFile || sk,
 currentIdx: Math.max(0, Math.min(currentIdx, quizList.length - 1)),
 quizListLength: quizList.length,
 totalTime: totalTime,
@@ -1525,9 +1605,10 @@ lastAnswerCorrect: lastAnswerCorrect,
 practiceFirstSubmit: practiceFirstSubmit,
 savedAt: Date.now()
 };
-try {
-localStorage.setItem(practiceDailyResumeStorageKey(user.id, mode), JSON.stringify(payload));
-} catch (e) {}
+var bag = loadPracticeResumeBag(mode);
+if (!bag || !bag.bySubject) bag = { v: 2, userId: user.id, mode: mode, bySubject: {} };
+bag.bySubject[sk] = payload;
+savePracticeResumeBag(mode, bag);
 }
 function updateResumeStudyButtonVisibility() {
 var btn = document.getElementById('btn-resume-study');
@@ -1538,12 +1619,25 @@ if (hint) hint.classList.toggle('hidden', !show);
 }
 async function resumePracticeDailyFromStorage() {
 if (mode !== 'practice' && mode !== 'daily') return;
-var data = user && user.id ? getParsedPracticeDailyResume(mode) : null;
+var sel = document.getElementById('session-val');
+if (!sel || !sel.value) return alert('회차를 선택하세요.');
+var opt = sel.options[sel.selectedIndex];
+var subjectKey = resolveSessionOptionSubjectKey(opt);
+var effKeys = getPreferredSubjectEffectiveKeys();
+if (subjectKey && effKeys.indexOf(subjectKey) < 0) {
+if (opt && opt.getAttribute('data-subject')) pendingQuizFile = opt.getAttribute('data-subject');
+else if (subjectKey) pendingQuizFile = subjectKey;
+else {
+var kx = getPreferredSubjectEffectiveKeys();
+pendingQuizFile = kx.length ? kx[0] : null;
+}
+prepareQuiz();
+return;
+}
+var data = (user && user.id && subjectKey) ? getResumePayloadForSubject(mode, subjectKey) : null;
 if (!data) {
-var sel0 = document.getElementById('session-val');
-if (!sel0 || !sel0.value) return alert('회차를 선택하세요.');
-var opt0 = sel0.options[sel0.selectedIndex];
-if (opt0 && opt0.getAttribute('data-subject')) pendingQuizFile = opt0.getAttribute('data-subject');
+if (opt && opt.getAttribute('data-subject')) pendingQuizFile = opt.getAttribute('data-subject');
+else if (subjectKey) pendingQuizFile = subjectKey;
 else {
 var k0 = getPreferredSubjectEffectiveKeys();
 pendingQuizFile = k0.length ? k0[0] : null;
@@ -1551,24 +1645,13 @@ pendingQuizFile = k0.length ? k0[0] : null;
 prepareQuiz();
 return;
 }
-if (data.preferredSubjectKeys && data.preferredSubjectKeys.length) {
-preferredSubjectKeys = data.preferredSubjectKeys.slice();
-savePreferredSubjectsToStorage();
-syncPreferredSubjectUi();
-var subLbl = document.getElementById('session-subject-label');
-if (subLbl) subLbl.textContent = '적용 과목: ' + getPreferredSubjectSummaryHtml();
-}
 await populateSessionSelectMerged();
-var sel = document.getElementById('session-val');
-if (!sel) return;
-sel.value = data.sessionSelectValue;
-if (sel.value !== data.sessionSelectValue) {
-alert('저장된 회차·과목을 현재 목록에서 찾지 못했습니다. 회차를 직접 선택한 뒤 시작해 주세요.');
-clearPracticeDailyResume(mode);
-updateResumeStudyButtonVisibility();
+if (data.sessionSelectValue) sel.value = data.sessionSelectValue;
+if (data.sessionSelectValue && sel.value !== data.sessionSelectValue) {
+alert('저장된 회차를 현재 목록에서 찾지 못했습니다. 회차를 확인하거나 「이 회차로 시작」을 이용해 주세요.');
 return;
 }
-pendingQuizFile = data.pendingQuizFile || null;
+pendingQuizFile = data.pendingQuizFile || subjectKey;
 quizSubjectFile = data.quizSubjectFile || null;
 lastLoadedSessionCode = data.sessionCode || '';
 var fetchPath = data.quizSubjectFile;
@@ -2628,7 +2711,7 @@ document.getElementById('subject-title').textContent = '시작하기';
 }
 }
 function startPracticeFromSelection() {
-if (mode === 'practice' || mode === 'daily') clearPracticeDailyResume(mode);
+if (mode === 'practice' || mode === 'daily') clearPracticeDailyResumeForCurrentSelection();
 var sel = document.getElementById('session-val');
 if (!sel || !sel.value) return alert('회차를 선택하세요.');
 var opt = sel.options[sel.selectedIndex];
@@ -3389,8 +3472,9 @@ populateSessionSelectMerged().catch(function () {});
 return;
 }
 if (user && user.id && (mode === 'practice' || mode === 'daily') && quizList && quizList.length) {
+var skEnd = inferSubjectKeyFromQuizContext();
 if (currentIdx >= quizList.length) {
-clearPracticeDailyResume(mode);
+if (skEnd) clearResumeForSubject(mode, skEnd);
 } else {
 savePracticeDailyResumeFromCurrentState();
 }
