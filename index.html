@@ -1252,6 +1252,8 @@ min-height: 108px;
 <button type="button" class="btn-orange btn-wrong-note" onclick="startWrongNoteQuiz()">📕 오답노트</button>
 <select id="session-val" aria-label="회차 선택"><option value="">과목을 먼저 선택하세요</option></select>
 <button type="button" class="btn-green" onclick="startPracticeFromSelection()">이 회차로 시작</button>
+<button type="button" id="btn-resume-study" class="btn-blue hidden" onclick="void(resumePracticeDailyFromStorage())">이어 공부하기</button>
+<p id="resume-study-hint" class="hidden" style="font-size:13px;color:#555;margin:6px 0 0 0;">저장된 회차·진행 위치부터 이어서 풀 수 있습니다.</p>
 </div>
 <button type="button" class="btn-gray" onclick="backToModeSelect()" style="margin-top:12px;">← 모드 선택으로</button>
 </div>
@@ -1369,6 +1371,8 @@ welding: '피복아크용접기능사'
 };
 const KING_SUBJECT_FILE_LIST_PREF = Object.keys(SUBJECT_LABELS);
 const PREF_SUBJECTS_STORAGE_KEY = 'catch_cert_pref_subjects_v1';
+/** 연습·데일리 이어하기: users/{uid}_practice | _daily */
+const PRACTICE_DAILY_RESUME_STORAGE_PREFIX = 'catch_cert_resume_v1_';
 /** 'all' 단독이거나 SUBJECT_LABELS 키 여러 개. 왕중왕전을 제외한 모드의 출제 범위 */
 let preferredSubjectKeys = ['all'];
 /**
@@ -1476,6 +1480,129 @@ try {
 localStorage.setItem(PREF_SUBJECTS_STORAGE_KEY, JSON.stringify(preferredSubjectKeys));
 } catch (e) {}
 }
+function practiceDailyResumeStorageKey(uid, m) {
+return PRACTICE_DAILY_RESUME_STORAGE_PREFIX + String(uid || '') + '_' + m;
+}
+function getParsedPracticeDailyResume(m) {
+if (!user || !user.id) return null;
+try {
+var raw = localStorage.getItem(practiceDailyResumeStorageKey(user.id, m));
+if (!raw) return null;
+var o = JSON.parse(raw);
+if (!o || o.v !== 1 || o.userId !== user.id || o.mode !== m) return null;
+return o;
+} catch (e) {
+return null;
+}
+}
+function clearPracticeDailyResume(m) {
+if (!user || !user.id) return;
+try {
+localStorage.removeItem(practiceDailyResumeStorageKey(user.id, m));
+} catch (e) {}
+}
+function savePracticeDailyResumeFromCurrentState() {
+if (!user || !user.id) return;
+if (mode !== 'practice' && mode !== 'daily') return;
+if (!quizList || !quizList.length) return;
+if (currentIdx >= quizList.length) return;
+var sessionSel = document.getElementById('session-val');
+var payload = {
+v: 1,
+userId: user.id,
+mode: mode,
+preferredSubjectKeys: preferredSubjectKeys.slice(),
+sessionSelectValue: sessionSel ? sessionSel.value : '',
+quizSubjectFile: quizSubjectFile || '',
+sessionCode: lastLoadedSessionCode || '',
+pendingQuizFile: pendingQuizFile || '',
+currentIdx: Math.max(0, Math.min(currentIdx, quizList.length - 1)),
+quizListLength: quizList.length,
+totalTime: totalTime,
+sessionPracticeSolved: sessionPracticeSolved,
+score: score,
+lastAnswerCorrect: lastAnswerCorrect,
+practiceFirstSubmit: practiceFirstSubmit,
+savedAt: Date.now()
+};
+try {
+localStorage.setItem(practiceDailyResumeStorageKey(user.id, mode), JSON.stringify(payload));
+} catch (e) {}
+}
+function updateResumeStudyButtonVisibility() {
+var btn = document.getElementById('btn-resume-study');
+var hint = document.getElementById('resume-study-hint');
+var show = !!(mode === 'practice' || mode === 'daily') && user && user.id && getParsedPracticeDailyResume(mode);
+if (btn) btn.classList.toggle('hidden', !show);
+if (hint) hint.classList.toggle('hidden', !show);
+}
+async function resumePracticeDailyFromStorage() {
+if (!user || !user.id) {
+alert('로그인 후 이용할 수 있습니다.');
+return;
+}
+if (mode !== 'practice' && mode !== 'daily') return;
+var data = getParsedPracticeDailyResume(mode);
+if (!data) {
+updateResumeStudyButtonVisibility();
+return;
+}
+if (data.preferredSubjectKeys && data.preferredSubjectKeys.length) {
+preferredSubjectKeys = data.preferredSubjectKeys.slice();
+savePreferredSubjectsToStorage();
+syncPreferredSubjectUi();
+var subLbl = document.getElementById('session-subject-label');
+if (subLbl) subLbl.textContent = '적용 과목: ' + getPreferredSubjectSummaryHtml();
+}
+await populateSessionSelectMerged();
+var sel = document.getElementById('session-val');
+if (!sel) return;
+sel.value = data.sessionSelectValue;
+if (sel.value !== data.sessionSelectValue) {
+alert('저장된 회차·과목을 현재 목록에서 찾지 못했습니다. 회차를 직접 선택한 뒤 시작해 주세요.');
+clearPracticeDailyResume(mode);
+updateResumeStudyButtonVisibility();
+return;
+}
+pendingQuizFile = data.pendingQuizFile || null;
+quizSubjectFile = data.quizSubjectFile || null;
+lastLoadedSessionCode = data.sessionCode || '';
+var fetchPath = data.quizSubjectFile;
+if (!fetchPath) {
+alert('이어하기 정보가 불완전합니다.');
+return;
+}
+var json;
+try {
+var r = await fetch(fetchPath);
+json = await r.json();
+} catch (e) {
+alert('문제를 불러오지 못했습니다.');
+return;
+}
+var sessionCode = data.sessionCode || '';
+if ((mode === 'practice' || mode === 'daily') && sessionCode) {
+quizList = json.filter(function (p) { return p.session === sessionCode; });
+if (quizList.length === 0 && Array.isArray(json) && json.length > 0) {
+quizList = json.slice();
+}
+} else {
+quizList = Array.isArray(json) ? json.slice() : [];
+}
+if (!quizList.length) {
+alert('문제 목록이 비어 있습니다.');
+return;
+}
+var idx = Math.max(0, Math.min(Number(data.currentIdx) || 0, quizList.length - 1));
+startQuizResumed({
+currentIdx: idx,
+totalTime: Number(data.totalTime) || 0,
+sessionPracticeSolved: Number(data.sessionPracticeSolved) || 0,
+score: Number(data.score) || 0,
+lastAnswerCorrect: data.lastAnswerCorrect && typeof data.lastAnswerCorrect === 'object' ? data.lastAnswerCorrect : {},
+practiceFirstSubmit: data.practiceFirstSubmit && typeof data.practiceFirstSubmit === 'object' ? data.practiceFirstSubmit : {}
+});
+}
 function getPreferredSubjectEffectiveKeys() {
 if (preferredSubjectKeys.indexOf('all') >= 0) return KING_SUBJECT_FILE_LIST_PREF.slice();
 return preferredSubjectKeys.filter(function (k) { return KING_SUBJECT_FILE_LIST_PREF.indexOf(k) >= 0; });
@@ -1564,6 +1691,7 @@ sel.innerHTML = '<option value="">회차 목록 확인 중…</option>';
 if (!keys.length) {
 sel.innerHTML = '<option value="">모드 화면에서 과목을 선택하세요</option>';
 sel.disabled = false;
+updateResumeStudyButtonVisibility();
 return;
 }
 if (keys.length === 1) {
@@ -1583,6 +1711,7 @@ sel.innerHTML = '';
 if (merged.length === 0) {
 sel.innerHTML = '<option value="">선택한 과목에서 문제 파일을 찾지 못했습니다</option>';
 sel.disabled = false;
+updateResumeStudyButtonVisibility();
 return;
 }
 merged.forEach(function (item) {
@@ -1597,6 +1726,7 @@ sel.appendChild(opt);
 });
 sel.disabled = false;
 if (startBtn) startBtn.disabled = false;
+updateResumeStudyButtonVisibility();
 }
 async function populateSessionSelect(subjectKey) {
 const sel = document.getElementById('session-val');
@@ -1612,6 +1742,7 @@ sel.innerHTML = '';
 if (okRows.length === 0) {
 sel.innerHTML = '<option value="">' + sk + '/' + sk + '_YY_MM.json 형식의 문제 파일이 없습니다 (배포 경로·파일명 확인)</option>';
 sel.disabled = false;
+updateResumeStudyButtonVisibility();
 return;
 }
 okRows.forEach(function (row) {
@@ -1624,6 +1755,7 @@ sel.appendChild(opt);
 });
 sel.disabled = false;
 if (startBtn) startBtn.disabled = false;
+updateResumeStudyButtonVisibility();
 }
 /** 선택된 회차에 대응하는 문제 JSON 경로 (data-path·data-subject·캐시) */
 function getSelectedSessionQuizPath(subjectKey) {
@@ -1647,6 +1779,8 @@ let lives=3, timeLeft=60, totalTime=0, timerInterval, isShieldActive=false, isTi
 let sessionPracticeSolved = 0;
 /** 연습 중 로드된 JSON 파일명 (오답 저장·오답 연습에 사용) */
 let quizSubjectFile = null;
+/** prepareQuiz에서 필터에 쓴 회차 코드 (이어하기 저장용) */
+let lastLoadedSessionCode = '';
 /** 과목별 마지막으로 탐색한 회차 목록 (경로 조회용) */
 let subjectSessionManifestCache = {};
 /** 오답노트만 풀 때 true — 랭킹·누적 연습 기록에는 반영하지 않음 */
@@ -2490,6 +2624,7 @@ document.getElementById('subject-title').textContent = '시작하기';
 }
 }
 function startPracticeFromSelection() {
+if (mode === 'practice' || mode === 'daily') clearPracticeDailyResume(mode);
 var sel = document.getElementById('session-val');
 if (!sel || !sel.value) return alert('회차를 선택하세요.');
 var opt = sel.options[sel.selectedIndex];
@@ -2908,6 +3043,7 @@ if (sessionVal && sessionVal.indexOf('::') >= 0) {
 var pv = sessionVal.split('::');
 if (pv.length >= 2) sessionCode = pv[pv.length - 1];
 }
+lastLoadedSessionCode = sessionCode || '';
 if (mode === 'practice' || mode === 'daily') {
 quizList = data.filter(p => p.session === sessionCode);
 if (quizList.length === 0 && Array.isArray(data) && data.length > 0) {
@@ -2932,6 +3068,31 @@ classicProceedTimer = null;
 }
 document.getElementById('item-section').classList.toggle('hidden', mode !== 'timeattack');
 startTimer(); updateUI(); showQuestion();
+}
+function startQuizResumed(resume) {
+document.getElementById('subject-box').classList.add('hidden');
+document.getElementById('quiz-box').classList.remove('hidden');
+score = Number(resume.score) || 0;
+currentIdx = Math.max(0, Math.min(Number(resume.currentIdx) || 0, quizList.length - 1));
+lives = 3;
+timeLeft = 60;
+streak = 0;
+totalTime = Math.max(0, Number(resume.totalTime) || 0);
+items = { hint: 0, shield: 0, time: 0 };
+sessionPracticeSolved = Math.max(0, Number(resume.sessionPracticeSolved) || 0);
+lastAnswerCorrect = resume.lastAnswerCorrect ? Object.assign({}, resume.lastAnswerCorrect) : {};
+practiceFirstSubmit = resume.practiceFirstSubmit ? Object.assign({}, resume.practiceFirstSubmit) : {};
+if (classicProceedTimer) {
+clearTimeout(classicProceedTimer);
+classicProceedTimer = null;
+}
+document.getElementById('item-section').classList.toggle('hidden', mode !== 'timeattack');
+var tm = String(Math.floor(totalTime / 60)).padStart(2, '0');
+var ts = String(Math.floor(totalTime % 60)).padStart(2, '0');
+document.getElementById('timer-text').innerText = tm + ':' + ts;
+startTimer();
+updateUI();
+showQuestion();
 }
 function syncPrevQuestionBtn() {
 const btn = document.getElementById('prev-question-btn');
@@ -3222,6 +3383,13 @@ document.getElementById('session-subject-label').textContent =
 updateSubjectRankHelp();
 populateSessionSelectMerged().catch(function () {});
 return;
+}
+if (user && user.id && (mode === 'practice' || mode === 'daily') && quizList && quizList.length) {
+if (currentIdx >= quizList.length) {
+clearPracticeDailyResume(mode);
+} else {
+savePracticeDailyResumeFromCurrentState();
+}
 }
 document.getElementById('rank-box').classList.remove('hidden');
 const timeStr = document.getElementById('timer-text').innerText;
