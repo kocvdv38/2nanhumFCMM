@@ -130,10 +130,10 @@
     "id": 15,
     "session": "24-02",
     "question": "다음 그림과 같은 제3각법 정투상도에서 우측면도로 가장 적합한 것은?",
-    "options": ["", "", "", ""],
+    "options": ["lathe/24_02/lathe_24_02_15_op1.png", "lathe/24_02/lathe_24_02_15_op2.png", "lathe/24_02/lathe_24_02_15_op3.png", "lathe/24_02/lathe_24_02_15_op4.png"],
     "answer": 4,
     "explanation": "",
-    "image_file": null
+    "image_file": "lathe/24_02/lathe_24_02_15.png"
   },
   {
     "id": 16,
@@ -472,7 +472,7 @@
     "options": ["11", "-11", "80", "-80"],
     "answer": 1,
     "explanation": "기준공구(T02)보다 T06이 11이 길어 G43을 사용하고 보정량은 +11이다.",
-    "image_file": null
+    "image_file": "lathe/24_02/lathe_24_02_48.png"
   },
   {
     "id": 49,
