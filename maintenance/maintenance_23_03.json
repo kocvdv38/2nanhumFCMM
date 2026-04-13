@@ -496,7 +496,7 @@
       "사용 공기압력"
     ],
     "answer": 2,
-    "explanation": "복동 실린더의 전진 시 출력은 $F=P \cdot A \cdot \mu$로, 실린더의 재질과 관련이 없다.",
+    "explanation": "복동 실린더의 전진 시 출력은 $F=P · A · μ로, 실린더의 재질과 관련이 없다.",
     "image_file": null
   },
   {
