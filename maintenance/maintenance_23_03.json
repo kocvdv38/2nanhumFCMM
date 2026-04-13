@@ -520,7 +520,7 @@
     "options": ["OR 밸브", "서비스 유닛", "AND 밸브", "시퀀스 밸브"],
     "answer": 2,
     "explanation": "압축공기 조정 유닛(Air Service Unit) : 기기의 윤활, 입력 조정, 드레인 제거를 행할 수 있도록 제작된 것으로 압축공기 필터(Filter), 압축공기 조절기(Pressure Regulator), 압축공기 윤활기(Lubricator)로 구성되어 있다.",
-    "image_file": "image_acc26c.jpg"
+    "image_file": "maintenance_23_03_48.png"
   },
   {
     "id": 49,
