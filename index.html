@@ -862,6 +862,9 @@ font-size: 13px;
 font-weight: bold;
 color: #444;
 margin: 0;
+flex: 1;
+min-width: 0;
+line-height: 1.25;
 }
 .board-comments-title small {
 font-weight: normal;
@@ -870,13 +873,19 @@ color: #888;
 .board-comments-more {
 width: 36px !important;
 min-width: 36px;
+height: 36px;
 margin: 0 !important;
-padding: 6px 0 !important;
+padding: 0 !important;
 font-size: 18px;
 line-height: 1;
 border-radius: 8px;
 background: #e9ecef;
 color: #333;
+display: inline-flex !important;
+align-items: center;
+justify-content: center;
+flex: 0 0 36px;
+align-self: center;
 }
 .board-comments-list {
 list-style: none;
@@ -926,21 +935,29 @@ list-style: none;
 .board-comments-form {
 display: flex;
 gap: 8px;
-align-items: stretch;
+align-items: center;
 }
 .board-comments-form input[type="text"] {
 flex: 1;
 margin: 0;
 display: inline-block;
 width: auto;
+height: 46px;
+box-sizing: border-box;
 }
 .board-comments-form .btn-gray {
 width: 72px !important;
 min-width: 72px;
+height: 46px;
 margin: 0;
 flex-shrink: 0;
-padding: 12px 8px;
+padding: 0 8px;
 font-size: 14px;
+display: inline-flex;
+align-items: center;
+justify-content: center;
+line-height: 1;
+align-self: center;
 }
 /* 첫 화면: 최근 5개 댓글 순환 */
 #board-comments-wrap-login .board-comments-title small {
