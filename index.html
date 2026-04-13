@@ -1190,6 +1190,7 @@ min-height: 108px;
 <button class="mode-app-btn btn-blue" style="background:linear-gradient(135deg,#20c997 0%,#17a2b8 100%);" onclick="selectMode('daily')"><span class="mode-app-icon" aria-hidden="true">📅</span><span class="mode-app-label">데일리 챌린지</span></button>
 <button class="mode-app-btn btn-green" onclick="selectMode('practice')"><span class="mode-app-icon" aria-hidden="true">📖</span><span class="mode-app-label">연습하기</span></button>
 <button class="mode-app-btn btn-purple" onclick="selectMode('classic')"><span class="mode-app-icon" aria-hidden="true">🏆</span><span class="mode-app-label">클래식 도전</span></button>
+<button class="mode-app-btn btn-blue" style="background:linear-gradient(135deg,#4c6ef5 0%,#364fc7 100%);" onclick="selectMode('mock')"><span class="mode-app-icon" aria-hidden="true">📝</span><span class="mode-app-label">모의고사</span></button>
 <button class="mode-app-btn btn-red" onclick="selectMode('survival')"><span class="mode-app-icon" aria-hidden="true">💔</span><span class="mode-app-label">서바이벌</span></button>
 <button class="mode-app-btn btn-orange" onclick="selectMode('timeattack')"><span class="mode-app-icon" aria-hidden="true">⏱️</span><span class="mode-app-label">타임 어택</span></button>
 <button class="mode-app-btn btn-blue" style="background:linear-gradient(135deg,#6f42c1 0%,#007bff 100%);" onclick="selectMode('king')"><span class="mode-app-icon" aria-hidden="true">⚔️</span><span class="mode-app-label">왕중왕전</span></button>
@@ -1389,6 +1390,7 @@ min-height: 108px;
 <div id="explanation-box" style="display:none; background:#eee; padding:10px; margin-top:10px; text-align:left; font-size:14px;"></div>
 <button id="next-btn" class="btn-blue hidden" onclick="nextPracticeQuestion()">다음 문제</button>
 <button type="button" id="prev-question-btn" class="btn-gray hidden" onclick="goToPreviousQuestion()" style="margin-top:10px;">← 이전 문제</button>
+<button type="button" id="mock-submit-btn" class="btn-green hidden" onclick="submitMockExam()" style="margin-top:10px;">모의고사 제출</button>
 <button type="button" class="btn-gray" onclick="quitGame()" style="margin-top:14px;">그만하기</button>
 <button type="button" id="btn-wrong-delete" class="btn-red hidden" onclick="deleteCurrentWrongNote()" style="margin-top:8px;">문제 삭제</button>
 </div>
@@ -1409,6 +1411,7 @@ min-height: 108px;
 <option value="daily">📅 데일리 챌린지</option>
 <option value="practice">📚 연습왕</option>
 <option value="classic">🎯 클래식</option>
+<option value="mock">📝 모의고사</option>
 <option value="survival">💔 서바이벌</option>
 <option value="timeattack">⏱️ 타임어택</option>
 <option value="king">⚔️ 왕중왕</option>
@@ -1446,6 +1449,8 @@ let lastAnswerCorrect = {};
 /** 연습: 문제당 최초 제출 시에만 sessionPracticeSolved 반영 */
 let practiceFirstSubmit = {};
 let classicProceedTimer = null;
+let mockAnswers = {};
+let mockSubmitted = false;
 let currentRankMode = 'daily';
 let pendingQuizFile = null;
 /** 개인정보: 프로필 사진(data URL) 저장 전 대기 */
@@ -1903,6 +1908,12 @@ sel.innerHTML = '<option value="">선택한 과목에서 문제 파일을 찾지
 sel.disabled = false;
 updateResumeStudyButtonVisibility();
 return;
+}
+if (mode === 'mock') {
+var randOpt = document.createElement('option');
+randOpt.value = '__mock_random__';
+randOpt.textContent = '랜덤 60문제 (선택 과목 전체)';
+sel.appendChild(randOpt);
 }
 merged.forEach(function (item) {
 var row = item.row;
@@ -2772,6 +2783,8 @@ function updateSubjectRankHelp() {
         html = '<h3>📖 연습하기 — 랭킹 반영</h3><ul><li>회차별 연습에서 각 문제를 <strong>처음 제출</strong>할 때마다 풀이 수가 누적되고, 종료 시 <strong>연습왕(누적 문제 수)</strong> 랭킹에 반영됩니다.</li><li><strong>오답노트</strong>만 풀 때는 랭킹·누적 연습 기록에 반영되지 않습니다.</li></ul>';
     } else if (m === 'classic') {
         html = '<h3>🏆 클래식 도전 — 랭킹 반영</h3><ul><li>게임이 끝나거나 <strong>그만두기</strong>할 때, <strong>이번 점수</strong>가 본인 <strong>역대 최고점</strong>보다 높을 때만 랭킹 점수가 갱신됩니다.</li></ul>';
+    } else if (m === 'mock') {
+        html = '<h3>📝 모의고사 — 랭킹 반영</h3><ul><li><strong>60문제 · 60분</strong> 제한이며, 제출 시 정답 수를 <strong>100점 만점 환산(소수 둘째 자리)</strong>으로 저장합니다.</li><li>랭킹은 개인의 <strong>상위 3회 환산점수</strong>를 순서대로 비교해 정해집니다.</li></ul>';
     } else if (m === 'survival') {
         html = '<h3>💔 서바이벌 — 랭킹 반영</h3><ul><li>게임이 끝나거나 <strong>그만두기</strong>할 때, <strong>이번 점수</strong>가 본인 <strong>역대 최고점</strong>보다 높을 때만 랭킹 점수가 갱신됩니다.</li></ul>';
     } else if (m === 'timeattack') {
@@ -2801,14 +2814,14 @@ document.getElementById('subject-box').classList.remove('hidden');
 document.getElementById('subject-pref-summary-wrap').classList.remove('hidden');
 syncPreferredSubjectUi();
 updateSubjectRankHelp();
-if (m === 'practice' || m === 'daily') {
+if (m === 'practice' || m === 'daily' || m === 'mock') {
 document.getElementById('subject-quick-start-wrap').classList.add('hidden');
 document.getElementById('session-select-div').classList.remove('hidden');
 document.getElementById('subject-title').textContent = '회차 선택';
 document.getElementById('session-subject-label').textContent =
 '적용 과목: ' + getPreferredSubjectSummaryHtml();
 var wn = document.querySelector('#session-select-div .btn-wrong-note');
-if (wn) wn.classList.toggle('hidden', mode === 'daily');
+if (wn) wn.classList.toggle('hidden', mode !== 'practice');
 populateSessionSelectMerged().catch(function () {
 var sel = document.getElementById('session-val');
 if (sel) sel.innerHTML = '<option value="">회차 목록을 불러오지 못했습니다</option>';
@@ -2823,6 +2836,11 @@ function startPracticeFromSelection() {
 if (mode === 'practice' || mode === 'daily') clearPracticeDailyResumeForCurrentSelection();
 var sel = document.getElementById('session-val');
 if (!sel || !sel.value) return alert('회차를 선택하세요.');
+if (mode === 'mock') {
+setQuizLoadingUi(true);
+prepareQuiz();
+return;
+}
 var opt = sel.options[sel.selectedIndex];
 if (opt && opt.getAttribute('data-subject')) pendingQuizFile = opt.getAttribute('data-subject');
 else {
@@ -3166,7 +3184,7 @@ return Promise.reject(new Error('__identity_dup'));
 const newUser = {
 id, pw, school, name:n, student_id: s, birth:b,
 hide_name_in_ranking: false,
-practice_count:0, practice_time:'00:00', practice_time_seconds:0, practice_score:0, classic_score:0, survival_score:0, timeattack_score:0, king_score:0,
+practice_count:0, practice_time:'00:00', practice_time_seconds:0, practice_score:0, classic_score:0, mock_rank_points:0, mock_submit_count:0, mock_last_score:0, survival_score:0, timeattack_score:0, king_score:0,
 daily_streak:0, daily_best_streak:0, daily_last_date:'', daily_time:'--:--', daily_time_seconds:0
 };
 if (emailRaw) newUser.email = emailRaw;
@@ -3240,6 +3258,69 @@ alert('문제를 불러오지 못했습니다.');
 }
 function prepareQuiz() {
 wrongNoteOnly = false;
+if (mode === 'mock') {
+const sel = document.getElementById('session-val');
+const picked = sel ? sel.value : '';
+if (!picked) {
+setQuizLoadingUi(false);
+return alert('회차를 선택하세요.');
+}
+if (picked === '__mock_random__') {
+return fetchKingFilesForPreferred().then(function (files) {
+if (!files || files.length === 0) {
+setQuizLoadingUi(false);
+alert('선택한 과목 범위에서 문제 파일을 찾지 못했습니다.');
+return;
+}
+return Promise.all(files.map(function (f) {
+return fetch(f).then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; });
+}));
+}).then(function (parts) {
+if (!parts) return;
+let data = [];
+parts.forEach(function (p) { if (Array.isArray(p)) data = data.concat(p); });
+if (data.length < 60) {
+setQuizLoadingUi(false);
+alert('모의고사에는 최소 60문제가 필요합니다.');
+return;
+}
+quizList = data.sort(function () { return Math.random() - 0.5; }).slice(0, 60);
+startQuiz();
+}).catch(function () {
+setQuizLoadingUi(false);
+alert('문제를 불러오지 못했습니다.');
+});
+}
+const fetchPathMock = getSelectedSessionQuizPath();
+if (!fetchPathMock) {
+setQuizLoadingUi(false);
+return alert('회차를 선택하세요.');
+}
+quizSubjectFile = fetchPathMock;
+return fetch(fetchPathMock).then(function (r) { return r.json(); }).then(function (data) {
+if (!Array.isArray(data) || data.length === 0) {
+setQuizLoadingUi(false);
+alert('문제를 불러오지 못했습니다.');
+return;
+}
+const selEl = document.getElementById('session-val');
+const optEl = selEl && selEl.options[selEl.selectedIndex];
+var sessionVal = selEl ? selEl.value : '';
+var sessionCode = optEl && optEl.getAttribute('data-session-code') ? optEl.getAttribute('data-session-code') : sessionVal;
+let rows = data.filter(function (p) { return p.session === sessionCode; });
+if (!rows.length) rows = data.slice();
+if (rows.length < 60) {
+setQuizLoadingUi(false);
+alert('선택한 회차 문제 수가 60개 미만입니다.');
+return;
+}
+quizList = rows.sort(function () { return Math.random() - 0.5; }).slice(0, 60);
+startQuiz();
+}).catch(function () {
+setQuizLoadingUi(false);
+alert('파일 로드 실패');
+});
+}
 if (mode !== 'practice' && mode !== 'daily') {
 prepareQuizSubjectMergedFromPreferred();
 return;
@@ -3279,6 +3360,8 @@ setQuizLoadingUi(false);
 document.getElementById('subject-box').classList.add('hidden');
 document.getElementById('quiz-box').classList.remove('hidden');
 score=0; currentIdx=0; lives=3; timeLeft=60; streak=0; totalTime=0; items={hint:0,shield:0,time:0};
+mockAnswers = {};
+mockSubmitted = false;
 sessionPracticeSolved = 0;
 lastAnswerCorrect = {};
 practiceFirstSubmit = {};
@@ -3287,6 +3370,7 @@ clearTimeout(classicProceedTimer);
 classicProceedTimer = null;
 }
 document.getElementById('item-section').classList.toggle('hidden', mode !== 'timeattack');
+document.getElementById('mock-submit-btn').classList.toggle('hidden', mode !== 'mock');
 startTimer(); updateUI(); showQuestion();
 }
 function startQuizResumed(resume) {
@@ -3300,6 +3384,8 @@ timeLeft = 60;
 streak = 0;
 totalTime = Math.max(0, Number(resume.totalTime) || 0);
 items = { hint: 0, shield: 0, time: 0 };
+mockAnswers = {};
+mockSubmitted = false;
 sessionPracticeSolved = Math.max(0, Number(resume.sessionPracticeSolved) || 0);
 lastAnswerCorrect = resume.lastAnswerCorrect ? Object.assign({}, resume.lastAnswerCorrect) : {};
 practiceFirstSubmit = resume.practiceFirstSubmit ? Object.assign({}, resume.practiceFirstSubmit) : {};
@@ -3308,6 +3394,7 @@ clearTimeout(classicProceedTimer);
 classicProceedTimer = null;
 }
 document.getElementById('item-section').classList.toggle('hidden', mode !== 'timeattack');
+document.getElementById('mock-submit-btn').classList.toggle('hidden', mode !== 'mock');
 var tm = String(Math.floor(totalTime / 60)).padStart(2, '0');
 var ts = String(Math.floor(totalTime % 60)).padStart(2, '0');
 document.getElementById('timer-text').innerText = tm + ':' + ts;
@@ -3318,11 +3405,11 @@ showQuestion();
 function syncPrevQuestionBtn() {
 const btn = document.getElementById('prev-question-btn');
 if (!btn) return;
-const show = !wrongNoteOnly && (mode === 'practice' || mode === 'daily' || mode === 'classic') && currentIdx > 0;
+const show = !wrongNoteOnly && (mode === 'practice' || mode === 'daily' || mode === 'classic' || mode === 'mock') && currentIdx > 0;
 btn.classList.toggle('hidden', !show);
 }
 function goToPreviousQuestion() {
-if (mode !== 'practice' && mode !== 'daily' && mode !== 'classic') return;
+if (mode !== 'practice' && mode !== 'daily' && mode !== 'classic' && mode !== 'mock') return;
 if (currentIdx <= 0) return;
 if (classicProceedTimer) {
 clearTimeout(classicProceedTimer);
@@ -3332,7 +3419,8 @@ currentIdx--;
 showQuestion();
 }
 function nextPracticeQuestion() {
-if(mode !== 'practice' && mode !== 'daily') return;
+if(mode !== 'practice' && mode !== 'daily' && mode !== 'mock') return;
+if (mode === 'mock' && currentIdx >= quizList.length - 1) return;
 currentIdx++;
 showQuestion();
 }
@@ -3340,6 +3428,15 @@ function startTimer() {
 clearInterval(timerInterval);
 timerInterval = setInterval(() => {
 if(!isTimeFrozen) {
+if(mode === 'mock') {
+totalTime += 0.1;
+var left = Math.max(0, 3600 - totalTime);
+const m = String(Math.floor(left/60)).padStart(2,'0');
+const s = String(Math.floor(left%60)).padStart(2,'0');
+document.getElementById('timer-text').innerText = `${m}:${s}`;
+document.getElementById('timer-fill').style.width = Math.max(0, (left / 3600 * 100)) + "%";
+if(left <= 0) submitMockExam(true);
+} else
 if(mode === 'timeattack') {
 timeLeft -= 0.1;
 document.getElementById('timer-fill').style.width = Math.max(0, (timeLeft / 60 * 100)) + "%";
@@ -3359,7 +3456,13 @@ const sd = document.getElementById('score-display');
 if (wrongNoteOnly) sd.classList.add('hidden');
 else {
 sd.classList.remove('hidden');
+if (mode === 'mock') {
+let answered = 0;
+Object.keys(mockAnswers).forEach(function (k) { if (mockAnswers[k] != null) answered++; });
+sd.innerText = '답안: ' + answered + '/60';
+} else {
 sd.innerText = '점수: ' + score;
+}
 }
 const delBtn = document.getElementById('btn-wrong-delete');
 if (delBtn) delBtn.classList.toggle('hidden', !wrongNoteOnly);
@@ -3384,18 +3487,31 @@ document.getElementById('q-txt').innerText = p.question;
 setQuizPassageBox('q-passage', p);
 document.getElementById('q-img').innerHTML = p.image_file ? '<img src="' + imageSrcForHtmlAttr(p.image_file) + '">' : "";
 document.getElementById('explanation-box').style.display = "none";
-document.getElementById('next-btn').classList.add('hidden');
+const nextBtn = document.getElementById('next-btn');
+nextBtn.classList.add('hidden');
+if (mode === 'mock') {
+nextBtn.textContent = '다음 문제';
+nextBtn.classList.remove('hidden');
+nextBtn.disabled = currentIdx >= quizList.length - 1;
+}
+const submitBtn = document.getElementById('mock-submit-btn');
+if (submitBtn) submitBtn.classList.toggle('hidden', mode !== 'mock');
 const optDiv = document.getElementById('q-opts'); optDiv.innerHTML = "";
 p.options.forEach((o, i) => {
 const btn = document.createElement('button');
 btn.className = "option-btn";
 setOptionButtonContent(btn, i, o);
-btn.onclick = () => checkAnswer(i + 1, btn);
+btn.onclick = () => {
+if (mode === 'mock') mockPickAnswer(i + 1);
+else checkAnswer(i + 1, btn);
+};
+if (mode === 'mock' && Number(mockAnswers[currentIdx]) === (i + 1)) btn.classList.add('correct');
 optDiv.appendChild(btn);
 });
 syncPrevQuestionBtn();
 }
 function checkAnswer(ans, btn) {
+if (mode === 'mock') return;
 const p = quizList[currentIdx];
 const idx = currentIdx;
 const canRevise = (mode === 'practice' || mode === 'daily' || mode === 'classic') && !wrongNoteOnly;
@@ -3437,6 +3553,17 @@ sessionPracticeSolved++;
 }
 }
 updateUI();
+}
+function mockPickAnswer(ans) {
+if (mode !== 'mock') return;
+mockAnswers[currentIdx] = ans;
+updateUI();
+showQuestion();
+}
+function submitMockExam(timeOver) {
+if (mode !== 'mock' || mockSubmitted) return;
+mockSubmitted = true;
+endGame();
 }
 function showTimeAttackToast(message) {
 const el = document.getElementById('timeattack-toast');
@@ -3566,6 +3693,16 @@ function formatPracticeScore(score) {
 const rounded = Math.round((Math.max(0, Number(score) || 0)) * 10) / 10;
 return rounded.toFixed(1).replace(/\.0$/, '');
 }
+function formatScore2(score) {
+return (Math.round((Math.max(0, Number(score) || 0)) * 100) / 100).toFixed(2);
+}
+function getMockPointByConvertedScore(score) {
+const s = Math.max(0, Number(score) || 0);
+if (s >= 100) return 3;
+if (s >= 80) return 2;
+if (s >= 60) return 1;
+return 0;
+}
 
 // 결과 및 랭킹
 async function refreshUserFromDb() {
@@ -3609,6 +3746,11 @@ const best = user.daily_best_streak != null ? user.daily_best_streak : 0;
 const last = user.daily_last_date ? String(user.daily_last_date) : '—';
 const tm = user.daily_time || '--:--';
 el.innerHTML = `<div class="rank-my-box"><b>나의 기록</b> · 연속 <strong>${st}</strong>일 · 최고 <strong>${best}</strong>일 · 마지막 출석 <strong>${last}</strong> · 플레이 시간 ${tm}${extra}</div>`;
+} else if (rankMode === 'mock') {
+const pts = Number(user.mock_rank_points) || 0;
+const cnt = Number(user.mock_submit_count) || 0;
+const last = formatScore2(user.mock_last_score || 0);
+el.innerHTML = `<div class="rank-my-box"><b>나의 기록</b> · 누적 <strong>${pts}</strong>점 · 제출 <strong>${cnt}</strong>회 · 최근 환산 <strong>${last}</strong>점${extra}</div>`;
 } else {
 const sc = user[rankMode + '_score'] != null ? user[rankMode + '_score'] : 0;
 const tm = rankMode === 'classic' ? (user.classic_time || '--:--') : (user[rankMode + '_time'] || '--:--');
@@ -3681,6 +3823,19 @@ updates[`users/${user.id}/daily_last_date`] = todayStr;
 updates[`users/${user.id}/daily_best_streak`] = best;
 }
 }
+} else if (mode === 'mock') {
+await refreshUserFromDb();
+let correct = 0;
+for (let i = 0; i < quizList.length; i++) {
+const pick = Number(mockAnswers[i] || 0);
+if (pick && pick === Number(quizList[i].answer)) correct++;
+}
+const converted = Math.round(((correct / 60) * 100) * 100) / 100;
+const addPt = getMockPointByConvertedScore(converted);
+updates[`users/${user.id}/mock_rank_points`] = (Number(user.mock_rank_points) || 0) + addPt;
+updates[`users/${user.id}/mock_submit_count`] = (Number(user.mock_submit_count) || 0) + 1;
+updates[`users/${user.id}/mock_last_score`] = converted;
+alert('모의고사 제출 완료\n정답: ' + correct + '/60\n환산점수: ' + formatScore2(converted) + '점\n획득 포인트: ' + addPt + '점');
 } else {
 updates[`users/${user.id}/${mode}_score`] = Math.max(user[mode+'_score'] || 0, score);
 if(mode === 'classic') updates[`users/${user.id}/classic_time`] = timeStr;
@@ -3767,7 +3922,7 @@ try { await refreshUserFromDb(); } catch(e) {}
 updateRankBackButton();
 const field = rankMode === 'practice'
 ? 'practice_score'
-: (rankMode === 'king' ? 'king_score' : (rankMode === 'daily' ? 'daily_streak' : rankMode + '_score'));
+: (rankMode === 'king' ? 'king_score' : (rankMode === 'daily' ? 'daily_streak' : (rankMode === 'mock' ? 'mock_rank_points' : rankMode + '_score')));
 try {
 const snap = await db.ref('users').once('value');
 const arr = [];
@@ -3778,12 +3933,14 @@ arr.push({ ...v, id: v.id != null ? v.id : c.key });
 });
 const arrWithRecord = arr.filter(u => {
 if (rankMode === 'practice') return getPracticeScoreFromUser(u) > 0;
+if (rankMode === 'mock') return (Number(u.mock_rank_points) || 0) > 0;
 return (Number(u[field]) || 0) > 0;
 });
 arrWithRecord.sort((a, b) => {
 const va = rankMode === 'practice' ? getPracticeScoreFromUser(a) : (Number(a[field]) || 0);
 const vb = rankMode === 'practice' ? getPracticeScoreFromUser(b) : (Number(b[field]) || 0);
 if (vb !== va) return vb - va;
+if (rankMode === 'mock') return (Number(b.mock_submit_count) || 0) - (Number(a.mock_submit_count) || 0);
 if (rankMode === 'daily') {
 const da = String(a.daily_last_date || '');
 const db = String(b.daily_last_date || '');
@@ -3816,12 +3973,16 @@ const valStr = rankMode === 'practice'
 ? ('누적 ' + (u.practice_count != null ? u.practice_count : 0) + '문제 (' + formatSecondsToMmSs(getPracticeCumulativeSeconds(u)) + ') → ' + formatPracticeScore(getPracticeScoreFromUser(u)) + '점')
 : rankMode === 'king'
 ? ('인증 우승 ' + (u.king_score != null ? u.king_score : 0) + '회')
+: rankMode === 'mock'
+? ('누적 포인트 ' + (Number(u.mock_rank_points) || 0) + '점 · 제출 ' + (Number(u.mock_submit_count) || 0) + '회 · 최근 환산 ' + formatScore2(u.mock_last_score || 0) + '점')
 : rankMode === 'daily'
 ? ('연속 ' + (u.daily_streak != null ? u.daily_streak : 0) + '일 · 최고 ' + (u.daily_best_streak != null ? u.daily_best_streak : 0) + '일')
 : ((u[field] != null ? u[field] : 0) + '점');
 const timeStr = rankMode === 'king'
 ? '—'
 : rankMode === 'practice'
+? ''
+: rankMode === 'mock'
 ? ''
 : rankMode === 'daily'
 ? (u.daily_time || '--:--')
@@ -4206,6 +4367,7 @@ const LOGIN_TOP3_MODES = [
 { key: 'daily', field: 'daily_streak', label: '데일리', icon: '📅', cardClass: 'login-top3-card--daily' },
 { key: 'practice', field: 'practice_score', label: '연습왕', icon: '📚', cardClass: 'login-top3-card--practice' },
 { key: 'classic', field: 'classic_score', label: '클래식', icon: '🎯', cardClass: 'login-top3-card--classic' },
+{ key: 'mock', field: 'mock_rank_points', label: '모의고사', icon: '📝', cardClass: 'login-top3-card--classic' },
 { key: 'survival', field: 'survival_score', label: '서바이벌', icon: '💔', cardClass: 'login-top3-card--survival' },
 { key: 'timeattack', field: 'timeattack_score', label: '타임어택', icon: '⏱️', cardClass: 'login-top3-card--timeattack' },
 { key: 'king', field: 'king_score', label: '왕중왕', icon: '⚔️', cardClass: 'login-top3-card--king' }
@@ -4239,11 +4401,18 @@ return db.localeCompare(da);
 } else {
 sorted.sort(function (a, b) {
 if (def.key === 'practice') return getPracticeScoreFromUser(b) - getPracticeScoreFromUser(a);
+if (def.key === 'mock') {
+const vb = Number(b.mock_rank_points) || 0;
+const va = Number(a.mock_rank_points) || 0;
+if (vb !== va) return vb - va;
+return (Number(b.mock_submit_count) || 0) - (Number(a.mock_submit_count) || 0);
+}
 return (Number(b[def.field]) || 0) - (Number(a[def.field]) || 0);
 });
 }
 return sorted.filter(function (u) {
 if (def.key === 'practice') return getPracticeScoreFromUser(u) > 0;
+if (def.key === 'mock') return (Number(u.mock_rank_points) || 0) > 0;
 return (Number(u[def.field]) || 0) > 0;
 }).slice(0, 3);
 }
