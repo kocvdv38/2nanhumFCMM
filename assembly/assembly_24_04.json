@@ -617,7 +617,7 @@
     "id": 57,
     "session": "24-04",
     "question": "다음 그림과 같은 입체도에서 화살표 방향 투상도로 가장 적합한 것은?",
-    "options": ["①", "②", "③", "④"],
+    "options": ["assembly/24_04/assembly_24_04_57_op1.png", "assembly/24_04/assembly_24_04_57_op2.png", "assembly/24_04/assembly_24_04_57_op3.png", "assembly/24_04/assembly_24_04_57_op4.png"],
     "answer": 1,
     "explanation": "정면에서 보았을 때 입체도의 형상을 가장 정확하게 표현한 것은 1번 투상도입니다.",
     "image_file": "assembly/24_04/assembly_24_04_57.png"
