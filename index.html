@@ -1485,6 +1485,8 @@ let user=null, quizList=[], currentIdx=0, score=0, mode='';
 let lastAnswerCorrect = {};
 /** 연습: 문제당 최초 제출 시에만 sessionPracticeSolved 반영 */
 let practiceFirstSubmit = {};
+/** 연습/데일리: 문제별 선택한 보기 번호(idx -> 1..n) */
+let practicePickedAnswer = {};
 let classicProceedTimer = null;
 let mockAnswers = {};
 let mockSubmitted = false;
@@ -1794,7 +1796,7 @@ if (pm) sk = normalizeSubjectKey(pm[1]);
 }
 if (sk) {
 var entry = {};
-var copyKeys = ['preferredSubjectKeys', 'sessionSelectValue', 'quizSubjectFile', 'sessionCode', 'pendingQuizFile', 'currentIdx', 'quizListLength', 'totalTime', 'sessionPracticeSolved', 'score', 'lastAnswerCorrect', 'practiceFirstSubmit', 'savedAt'];
+var copyKeys = ['preferredSubjectKeys', 'sessionSelectValue', 'quizSubjectFile', 'sessionCode', 'pendingQuizFile', 'currentIdx', 'quizListLength', 'totalTime', 'sessionPracticeSolved', 'score', 'lastAnswerCorrect', 'practiceFirstSubmit', 'practicePickedAnswer', 'savedAt'];
 for (var ci = 0; ci < copyKeys.length; ci++) {
 var ck = copyKeys[ci];
 if (o1[ck] !== undefined) entry[ck] = o1[ck];
@@ -1871,6 +1873,7 @@ sessionPracticeSolved: sessionPracticeSolved,
 score: score,
 lastAnswerCorrect: lastAnswerCorrect,
 practiceFirstSubmit: practiceFirstSubmit,
+practicePickedAnswer: practicePickedAnswer,
 savedAt: Date.now()
 };
 var bag = loadPracticeResumeBag(mode);
@@ -1955,7 +1958,8 @@ totalTime: Number(data.totalTime) || 0,
 sessionPracticeSolved: Number(data.sessionPracticeSolved) || 0,
 score: Number(data.score) || 0,
 lastAnswerCorrect: data.lastAnswerCorrect && typeof data.lastAnswerCorrect === 'object' ? data.lastAnswerCorrect : {},
-practiceFirstSubmit: data.practiceFirstSubmit && typeof data.practiceFirstSubmit === 'object' ? data.practiceFirstSubmit : {}
+practiceFirstSubmit: data.practiceFirstSubmit && typeof data.practiceFirstSubmit === 'object' ? data.practiceFirstSubmit : {},
+practicePickedAnswer: data.practicePickedAnswer && typeof data.practicePickedAnswer === 'object' ? data.practicePickedAnswer : {}
 });
 }
 function getPreferredSubjectEffectiveKeys() {
@@ -3767,6 +3771,7 @@ schoolWarWrongCount = 0;
 sessionPracticeSolved = 0;
 lastAnswerCorrect = {};
 practiceFirstSubmit = {};
+practicePickedAnswer = {};
 if (classicProceedTimer) {
 clearTimeout(classicProceedTimer);
 classicProceedTimer = null;
@@ -3792,6 +3797,7 @@ mockSubmitted = false;
 sessionPracticeSolved = Math.max(0, Number(resume.sessionPracticeSolved) || 0);
 lastAnswerCorrect = resume.lastAnswerCorrect ? Object.assign({}, resume.lastAnswerCorrect) : {};
 practiceFirstSubmit = resume.practiceFirstSubmit ? Object.assign({}, resume.practiceFirstSubmit) : {};
+practicePickedAnswer = resume.practicePickedAnswer ? Object.assign({}, resume.practicePickedAnswer) : {};
 if (classicProceedTimer) {
 clearTimeout(classicProceedTimer);
 classicProceedTimer = null;
@@ -3921,6 +3927,19 @@ else checkAnswer(i + 1, btn);
 if (mode === 'mock' && Number(mockAnswers[currentIdx]) === (i + 1)) btn.classList.add('correct');
 optDiv.appendChild(btn);
 });
+if ((mode === 'practice' || mode === 'daily') && !wrongNoteOnly && practiceFirstSubmit[currentIdx]) {
+const picked = Number(practicePickedAnswer[currentIdx] || 0);
+if (picked > 0) {
+const pickedBtn = optDiv.querySelectorAll('.option-btn')[picked - 1];
+if (pickedBtn) {
+pickedBtn.classList.add(picked === p.answer ? 'correct' : 'wrong');
+}
+}
+optDiv.querySelectorAll('.option-btn').forEach(function (el) {
+el.disabled = true;
+el.style.pointerEvents = 'none';
+});
+}
 syncPrevQuestionBtn();
 }
 async function schoolWarAutoLoseCells(count) {
@@ -4014,6 +4033,9 @@ const p = quizList[currentIdx];
 const idx = currentIdx;
 if ((mode === 'practice' || mode === 'daily') && !wrongNoteOnly && practiceFirstSubmit[idx]) {
 return;
+}
+if ((mode === 'practice' || mode === 'daily') && !wrongNoteOnly) {
+practicePickedAnswer[idx] = ans;
 }
 const canRevise = (mode === 'practice' || mode === 'daily' || mode === 'classic') && !wrongNoteOnly;
 if (canRevise && lastAnswerCorrect[idx] === true) {
