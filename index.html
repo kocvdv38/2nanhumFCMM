@@ -2203,6 +2203,61 @@ let subjectSessionManifestCache = {};
 let sessionSelectRequestSeq = 0;
 /** 오답노트만 풀 때 true — 랭킹·누적 연습 기록에는 반영하지 않음 */
 let wrongNoteOnly = false;
+/** 클래식·서바이벌·타임어택·학교점령전 그만두기 후 오답만 다시 보는 라운드 */
+let wrongReviewSession = false;
+let reviewBaseMode = '';
+let pendingQuitWrongReview = false;
+/** 본 게임 중 틀린 문제 인덱스 (오답 복습용) */
+let sessionWrongRoundIndices = {};
+function resetSessionWrongRound() {
+sessionWrongRoundIndices = {};
+}
+function noteSessionWrongRound(idx) {
+sessionWrongRoundIndices[idx] = true;
+}
+function buildWrongQuestionsFromSession() {
+var keys = Object.keys(sessionWrongRoundIndices).map(Number).sort(function (a, b) { return a - b; });
+var out = [];
+for (var i = 0; i < keys.length; i++) {
+var p = quizList[keys[i]];
+if (p) out.push(p);
+}
+return out;
+}
+function startWrongReviewRound(wrongQs) {
+if (!wrongQs || !wrongQs.length) return;
+wrongReviewSession = true;
+quizList = wrongQs.slice();
+currentIdx = 0;
+score = 0;
+lives = 3;
+timeLeft = 60;
+streak = 0;
+totalTime = 0;
+items = { hint: 0, shield: 0, time: 0 };
+sessionPracticeSolved = 0;
+lastAnswerCorrect = {};
+practiceFirstSubmit = {};
+practicePickedAnswer = {};
+mockAnswers = {};
+mockSubmitted = false;
+isShieldActive = false;
+isTimeFrozen = false;
+if (classicProceedTimer) {
+clearTimeout(classicProceedTimer);
+classicProceedTimer = null;
+}
+resetSessionWrongRound();
+setQuizLoadingUi(false);
+document.getElementById('subject-box').classList.add('hidden');
+document.getElementById('schoolwar-box').classList.add('hidden');
+document.getElementById('quiz-box').classList.remove('hidden');
+document.getElementById('item-section').classList.add('hidden');
+document.getElementById('mock-submit-btn').classList.add('hidden');
+startTimer();
+updateUI();
+showQuestion();
+}
 let items = { hint: 0, shield: 0, time: 0 }, streak = 0, isIdCheck = false, lastId = "";
 let isIdentityCheck = false, lastIdentityName = "", lastIdentityBirth = "";
 let timeAttackToastShowTimer = null;
@@ -3821,6 +3876,7 @@ setQuizLoadingUi(false);
 document.getElementById('subject-box').classList.add('hidden');
 document.getElementById('schoolwar-box').classList.add('hidden');
 document.getElementById('quiz-box').classList.remove('hidden');
+resetSessionWrongRound();
 score=0; currentIdx=0; lives=3; timeLeft=60; streak=0; totalTime=0; items={hint:0,shield:0,time:0};
 mockAnswers = {};
 mockSubmitted = false;
@@ -3872,11 +3928,11 @@ showQuestion();
 function syncPrevQuestionBtn() {
 const btn = document.getElementById('prev-question-btn');
 if (!btn) return;
-const show = !wrongNoteOnly && (mode === 'practice' || mode === 'daily' || mode === 'classic' || mode === 'mock' || mode === 'schoolwar') && currentIdx > 0;
+const show = !wrongNoteOnly && !wrongReviewSession && (mode === 'practice' || mode === 'daily' || mode === 'mock' || mode === 'schoolwar') && currentIdx > 0;
 btn.classList.toggle('hidden', !show);
 }
 function goToPreviousQuestion() {
-if (mode !== 'practice' && mode !== 'daily' && mode !== 'classic' && mode !== 'mock' && mode !== 'schoolwar') return;
+if (mode !== 'practice' && mode !== 'daily' && mode !== 'mock' && mode !== 'schoolwar') return;
 if (currentIdx <= 0) return;
 if (classicProceedTimer) {
 clearTimeout(classicProceedTimer);
@@ -3886,7 +3942,7 @@ currentIdx--;
 showQuestion();
 }
 function nextPracticeQuestion() {
-if(mode !== 'practice' && mode !== 'daily' && mode !== 'mock' && mode !== 'schoolwar') return;
+if (!wrongReviewSession && mode !== 'practice' && mode !== 'daily' && mode !== 'mock' && mode !== 'schoolwar') return;
 if (mode === 'mock' && currentIdx >= quizList.length - 1) return;
 currentIdx++;
 showQuestion();
@@ -3962,7 +4018,13 @@ document.getElementById('q-img').innerHTML = p.image_file ? '<img src="' + image
 document.getElementById('explanation-box').style.display = "none";
 const nextBtn = document.getElementById('next-btn');
 nextBtn.classList.add('hidden');
-if (mode === 'mock') {
+if (wrongReviewSession) {
+nextBtn.textContent = '다음 문제';
+if (currentIdx < quizList.length - 1) {
+nextBtn.classList.remove('hidden');
+nextBtn.disabled = false;
+}
+} else if (mode === 'mock') {
 nextBtn.textContent = '다음 문제';
 nextBtn.classList.remove('hidden');
 nextBtn.disabled = currentIdx >= quizList.length - 1;
@@ -3991,7 +4053,7 @@ else checkAnswer(i + 1, btn);
 if (mode === 'mock' && Number(mockAnswers[currentIdx]) === (i + 1)) btn.classList.add('correct');
 optDiv.appendChild(btn);
 });
-if ((mode === 'practice' || mode === 'daily') && !wrongNoteOnly && practiceFirstSubmit[currentIdx]) {
+if (((mode === 'practice' || mode === 'daily') && !wrongNoteOnly || wrongReviewSession) && practiceFirstSubmit[currentIdx]) {
 const picked = Number(practicePickedAnswer[currentIdx] || 0);
 if (picked > 0) {
 const pickedBtn = optDiv.querySelectorAll('.option-btn')[picked - 1];
@@ -4095,30 +4157,30 @@ function checkAnswer(ans, btn) {
 if (mode === 'mock') return;
 const p = quizList[currentIdx];
 const idx = currentIdx;
-if ((mode === 'practice' || mode === 'daily') && !wrongNoteOnly && practiceFirstSubmit[idx]) {
+if (((mode === 'practice' || mode === 'daily') && !wrongNoteOnly || wrongReviewSession) && practiceFirstSubmit[idx]) {
 return;
 }
-if ((mode === 'practice' || mode === 'daily') && !wrongNoteOnly) {
+if ((mode === 'practice' || mode === 'daily') && !wrongNoteOnly || wrongReviewSession) {
 practicePickedAnswer[idx] = ans;
 }
-const canRevise = (mode === 'practice' || mode === 'daily' || mode === 'classic') && !wrongNoteOnly;
-if (canRevise && lastAnswerCorrect[idx] === true) {
+const canRevise = ((mode === 'practice' || mode === 'daily' || mode === 'classic') && !wrongNoteOnly) || wrongReviewSession;
+if (canRevise && lastAnswerCorrect[idx] === true && !wrongReviewSession) {
 score -= 10;
 }
 (async function () {
 if(ans === p.answer) {
-if (!wrongNoteOnly) score += 10;
-if(mode === 'timeattack') {
+if (!wrongNoteOnly && !wrongReviewSession) score += 10;
+if(mode === 'timeattack' && !wrongReviewSession) {
 timeLeft += 30;
 if((items.hint + items.shield + items.time) < 2) { streak++; if(streak >= 3) { gainRandomItem(); streak = 0; } }
 }
 btn.classList.add('correct');
 if (canRevise) lastAnswerCorrect[idx] = true;
 if (mode === 'practice' && !wrongNoteOnly && user && user.id && quizSubjectFile) removeWrongNoteForQuestion(quizSubjectFile, p);
-if (mode === 'schoolwar') schoolWarCorrectCount++;
+if (mode === 'schoolwar' && !wrongReviewSession) schoolWarCorrectCount++;
 proceed();
 } else {
-streak = 0;
+if (!wrongReviewSession) streak = 0;
 if(isShieldActive) {
 isShieldActive = false;
 showTimeAttackToast('🛡️ 실드로 막았습니다!');
@@ -4130,16 +4192,21 @@ proceed();
 btn.classList.add('wrong');
 if (canRevise) lastAnswerCorrect[idx] = false;
 if(mode === 'practice' && user && user.id && quizSubjectFile && !wrongNoteOnly) saveWrongNote(quizSubjectFile, p);
+if (!wrongReviewSession) {
 if (mode === 'schoolwar') schoolWarWrongCount++;
 if(mode === 'survival') { lives--; if(lives <= 0) return endGame(); }
 if(mode === 'timeattack') timeLeft -= 10;
+}
+if (!wrongReviewSession && (mode === 'classic' || mode === 'survival' || mode === 'timeattack' || mode === 'schoolwar')) {
+noteSessionWrongRound(idx);
+}
 proceed();
 }
 }
-if ((mode === 'practice' || mode === 'daily') && !wrongNoteOnly) {
+if (((mode === 'practice' || mode === 'daily') && !wrongNoteOnly) || wrongReviewSession) {
 if (!practiceFirstSubmit[idx]) {
 practiceFirstSubmit[idx] = true;
-sessionPracticeSolved++;
+if (!wrongReviewSession) sessionPracticeSolved++;
 }
 document.querySelectorAll('#q-opts .option-btn').forEach(function (el) {
 el.disabled = true;
@@ -4214,6 +4281,15 @@ showTimeAttackToast(msg);
 updateUI();
 }
 function proceed() {
+if (wrongReviewSession) {
+const p = quizList[currentIdx];
+const exp = document.getElementById('explanation-box');
+exp.innerHTML = `<b>정답: ${p.answer}번</b><br>${p.explanation || "해설 없음"}`;
+exp.style.display = "block";
+document.getElementById('next-btn').classList.remove('hidden');
+syncPrevQuestionBtn();
+return;
+}
 if(mode === 'practice' || mode === 'daily') {
 const p = quizList[currentIdx];
 const exp = document.getElementById('explanation-box');
@@ -4389,6 +4465,15 @@ el.innerHTML = `<div class="rank-my-box"><b>나의 기록</b> · <strong>${sc}</
 async function persistGameResultAndShowRanking() {
 clearInterval(timerInterval);
 document.getElementById('quiz-box').classList.add('hidden');
+if (wrongReviewSession) {
+wrongReviewSession = false;
+var bmDone = reviewBaseMode;
+reviewBaseMode = '';
+resetSessionWrongRound();
+document.getElementById('rank-box').classList.remove('hidden');
+if (bmDone) await fetchRanking(bmDone);
+return;
+}
 if (mode === 'schoolwar') {
 if (user && user.id) {
 try {
@@ -4404,6 +4489,16 @@ schoolwar_daily_used: nextUsed
 });
 await refreshUserFromDb();
 } catch (e) {}
+}
+if (pendingQuitWrongReview) {
+var wrSw = buildWrongQuestionsFromSession();
+pendingQuitWrongReview = false;
+if (wrSw.length > 0) {
+reviewBaseMode = 'schoolwar';
+document.getElementById('schoolwar-box').classList.add('hidden');
+startWrongReviewRound(wrSw);
+return;
+}
 }
 document.getElementById('rank-box').classList.add('hidden');
 document.getElementById('schoolwar-box').classList.remove('hidden');
@@ -4498,13 +4593,28 @@ if(mode === 'classic') updates[`users/${user.id}/classic_time`] = timeStr;
 await db.ref().update(updates);
 await refreshUserFromDb();
 await fetchRanking(mode);
+if (pendingQuitWrongReview) {
+pendingQuitWrongReview = false;
+var wrMain = buildWrongQuestionsFromSession();
+if (wrMain.length > 0) {
+reviewBaseMode = mode;
+document.getElementById('rank-box').classList.add('hidden');
+startWrongReviewRound(wrMain);
+}
+}
 }
 async function endGame() {
 await persistGameResultAndShowRanking();
 }
 function quitGame() {
+if (wrongReviewSession) {
+if (!confirm('오답 복습을 종료할까요?')) return;
+persistGameResultAndShowRanking().catch(() => alert('화면 전환에 실패했습니다.'));
+return;
+}
 if (mode === 'schoolwar') {
 if (!confirm('점령전 문제 풀이를 종료하고 점령전 화면으로 돌아갈까요?')) return;
+pendingQuitWrongReview = true;
 persistGameResultAndShowRanking().catch(() => alert('화면 전환에 실패했습니다.'));
 return;
 }
@@ -4513,6 +4623,7 @@ persistGameResultAndShowRanking().catch(() => alert('화면 전환에 실패했�
 return;
 }
 if (!confirm('그만두시겠습니까? 지금까지의 기록이 저장되고 랭킹으로 이동합니다.')) return;
+pendingQuitWrongReview = (mode === 'classic' || mode === 'survival' || mode === 'timeattack');
 persistGameResultAndShowRanking().catch(() => alert('저장에 실패했습니다.'));
 }
 
