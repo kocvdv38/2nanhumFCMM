@@ -1344,6 +1344,7 @@ min-height: 108px;
 <button type="button" id="btn-resume-study" class="btn-blue hidden" onclick="void(resumePracticeDailyFromStorage())">이어 공부하기</button>
 <p id="resume-study-hint" class="hidden" style="font-size:13px;color:#555;margin:6px 0 0 0;">같은 과목에 저장된 진행이 있으면 저장된 회차·문제부터 이어갑니다. 다른 회차를 새로 풀려면 「이 회차로 시작」을 누르세요.</p>
 </div>
+<p id="quiz-load-indicator" class="hidden" style="font-size:13px;color:#0b5ed7;margin:8px 0 0 0;">문제 로드 중... 잠시만 기다려 주세요.</p>
 <button type="button" class="btn-gray" onclick="backToModeSelect()" style="margin-top:12px;">← 모드 선택으로</button>
 </div>
 
@@ -2787,6 +2788,7 @@ sessionSelectRequestSeq++;
 pendingQuizFile = null;
 quizSubjectFile = null;
 wrongNoteOnly = false;
+setQuizLoadingUi(false);
 document.getElementById('mode-box').classList.add('hidden');
 if (m === 'king') {
 document.getElementById('subject-box').classList.add('hidden');
@@ -2825,6 +2827,7 @@ else {
 var k = getPreferredSubjectEffectiveKeys();
 pendingQuizFile = k.length ? k[0] : null;
 }
+setQuizLoadingUi(true);
 prepareQuiz();
 }
 function backToModeSelect() {
@@ -2833,6 +2836,7 @@ sessionSelectRequestSeq++;
 pendingQuizFile = null;
 quizSubjectFile = null;
 wrongNoteOnly = false;
+setQuizLoadingUi(false);
 document.getElementById('subject-quick-start-wrap').classList.add('hidden');
 document.getElementById('session-select-div').classList.add('hidden');
 document.getElementById('subject-title').textContent = '과목 선택';
@@ -3184,18 +3188,30 @@ alert('가입에 실패했습니다.\n' + (msg || '네트워크 오류'));
 // 퀴즈 준비 및 진행 (이전 답변과 로직 동일)
 function startQuizFromPreferredNonDaily() {
 if (mode === 'king') return;
+setQuizLoadingUi(true);
 prepareQuizSubjectMergedFromPreferred();
+}
+function setQuizLoadingUi(isLoading) {
+var on = !!isLoading;
+var el = document.getElementById('quiz-load-indicator');
+if (el) el.classList.toggle('hidden', !on);
+var startPracticeBtn = document.querySelector('#session-select-div .btn-green');
+if (startPracticeBtn) startPracticeBtn.disabled = on;
+var quickStartBtn = document.querySelector('#subject-quick-start-wrap .btn-green');
+if (quickStartBtn) quickStartBtn.disabled = on;
 }
 function prepareQuizSubjectMergedFromPreferred() {
 wrongNoteOnly = false;
 var keys = getPreferredSubjectEffectiveKeys();
 if (!keys.length) {
+setQuizLoadingUi(false);
 alert('모드 화면에서 풀이 과목을 선택해 주세요.');
 return;
 }
 quizSubjectFile = preferredSubjectKeys.indexOf('all') >= 0 ? 'all' : keys.join('+');
 fetchKingFilesForPreferred().then(function (files) {
 if (files.length === 0) {
+setQuizLoadingUi(false);
 alert('선택한 과목 범위에서 문제 파일을 찾지 못했습니다.');
 return;
 }
@@ -3209,12 +3225,14 @@ parts.forEach(function (p) {
 if (Array.isArray(p)) data = data.concat(p);
 });
 if (data.length === 0) {
+setQuizLoadingUi(false);
 alert('문제를 불러오지 못했습니다. 과목 폴더·파일명을 확인하세요.');
 return;
 }
 quizList = data.sort(function () { return Math.random() - 0.5; });
 startQuiz();
 }).catch(function () {
+setQuizLoadingUi(false);
 alert('문제를 불러오지 못했습니다.');
 });
 }
@@ -3225,7 +3243,10 @@ prepareQuizSubjectMergedFromPreferred();
 return;
 }
 const fetchPath = getSelectedSessionQuizPath();
-if (!fetchPath) return alert('회차를 선택하세요.');
+if (!fetchPath) {
+setQuizLoadingUi(false);
+return alert('회차를 선택하세요.');
+}
 quizSubjectFile = fetchPath;
 fetch(fetchPath).then(r => r.json()).then(data => {
 const selEl = document.getElementById('session-val');
@@ -3246,9 +3267,13 @@ quizList = data.slice();
 quizList = data.sort(() => Math.random() - 0.5);
 }
 startQuiz();
-}).catch(e => alert('파일 로드 실패'));
+}).catch(e => {
+setQuizLoadingUi(false);
+alert('파일 로드 실패');
+});
 }
 function startQuiz() {
+setQuizLoadingUi(false);
 document.getElementById('subject-box').classList.add('hidden');
 document.getElementById('quiz-box').classList.remove('hidden');
 score=0; currentIdx=0; lives=3; timeLeft=60; streak=0; totalTime=0; items={hint:0,shield:0,time:0};
@@ -3263,6 +3288,7 @@ document.getElementById('item-section').classList.toggle('hidden', mode !== 'tim
 startTimer(); updateUI(); showQuestion();
 }
 function startQuizResumed(resume) {
+setQuizLoadingUi(false);
 document.getElementById('subject-box').classList.add('hidden');
 document.getElementById('quiz-box').classList.remove('hidden');
 score = Number(resume.score) || 0;
