@@ -1853,12 +1853,21 @@ preferredSubjectKeys = keys;
 }
 savePreferredSubjectsToStorage();
 syncPreferredSubjectUi();
+if ((mode === 'practice' || mode === 'daily') && !document.getElementById('session-select-div').classList.contains('hidden')) {
+var labelEl = document.getElementById('session-subject-label');
+if (labelEl) labelEl.textContent = '적용 과목: ' + getPreferredSubjectSummaryHtml();
+populateSessionSelectMerged().catch(function () {
+var sel = document.getElementById('session-val');
+if (sel) sel.innerHTML = '<option value="">회차 목록을 불러오지 못했습니다</option>';
+});
+}
 closeSubjectPrefModal();
 }
 async function populateSessionSelectMerged() {
 var keys = getPreferredSubjectEffectiveKeys();
 var sel = document.getElementById('session-val');
 var startBtn = document.querySelector('#session-select-div .btn-green');
+var reqId = ++sessionSelectRequestSeq;
 if (!sel) return;
 sel.innerHTML = '';
 sel.disabled = true;
@@ -1877,12 +1886,14 @@ var merged = [];
 for (var i = 0; i < keys.length; i++) {
 var sk = keys[i];
 var okRows = await discoverSubjectQuizFiles(sk);
+if (reqId !== sessionSelectRequestSeq) return;
 subjectSessionManifestCache[sk] = okRows;
 for (var j = 0; j < okRows.length; j++) {
 merged.push({ sk: sk, row: okRows[j] });
 }
 }
 merged.sort(function (a, b) { return compareSessionCodeDesc(a.row.code, b.row.code); });
+if (reqId !== sessionSelectRequestSeq) return;
 sel.innerHTML = '';
 if (merged.length === 0) {
 sel.innerHTML = '<option value="">선택한 과목에서 문제 파일을 찾지 못했습니다</option>';
@@ -1908,11 +1919,13 @@ async function populateSessionSelect(subjectKey) {
 const sel = document.getElementById('session-val');
 const startBtn = document.querySelector('#session-select-div .btn-green');
 const sk = normalizeSubjectKey(subjectKey);
+const reqId = ++sessionSelectRequestSeq;
 sel.innerHTML = '';
 sel.disabled = true;
 if (startBtn) startBtn.disabled = true;
 sel.innerHTML = '<option value="">회차 목록 확인 중…</option>';
 const okRows = await discoverSubjectQuizFiles(sk);
+if (reqId !== sessionSelectRequestSeq || normalizeSubjectKey(pendingQuizFile) !== sk) return;
 subjectSessionManifestCache[sk] = okRows;
 sel.innerHTML = '';
 if (okRows.length === 0) {
@@ -1959,6 +1972,8 @@ let quizSubjectFile = null;
 let lastLoadedSessionCode = '';
 /** 과목별 마지막으로 탐색한 회차 목록 (경로 조회용) */
 let subjectSessionManifestCache = {};
+/** 회차 목록 비동기 조회 최신 요청 번호 (과목 변경 경합 방지) */
+let sessionSelectRequestSeq = 0;
 /** 오답노트만 풀 때 true — 랭킹·누적 연습 기록에는 반영하지 않음 */
 let wrongNoteOnly = false;
 let items = { hint: 0, shield: 0, time: 0 }, streak = 0, isIdCheck = false, lastId = "";
@@ -2768,6 +2783,7 @@ function updateSubjectRankHelp() {
 
 function selectMode(m) {
 mode = m;
+sessionSelectRequestSeq++;
 pendingQuizFile = null;
 quizSubjectFile = null;
 wrongNoteOnly = false;
@@ -2813,6 +2829,7 @@ prepareQuiz();
 }
 function backToModeSelect() {
 kingBackToModeSilently();
+sessionSelectRequestSeq++;
 pendingQuizFile = null;
 quizSubjectFile = null;
 wrongNoteOnly = false;
