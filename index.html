@@ -470,12 +470,20 @@ border-color: #cc2f3e;
 background: linear-gradient(135deg, #ff9d4d 0%, #fd7e14 100%);
 border-color: #ea7311;
 }
-/* daily, king은 inline 그라데이션 버튼이라 순서로 지정 */
+/* inline 그라데이션 버튼 아이콘 배경 보정 */
 .mode-app-grid .mode-app-btn:nth-child(1) .mode-app-icon {
 background: linear-gradient(135deg, #39d7bf 0%, #1fb0c4 100%);
 border-color: #1f9fb0;
 }
-.mode-app-grid .mode-app-btn:nth-child(6) .mode-app-icon {
+.mode-app-grid .mode-app-btn:nth-child(4) .mode-app-icon {
+background: linear-gradient(135deg, #4c6ef5 0%, #364fc7 100%);
+border-color: #3b5bdb;
+}
+.mode-app-grid .mode-app-btn:nth-child(5) .mode-app-icon {
+background: linear-gradient(135deg, #20c997 0%, #0ca678 100%);
+border-color: #109b78;
+}
+.mode-app-grid .mode-app-btn:nth-child(8) .mode-app-icon {
 background: linear-gradient(135deg, #8a57d2 0%, #2f7dff 100%);
 border-color: #4f63cf;
 }
@@ -1191,6 +1199,7 @@ min-height: 108px;
 <button class="mode-app-btn btn-green" onclick="selectMode('practice')"><span class="mode-app-icon" aria-hidden="true">📖</span><span class="mode-app-label">연습하기</span></button>
 <button class="mode-app-btn btn-purple" onclick="selectMode('classic')"><span class="mode-app-icon" aria-hidden="true">🏆</span><span class="mode-app-label">클래식 도전</span></button>
 <button class="mode-app-btn btn-blue" style="background:linear-gradient(135deg,#4c6ef5 0%,#364fc7 100%);" onclick="selectMode('mock')"><span class="mode-app-icon" aria-hidden="true">📝</span><span class="mode-app-label">모의고사</span></button>
+<button class="mode-app-btn btn-blue" style="background:linear-gradient(135deg,#12b886 0%,#0ca678 100%);" onclick="selectMode('schoolwar')"><span class="mode-app-icon" aria-hidden="true">🏫</span><span class="mode-app-label">학교 점령전</span></button>
 <button class="mode-app-btn btn-red" onclick="selectMode('survival')"><span class="mode-app-icon" aria-hidden="true">💔</span><span class="mode-app-label">서바이벌</span></button>
 <button class="mode-app-btn btn-orange" onclick="selectMode('timeattack')"><span class="mode-app-icon" aria-hidden="true">⏱️</span><span class="mode-app-label">타임 어택</span></button>
 <button class="mode-app-btn btn-blue" style="background:linear-gradient(135deg,#6f42c1 0%,#007bff 100%);" onclick="selectMode('king')"><span class="mode-app-icon" aria-hidden="true">⚔️</span><span class="mode-app-label">왕중왕전</span></button>
@@ -1257,8 +1266,8 @@ min-height: 108px;
 <select id="king-lobby-subject" onchange="kingLobbySubjectChange(this.value)">
 <option value="all">전체 과목 (랜덤)</option>
 <option value="drawing">전산응용기계제도기능사</option>
-<option value="lathe">컴퓨터응용선반기능사(밀링동일)</option>
-<option value="milling">컴퓨터응용밀링기능사(선반동일)</option>
+<option value="lathe">컴퓨터응용선반기능사</option>
+<option value="milling">컴퓨터응용밀링기능사</option>
 <option value="assembly">기계조립기능사</option>
 <option value="maintenance">설비보전기능사</option>
 <option value="automation">자동화설비기능사</option>
@@ -1351,6 +1360,33 @@ min-height: 108px;
 <button type="button" class="btn-gray" onclick="backToModeSelect()" style="margin-top:12px;">← 모드 선택으로</button>
 </div>
 
+<div id="schoolwar-box" class="card hidden">
+<h2>학교 점령전</h2>
+<p style="font-size:13px;color:#555;text-align:left;margin:0 0 10px 0;">학교를 선택하고 문제를 풀어 땅을 점령하세요. 정답 시 1칸 점령, 오답 시 내 땅 1칸 상실.</p>
+<select id="schoolwar-school-select" aria-label="학교 선택">
+<option value="">학교 선택</option>
+<option value="군산기계공업고등학교">군산기계공업고등학교</option>
+<option value="수소에너지고등학교">수소에너지고등학교</option>
+<option value="이리공업고등학교">이리공업고등학교</option>
+<option value="전북기계공업고등학교">전북기계공업고등학교</option>
+<option value="전북자동차고등학교">전북자동차고등학교</option>
+<option value="전주공업고등학교">전주공업고등학교</option>
+<option value="기타">기타</option>
+</select>
+<p id="schoolwar-status" style="font-size:13px;color:#666;margin:8px 0;">학교를 선택하세요.</p>
+<div style="display:flex;gap:8px;align-items:center;justify-content:center;margin:6px 0 10px 0;">
+<label for="schoolwar-color" style="font-size:13px;color:#555;">내 점령 색상</label>
+<input type="color" id="schoolwar-color" value="#20c997" style="width:44px;height:32px;padding:0;border:1px solid #ddd;border-radius:6px;">
+<button type="button" class="btn-gray" style="width:auto;padding:8px 12px;margin:0;" onclick="saveSchoolWarColor()">색상 저장</button>
+</div>
+<div id="schoolwar-map" style="display:grid;grid-template-columns:repeat(50, 1fr);gap:1px;max-width:520px;margin:0 auto 10px auto;background:#e9ecef;border:1px solid #dee2e6;padding:4px;border-radius:8px;"></div>
+<div id="schoolwar-stats" style="text-align:left;font-size:13px;background:#f8f9fa;border:1px solid #e9ecef;border-radius:8px;padding:8px;min-height:46px;margin-bottom:10px;">점령 현황이 여기에 표시됩니다.</div>
+<p id="schoolwar-select-hint" class="hidden" style="font-size:13px;color:#0b5ed7;margin:0 0 8px 0;">점령할 칸을 선택하세요.</p>
+<button type="button" id="schoolwar-apply-btn" class="btn-blue hidden" onclick="applySchoolWarSelections()" style="margin-bottom:10px;">선택 점령 확정</button>
+<button type="button" class="btn-green" onclick="startSchoolWarQuiz()">문제 풀기 시작</button>
+<button type="button" class="btn-gray" onclick="backToModeSelect()">← 모드 선택으로</button>
+</div>
+
 <div id="subject-pref-modal" class="subject-pref-modal hidden" aria-hidden="true">
 <div class="subject-pref-modal-backdrop" onclick="closeSubjectPrefModal()"></div>
 <div class="subject-pref-modal-card" role="dialog" aria-modal="true" aria-labelledby="subject-pref-modal-title" onclick="event.stopPropagation()">
@@ -1412,6 +1448,7 @@ min-height: 108px;
 <option value="practice">📚 연습왕</option>
 <option value="classic">🎯 클래식</option>
 <option value="mock">📝 모의고사</option>
+<option value="schoolwar">🏫 학교 점령전</option>
 <option value="survival">💔 서바이벌</option>
 <option value="timeattack">⏱️ 타임어택</option>
 <option value="king">⚔️ 왕중왕</option>
@@ -1451,6 +1488,18 @@ let practiceFirstSubmit = {};
 let classicProceedTimer = null;
 let mockAnswers = {};
 let mockSubmitted = false;
+let schoolWarSchool = '';
+let schoolWarCells = {};
+let schoolWarCellsRef = null;
+let schoolWarCellsHandler = null;
+let schoolWarUserNames = {};
+let schoolWarUserColors = {};
+let schoolWarTodayLimit = 10;
+let schoolWarCorrectCount = 0;
+let schoolWarWrongCount = 0;
+let schoolWarSelectionMode = false;
+let schoolWarCaptureQuota = 0;
+let schoolWarSelectedCells = {};
 let currentRankMode = 'daily';
 let pendingQuizFile = null;
 /** 개인정보: 프로필 사진(data URL) 저장 전 대기 */
@@ -1458,8 +1507,8 @@ let pendingProfilePhotoData = null;
 let removeProfilePhotoPending = false;
 const SUBJECT_LABELS = {
 drawing: '전산응용기계제도기능사',
-lathe: '컴퓨터응용선반기능사',
-milling: '컴퓨터응용밀링기능사',
+lathe: '컴퓨터응용선반기능사(밀링동일)',
+milling: '컴퓨터응용밀링기능사(선반동일)',
 assembly: '기계조립기능사',
 maintenance: '설비보전기능사',
 automation: '자동화설비기능사',
@@ -2798,6 +2847,8 @@ function updateSubjectRankHelp() {
         html = '<h3>💔 서바이벌 — 랭킹 반영</h3><ul><li>게임이 끝나거나 <strong>그만두기</strong>할 때, <strong>이번 점수</strong>가 본인 <strong>역대 최고점</strong>보다 높을 때만 랭킹 점수가 갱신됩니다.</li></ul>';
     } else if (m === 'timeattack') {
         html = '<h3>⏱️ 타임 어택 — 랭킹 반영</h3><ul><li>게임이 끝나거나 <strong>그만두기</strong>할 때, <strong>이번 점수</strong>가 본인 <strong>역대 최고점</strong>보다 높을 때만 랭킹 점수가 갱신됩니다.</li></ul>';
+    } else if (m === 'schoolwar') {
+        html = '<h3>🏫 학교 점령전 — 실시간 반영</h3><ul><li>정답 시 1칸 점령, 오답 시 내 땅 1칸 상실. 점령 현황은 같은 학교 접속자에게 실시간으로 반영됩니다.</li></ul>';
     } else if (m === 'king') {
         html = '<h3>⚔️ 왕중왕전 — 랭킹 반영</h3><ul><li>한 게임을 시작할 때 <strong>참가자가 5명 이상</strong>인 방에서 <strong>우승</strong>한 경우에만 인증 횟수(왕중왕 랭킹)가 올라갑니다.</li></ul>';
     } else {
@@ -2814,9 +2865,15 @@ quizSubjectFile = null;
 wrongNoteOnly = false;
 setQuizLoadingUi(false);
 document.getElementById('mode-box').classList.add('hidden');
+document.getElementById('schoolwar-box').classList.add('hidden');
 if (m === 'king') {
 document.getElementById('subject-box').classList.add('hidden');
 kingOpenEntry();
+return;
+}
+if (m === 'schoolwar') {
+document.getElementById('subject-box').classList.add('hidden');
+openSchoolWarMode();
 return;
 }
 document.getElementById('subject-box').classList.remove('hidden');
@@ -2861,6 +2918,7 @@ prepareQuiz();
 }
 function backToModeSelect() {
 kingBackToModeSilently();
+detachSchoolWarListener();
 sessionSelectRequestSeq++;
 pendingQuizFile = null;
 quizSubjectFile = null;
@@ -2870,6 +2928,7 @@ document.getElementById('subject-quick-start-wrap').classList.add('hidden');
 document.getElementById('session-select-div').classList.add('hidden');
 document.getElementById('subject-title').textContent = '과목 선택';
 document.getElementById('subject-box').classList.add('hidden');
+document.getElementById('schoolwar-box').classList.add('hidden');
 document.getElementById('mode-box').classList.remove('hidden');
 syncPreferredSubjectUi();
 }
@@ -3229,6 +3288,195 @@ if (startPracticeBtn) startPracticeBtn.disabled = on;
 var quickStartBtn = document.querySelector('#subject-quick-start-wrap .btn-green');
 if (quickStartBtn) quickStartBtn.disabled = on;
 }
+function schoolWarCellColor(ownerUid) {
+if (!ownerUid) return '#f8f9fa';
+if (schoolWarUserColors && schoolWarUserColors[String(ownerUid)]) return schoolWarUserColors[String(ownerUid)];
+let h = 0;
+const s = String(ownerUid);
+for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 360;
+return 'hsl(' + h + ', 62%, 70%)';
+}
+function initSchoolWarMapUi() {
+const mapEl = document.getElementById('schoolwar-map');
+if (!mapEl || mapEl.childElementCount === 2500) return;
+mapEl.innerHTML = '';
+for (let i = 0; i < 2500; i++) {
+const c = document.createElement('div');
+c.id = 'sw-cell-' + i;
+c.setAttribute('data-cell-id', String(i));
+c.setAttribute('data-owner-uid', '');
+c.style.width = '100%';
+c.style.aspectRatio = '1 / 1';
+c.style.background = '#f8f9fa';
+c.style.cursor = 'pointer';
+c.addEventListener('click', function () {
+const ownerUid = String(c.getAttribute('data-owner-uid') || '').trim();
+const cellId = String(c.getAttribute('data-cell-id') || '');
+if (schoolWarSelectionMode) {
+if (!cellId) return;
+if (ownerUid && user && String(ownerUid) === String(user.id)) return;
+if (schoolWarSelectedCells[cellId]) {
+delete schoolWarSelectedCells[cellId];
+} else {
+const picked = Object.keys(schoolWarSelectedCells).length;
+if (picked >= schoolWarCaptureQuota) return;
+schoolWarSelectedCells[cellId] = true;
+}
+renderSchoolWarMap();
+updateSchoolWarSelectionUi();
+return;
+}
+if (!ownerUid) return;
+alert('점령자 아이디: ' + ownerUid);
+});
+mapEl.appendChild(c);
+}
+}
+function updateSchoolWarSelectionUi() {
+const hint = document.getElementById('schoolwar-select-hint');
+const btn = document.getElementById('schoolwar-apply-btn');
+const picked = Object.keys(schoolWarSelectedCells).length;
+if (!schoolWarSelectionMode) {
+if (hint) hint.classList.add('hidden');
+if (btn) btn.classList.add('hidden');
+return;
+}
+if (hint) {
+hint.classList.remove('hidden');
+hint.textContent = '점령할 칸 선택: ' + picked + '/' + schoolWarCaptureQuota;
+}
+if (btn) {
+btn.classList.remove('hidden');
+btn.disabled = picked !== schoolWarCaptureQuota;
+}
+}
+function renderSchoolWarMap() {
+for (let i = 0; i < 2500; i++) {
+const el = document.getElementById('sw-cell-' + i);
+if (!el) continue;
+const ownerUid = String(schoolWarCells[String(i)] || '').trim();
+el.style.background = schoolWarCellColor(ownerUid);
+if (schoolWarSelectionMode && schoolWarSelectedCells[String(i)]) {
+el.style.outline = '2px solid #0d6efd';
+el.style.outlineOffset = '-2px';
+} else {
+el.style.outline = '';
+}
+el.setAttribute('data-owner-uid', ownerUid);
+el.title = ownerUid ? ('점령자: ' + ownerUid) : '빈칸';
+}
+}
+function renderSchoolWarStats() {
+const st = document.getElementById('schoolwar-stats');
+if (!st) return;
+const cnt = {};
+Object.keys(schoolWarCells || {}).forEach(function (k) {
+const uid = schoolWarCells[k];
+if (!uid) return;
+cnt[uid] = (cnt[uid] || 0) + 1;
+});
+const arr = Object.keys(cnt).map(function (uid) {
+return { uid: uid, c: cnt[uid] };
+}).sort(function (a, b) { return b.c - a.c; });
+if (!arr.length) {
+st.textContent = '아직 점령된 땅이 없습니다.';
+return;
+}
+const top = arr.slice(0, 12).map(function (r) {
+const name = schoolWarUserNames[r.uid] || r.uid;
+const pct = ((r.c / 2500) * 100).toFixed(2);
+return '<div>' + escapeHtml(name) + ' · <b>' + r.c + '칸</b> (' + pct + '%)</div>';
+});
+st.innerHTML = top.join('');
+}
+function detachSchoolWarListener() {
+if (schoolWarCellsRef && schoolWarCellsHandler) schoolWarCellsRef.off('value', schoolWarCellsHandler);
+schoolWarCellsRef = null;
+schoolWarCellsHandler = null;
+}
+async function loadSchoolWarUserNames() {
+try {
+const s = await db.ref('users').once('value');
+const out = {};
+const colors = {};
+s.forEach(function (c) {
+const v = c.val() || {};
+const uid = String(v.id != null ? v.id : c.key);
+out[uid] = (v.name && String(v.name).trim()) ? String(v.name).trim() : uid;
+if (v.schoolwar_color && /^#[0-9a-fA-F]{6}$/.test(String(v.schoolwar_color))) colors[uid] = String(v.schoolwar_color);
+});
+schoolWarUserNames = out;
+schoolWarUserColors = colors;
+} catch (e) {}
+}
+async function saveSchoolWarColor() {
+if (!user || !user.id) return alert('로그인이 필요합니다.');
+const el = document.getElementById('schoolwar-color');
+const c = el ? String(el.value || '').trim() : '';
+if (!/^#[0-9a-fA-F]{6}$/.test(c)) return alert('색상을 선택해 주세요.');
+try {
+await db.ref('users/' + user.id + '/schoolwar_color').set(c);
+schoolWarUserColors[String(user.id)] = c;
+renderSchoolWarMap();
+} catch (e) {
+alert('색상 저장에 실패했습니다.');
+}
+}
+function attachSchoolWarListener(schoolName) {
+detachSchoolWarListener();
+if (!schoolName) return;
+schoolWarCellsRef = db.ref('schoolWars/' + encodeURIComponent(schoolName) + '/cells');
+schoolWarCellsHandler = function (snap) {
+schoolWarCells = snap.val() || {};
+renderSchoolWarMap();
+renderSchoolWarStats();
+};
+schoolWarCellsRef.on('value', schoolWarCellsHandler);
+}
+function openSchoolWarMode() {
+schoolWarSelectionMode = false;
+schoolWarCaptureQuota = 0;
+schoolWarSelectedCells = {};
+updateSchoolWarSelectionUi();
+initSchoolWarMapUi();
+document.getElementById('schoolwar-box').classList.remove('hidden');
+const sel = document.getElementById('schoolwar-school-select');
+if (user && user.school) sel.value = user.school;
+schoolWarSchool = sel.value || '';
+if (schoolWarSchool) {
+const today = getLocalDateStringForDaily(new Date());
+const used = (String(user && user.schoolwar_daily_date || '') === today) ? (Number(user && user.schoolwar_daily_used) || 0) : 0;
+const left = Math.max(0, 10 - used);
+document.getElementById('schoolwar-status').textContent = '선택 학교: ' + schoolWarSchool + ' · 오늘 남은 문제: ' + left + '개';
+attachSchoolWarListener(schoolWarSchool);
+} else {
+document.getElementById('schoolwar-status').textContent = '학교를 선택하세요.';
+schoolWarCells = {};
+renderSchoolWarMap();
+renderSchoolWarStats();
+}
+loadSchoolWarUserNames().then(renderSchoolWarStats);
+if (user && user.schoolwar_color && /^#[0-9a-fA-F]{6}$/.test(String(user.schoolwar_color))) {
+const cEl = document.getElementById('schoolwar-color');
+if (cEl) cEl.value = String(user.schoolwar_color);
+}
+}
+document.getElementById('schoolwar-school-select').addEventListener('change', function () {
+schoolWarSchool = this.value || '';
+if (!schoolWarSchool) {
+detachSchoolWarListener();
+document.getElementById('schoolwar-status').textContent = '학교를 선택하세요.';
+schoolWarCells = {};
+renderSchoolWarMap();
+renderSchoolWarStats();
+return;
+}
+const today = getLocalDateStringForDaily(new Date());
+const used = (String(user && user.schoolwar_daily_date || '') === today) ? (Number(user && user.schoolwar_daily_used) || 0) : 0;
+const left = Math.max(0, 10 - used);
+document.getElementById('schoolwar-status').textContent = '선택 학교: ' + schoolWarSchool + ' · 오늘 남은 문제: ' + left + '개';
+attachSchoolWarListener(schoolWarSchool);
+});
 function prepareQuizSubjectMergedFromPreferred() {
 wrongNoteOnly = false;
 var keys = getPreferredSubjectEffectiveKeys();
@@ -3263,6 +3511,35 @@ startQuiz();
 }).catch(function () {
 setQuizLoadingUi(false);
 alert('문제를 불러오지 못했습니다.');
+});
+}
+function startSchoolWarQuiz() {
+if (!user || !user.id) return alert('로그인이 필요합니다.');
+if (!schoolWarSchool) return alert('학교를 선택하세요.');
+setQuizLoadingUi(true);
+refreshUserFromDb().then(function () {
+const today = getLocalDateStringForDaily(new Date());
+const last = String(user.schoolwar_daily_date || '').trim();
+const used = (last === today) ? (Number(user.schoolwar_daily_used) || 0) : 0;
+const left = Math.max(0, 10 - used);
+if (left <= 0) {
+setQuizLoadingUi(false);
+alert('학교 점령전은 하루 최대 10문제까지 풀 수 있습니다.');
+return;
+}
+schoolWarTodayLimit = left;
+mode = 'schoolwar';
+return prepareSchoolWarQuiz().then(function () {
+schoolWarCorrectCount = 0;
+schoolWarWrongCount = 0;
+schoolWarSelectionMode = false;
+schoolWarSelectedCells = {};
+updateSchoolWarSelectionUi();
+startQuiz();
+});
+}).catch(function () {
+setQuizLoadingUi(false);
+alert('점령전 문제를 준비하지 못했습니다. (선택한 과목에서 최소 ' + schoolWarTodayLimit + '문제 필요)');
 });
 }
 function prepareQuiz() {
@@ -3355,10 +3632,13 @@ alert('파일 로드 실패');
 function startQuiz() {
 setQuizLoadingUi(false);
 document.getElementById('subject-box').classList.add('hidden');
+document.getElementById('schoolwar-box').classList.add('hidden');
 document.getElementById('quiz-box').classList.remove('hidden');
 score=0; currentIdx=0; lives=3; timeLeft=60; streak=0; totalTime=0; items={hint:0,shield:0,time:0};
 mockAnswers = {};
 mockSubmitted = false;
+schoolWarCorrectCount = 0;
+schoolWarWrongCount = 0;
 sessionPracticeSolved = 0;
 lastAnswerCorrect = {};
 practiceFirstSubmit = {};
@@ -3373,6 +3653,7 @@ startTimer(); updateUI(); showQuestion();
 function startQuizResumed(resume) {
 setQuizLoadingUi(false);
 document.getElementById('subject-box').classList.add('hidden');
+document.getElementById('schoolwar-box').classList.add('hidden');
 document.getElementById('quiz-box').classList.remove('hidden');
 score = Number(resume.score) || 0;
 currentIdx = Math.max(0, Math.min(Number(resume.currentIdx) || 0, quizList.length - 1));
@@ -3402,11 +3683,11 @@ showQuestion();
 function syncPrevQuestionBtn() {
 const btn = document.getElementById('prev-question-btn');
 if (!btn) return;
-const show = !wrongNoteOnly && (mode === 'practice' || mode === 'daily' || mode === 'classic' || mode === 'mock') && currentIdx > 0;
+const show = !wrongNoteOnly && (mode === 'practice' || mode === 'daily' || mode === 'classic' || mode === 'mock' || mode === 'schoolwar') && currentIdx > 0;
 btn.classList.toggle('hidden', !show);
 }
 function goToPreviousQuestion() {
-if (mode !== 'practice' && mode !== 'daily' && mode !== 'classic' && mode !== 'mock') return;
+if (mode !== 'practice' && mode !== 'daily' && mode !== 'classic' && mode !== 'mock' && mode !== 'schoolwar') return;
 if (currentIdx <= 0) return;
 if (classicProceedTimer) {
 clearTimeout(classicProceedTimer);
@@ -3416,7 +3697,7 @@ currentIdx--;
 showQuestion();
 }
 function nextPracticeQuestion() {
-if(mode !== 'practice' && mode !== 'daily' && mode !== 'mock') return;
+if(mode !== 'practice' && mode !== 'daily' && mode !== 'mock' && mode !== 'schoolwar') return;
 if (mode === 'mock' && currentIdx >= quizList.length - 1) return;
 currentIdx++;
 showQuestion();
@@ -3457,6 +3738,10 @@ if (mode === 'mock') {
 let answered = 0;
 Object.keys(mockAnswers).forEach(function (k) { if (mockAnswers[k] != null) answered++; });
 sd.innerText = '답안: ' + answered + '/60';
+} else if (mode === 'schoolwar') {
+let mine = 0;
+Object.keys(schoolWarCells || {}).forEach(function (k) { if (String(schoolWarCells[k] || '') === String(user && user.id || '')) mine++; });
+sd.innerText = '내 점령: ' + mine + '칸';
 } else {
 sd.innerText = '점수: ' + score;
 }
@@ -3478,7 +3763,9 @@ if (classicProceedTimer) {
 clearTimeout(classicProceedTimer);
 classicProceedTimer = null;
 }
-if(currentIdx >= quizList.length) return endGame();
+if(currentIdx >= quizList.length) {
+return endGame();
+}
 const p = quizList[currentIdx];
 document.getElementById('q-txt').innerText = p.question;
 setQuizPassageBox('q-passage', p);
@@ -3490,6 +3777,10 @@ if (mode === 'mock') {
 nextBtn.textContent = '다음 문제';
 nextBtn.classList.remove('hidden');
 nextBtn.disabled = currentIdx >= quizList.length - 1;
+} else if (mode === 'schoolwar') {
+nextBtn.textContent = '다음 문제';
+nextBtn.classList.remove('hidden');
+nextBtn.disabled = false;
 }
 const submitBtn = document.getElementById('mock-submit-btn');
 if (submitBtn) submitBtn.classList.toggle('hidden', mode !== 'mock');
@@ -3507,6 +3798,77 @@ optDiv.appendChild(btn);
 });
 syncPrevQuestionBtn();
 }
+async function schoolWarAutoLoseCells(count) {
+if (!user || !user.id || !schoolWarSchool) return 0;
+let need = Math.max(0, Number(count) || 0);
+if (!need) return 0;
+const mine = [];
+for (let i = 0; i < 2500; i++) {
+if (String(schoolWarCells[String(i)] || '') === String(user.id)) mine.push(String(i));
+}
+if (!mine.length) return 0;
+let lost = 0;
+while (need > 0 && mine.length > 0) {
+const idx = Math.floor(Math.random() * mine.length);
+const cellId = mine.splice(idx, 1)[0];
+const ref = db.ref('schoolWars/' + encodeURIComponent(schoolWarSchool) + '/cells/' + cellId);
+let ok = false;
+await ref.transaction(function (owner) {
+if (String(owner || '') !== String(user.id)) return owner;
+return null;
+}, function (err, committed) { ok = !err && !!committed; });
+if (ok) {
+need--;
+lost++;
+}
+}
+return lost;
+}
+function beginSchoolWarSelection(quota) {
+schoolWarCaptureQuota = Math.max(0, Number(quota) || 0);
+schoolWarSelectedCells = {};
+schoolWarSelectionMode = schoolWarCaptureQuota > 0;
+updateSchoolWarSelectionUi();
+renderSchoolWarMap();
+if (!schoolWarSelectionMode) {
+alert('이번 문제풀이에서 점령 가능한 칸이 없습니다.');
+}
+}
+async function applySchoolWarSelections() {
+if (!schoolWarSelectionMode || !user || !user.id || !schoolWarSchool) return;
+const picks = Object.keys(schoolWarSelectedCells);
+if (picks.length !== schoolWarCaptureQuota) {
+return alert('점령할 칸을 ' + schoolWarCaptureQuota + '개 정확히 선택해 주세요.');
+}
+const root = db.ref('schoolWars/' + encodeURIComponent(schoolWarSchool) + '/cells');
+let done = 0;
+for (let i = 0; i < picks.length; i++) {
+const cellId = picks[i];
+let ok = false;
+await root.child(cellId).transaction(function (owner) {
+if (String(owner || '') === String(user.id)) return owner;
+return user.id;
+}, function (err, committed) { ok = !err && !!committed; });
+if (ok) done++;
+}
+schoolWarSelectionMode = false;
+schoolWarCaptureQuota = 0;
+schoolWarSelectedCells = {};
+updateSchoolWarSelectionUi();
+renderSchoolWarMap();
+alert('점령 적용 완료: ' + done + '칸');
+}
+async function prepareSchoolWarQuiz() {
+const files = await fetchKingFilesForPreferred();
+if (!files || !files.length) throw new Error('no_files');
+const parts = await Promise.all(files.map(function (f) {
+return fetch(f).then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; });
+}));
+let data = [];
+parts.forEach(function (p) { if (Array.isArray(p)) data = data.concat(p); });
+if (data.length < schoolWarTodayLimit) throw new Error('not_enough_questions');
+quizList = data.sort(function () { return Math.random() - 0.5; }).slice(0, schoolWarTodayLimit);
+}
 function checkAnswer(ans, btn) {
 if (mode === 'mock') return;
 const p = quizList[currentIdx];
@@ -3515,6 +3877,7 @@ const canRevise = (mode === 'practice' || mode === 'daily' || mode === 'classic'
 if (canRevise && lastAnswerCorrect[idx] === true) {
 score -= 10;
 }
+(async function () {
 if(ans === p.answer) {
 if (!wrongNoteOnly) score += 10;
 if(mode === 'timeattack') {
@@ -3524,6 +3887,7 @@ if((items.hint + items.shield + items.time) < 2) { streak++; if(streak >= 3) { g
 btn.classList.add('correct');
 if (canRevise) lastAnswerCorrect[idx] = true;
 if (mode === 'practice' && !wrongNoteOnly && user && user.id && quizSubjectFile) removeWrongNoteForQuestion(quizSubjectFile, p);
+if (mode === 'schoolwar') schoolWarCorrectCount++;
 proceed();
 } else {
 streak = 0;
@@ -3538,6 +3902,7 @@ proceed();
 btn.classList.add('wrong');
 if (canRevise) lastAnswerCorrect[idx] = false;
 if(mode === 'practice' && user && user.id && quizSubjectFile && !wrongNoteOnly) saveWrongNote(quizSubjectFile, p);
+if (mode === 'schoolwar') schoolWarWrongCount++;
 if(mode === 'survival') { lives--; if(lives <= 0) return endGame(); }
 if(mode === 'timeattack') timeLeft -= 10;
 proceed();
@@ -3550,6 +3915,7 @@ sessionPracticeSolved++;
 }
 }
 updateUI();
+})().catch(function () {});
 }
 function mockPickAnswer(ans) {
 if (mode !== 'mock') return;
@@ -3630,6 +3996,8 @@ classicProceedTimer = null;
 currentIdx++;
 showQuestion();
 }, 400);
+} else if (mode === 'schoolwar') {
+setTimeout(() => { currentIdx++; showQuestion(); }, 300);
 } else {
 setTimeout(() => { currentIdx++; showQuestion(); }, 400);
 }
@@ -3693,6 +4061,34 @@ return rounded.toFixed(1).replace(/\.0$/, '');
 function formatScore2(score) {
 return (Math.round((Math.max(0, Number(score) || 0)) * 100) / 100).toFixed(2);
 }
+function computeSchoolWarCountsFromMap(allSchoolWars) {
+const out = {};
+const root = allSchoolWars || {};
+Object.keys(root).forEach(function (schoolKey) {
+const cells = root[schoolKey] && root[schoolKey].cells ? root[schoolKey].cells : {};
+Object.keys(cells).forEach(function (cellId) {
+const uid = String(cells[cellId] || '').trim();
+if (!uid) return;
+out[uid] = (out[uid] || 0) + 1;
+});
+});
+return out;
+}
+async function applySchoolWarCountsToUsers(arr) {
+if (!Array.isArray(arr)) return arr;
+try {
+const swSnap = await db.ref('schoolWars').once('value');
+const counts = computeSchoolWarCountsFromMap(swSnap.val());
+arr.forEach(function (u) {
+u.__schoolwar_cells = counts[String(u.id)] || 0;
+});
+} catch (e) {
+arr.forEach(function (u) {
+if (u.__schoolwar_cells == null) u.__schoolwar_cells = 0;
+});
+}
+return arr;
+}
 function getMockPointByConvertedScore(score) {
 const s = Math.max(0, Number(score) || 0);
 if (s >= 100) return 3;
@@ -3748,6 +4144,9 @@ const pts = Number(user.mock_rank_points) || 0;
 const cnt = Number(user.mock_submit_count) || 0;
 const last = formatScore2(user.mock_last_score || 0);
 el.innerHTML = `<div class="rank-my-box"><b>나의 기록</b> · 누적 <strong>${pts}</strong>점 · 제출 <strong>${cnt}</strong>회 · 최근 환산 <strong>${last}</strong>점${extra}</div>`;
+} else if (rankMode === 'schoolwar') {
+const cnt = Number(user.__schoolwar_cells || 0);
+el.innerHTML = `<div class="rank-my-box"><b>나의 기록</b> · 현재 점령 <strong>${cnt}</strong>칸${extra}</div>`;
 } else {
 const sc = user[rankMode + '_score'] != null ? user[rankMode + '_score'] : 0;
 const tm = rankMode === 'classic' ? (user.classic_time || '--:--') : (user[rankMode + '_time'] || '--:--');
@@ -3758,6 +4157,33 @@ el.innerHTML = `<div class="rank-my-box"><b>나의 기록</b> · <strong>${sc}</
 async function persistGameResultAndShowRanking() {
 clearInterval(timerInterval);
 document.getElementById('quiz-box').classList.add('hidden');
+if (mode === 'schoolwar') {
+if (user && user.id) {
+try {
+await refreshUserFromDb();
+const today = getLocalDateStringForDaily(new Date());
+const last = String(user.schoolwar_daily_date || '').trim();
+const prevUsed = (last === today) ? (Number(user.schoolwar_daily_used) || 0) : 0;
+const solvedNow = Math.min(quizList.length, Math.max(0, Number(currentIdx) || 0));
+const nextUsed = Math.min(10, prevUsed + solvedNow);
+await db.ref('users/' + user.id).update({
+schoolwar_daily_date: today,
+schoolwar_daily_used: nextUsed
+});
+await refreshUserFromDb();
+} catch (e) {}
+}
+const lost = await schoolWarAutoLoseCells(schoolWarWrongCount);
+document.getElementById('rank-box').classList.add('hidden');
+document.getElementById('schoolwar-box').classList.remove('hidden');
+const todayInfo = getLocalDateStringForDaily(new Date());
+const usedInfo = (String(user && user.schoolwar_daily_date || '') === todayInfo) ? (Number(user && user.schoolwar_daily_used) || 0) : 0;
+const leftInfo = Math.max(0, 10 - usedInfo);
+document.getElementById('schoolwar-status').textContent = '선택 학교: ' + (schoolWarSchool || '-') + ' · 오늘 남은 문제: ' + leftInfo + '개 · 정답 ' + schoolWarCorrectCount + '개 / 오답 ' + schoolWarWrongCount + '개 (오답으로 ' + lost + '칸 상실)';
+beginSchoolWarSelection(schoolWarCorrectCount);
+updateSubjectRankHelp();
+return;
+}
 if (wrongNoteOnly) {
 wrongNoteOnly = false;
 document.getElementById('rank-box').classList.add('hidden');
@@ -3845,6 +4271,11 @@ async function endGame() {
 await persistGameResultAndShowRanking();
 }
 function quitGame() {
+if (mode === 'schoolwar') {
+if (!confirm('점령전 문제 풀이를 종료하고 점령전 화면으로 돌아갈까요?')) return;
+persistGameResultAndShowRanking().catch(() => alert('화면 전환에 실패했습니다.'));
+return;
+}
 if (wrongNoteOnly) {
 persistGameResultAndShowRanking().catch(() => alert('화면 전환에 실패했습니다.'));
 return;
@@ -3919,7 +4350,7 @@ try { await refreshUserFromDb(); } catch(e) {}
 updateRankBackButton();
 const field = rankMode === 'practice'
 ? 'practice_score'
-: (rankMode === 'king' ? 'king_score' : (rankMode === 'daily' ? 'daily_streak' : (rankMode === 'mock' ? 'mock_rank_points' : rankMode + '_score')));
+: (rankMode === 'king' ? 'king_score' : (rankMode === 'daily' ? 'daily_streak' : (rankMode === 'mock' ? 'mock_rank_points' : (rankMode === 'schoolwar' ? '__schoolwar_cells' : rankMode + '_score'))));
 try {
 const snap = await db.ref('users').once('value');
 const arr = [];
@@ -3928,9 +4359,17 @@ const v = c.val();
 if(!v) return;
 arr.push({ ...v, id: v.id != null ? v.id : c.key });
 });
+if (rankMode === 'schoolwar') {
+const swSnap = await db.ref('schoolWars').once('value');
+const counts = computeSchoolWarCountsFromMap(swSnap.val());
+arr.forEach(function (u) {
+u.__schoolwar_cells = counts[String(u.id)] || 0;
+});
+}
 const arrWithRecord = arr.filter(u => {
 if (rankMode === 'practice') return getPracticeScoreFromUser(u) > 0;
 if (rankMode === 'mock') return (Number(u.mock_rank_points) || 0) > 0;
+if (rankMode === 'schoolwar') return (Number(u.__schoolwar_cells) || 0) > 0;
 return (Number(u[field]) || 0) > 0;
 });
 arrWithRecord.sort((a, b) => {
@@ -3972,6 +4411,8 @@ const valStr = rankMode === 'practice'
 ? ('인증 우승 ' + (u.king_score != null ? u.king_score : 0) + '회')
 : rankMode === 'mock'
 ? ('누적 포인트 ' + (Number(u.mock_rank_points) || 0) + '점 · 제출 ' + (Number(u.mock_submit_count) || 0) + '회 · 최근 환산 ' + formatScore2(u.mock_last_score || 0) + '점')
+: rankMode === 'schoolwar'
+? ('현재 점령 ' + (Number(u.__schoolwar_cells) || 0) + '칸')
 : rankMode === 'daily'
 ? ('연속 ' + (u.daily_streak != null ? u.daily_streak : 0) + '일 · 최고 ' + (u.daily_best_streak != null ? u.daily_best_streak : 0) + '일')
 : ((u[field] != null ? u[field] : 0) + '점');
@@ -3980,6 +4421,8 @@ const timeStr = rankMode === 'king'
 : rankMode === 'practice'
 ? ''
 : rankMode === 'mock'
+? ''
+: rankMode === 'schoolwar'
 ? ''
 : rankMode === 'daily'
 ? (u.daily_time || '--:--')
@@ -4365,6 +4808,7 @@ const LOGIN_TOP3_MODES = [
 { key: 'practice', field: 'practice_score', label: '연습왕', icon: '📚', cardClass: 'login-top3-card--practice' },
 { key: 'classic', field: 'classic_score', label: '클래식', icon: '🎯', cardClass: 'login-top3-card--classic' },
 { key: 'mock', field: 'mock_rank_points', label: '모의고사', icon: '📝', cardClass: 'login-top3-card--classic' },
+{ key: 'schoolwar', field: '__schoolwar_cells', label: '학교 점령전', icon: '🏫', cardClass: 'login-top3-card--daily' },
 { key: 'survival', field: 'survival_score', label: '서바이벌', icon: '💔', cardClass: 'login-top3-card--survival' },
 { key: 'timeattack', field: 'timeattack_score', label: '타임어택', icon: '⏱️', cardClass: 'login-top3-card--timeattack' },
 { key: 'king', field: 'king_score', label: '왕중왕', icon: '⚔️', cardClass: 'login-top3-card--king' }
@@ -4404,12 +4848,14 @@ const va = Number(a.mock_rank_points) || 0;
 if (vb !== va) return vb - va;
 return (Number(b.mock_submit_count) || 0) - (Number(a.mock_submit_count) || 0);
 }
+if (def.key === 'schoolwar') return (Number(b.__schoolwar_cells) || 0) - (Number(a.__schoolwar_cells) || 0);
 return (Number(b[def.field]) || 0) - (Number(a[def.field]) || 0);
 });
 }
 return sorted.filter(function (u) {
 if (def.key === 'practice') return getPracticeScoreFromUser(u) > 0;
 if (def.key === 'mock') return (Number(u.mock_rank_points) || 0) > 0;
+if (def.key === 'schoolwar') return (Number(u.__schoolwar_cells) || 0) > 0;
 return (Number(u[def.field]) || 0) > 0;
 }).slice(0, 3);
 }
@@ -4633,8 +5079,10 @@ paintRankTop3Slide();
 startRankTop3Rotation();
 }
 
-function updateRankTop3Carousel(arr) {
-rankTop3CardHtmlList = buildTop3CardHtmlList(arr);
+async function updateRankTop3Carousel(arr) {
+var work = Array.isArray(arr) ? arr.map(function (u) { return Object.assign({}, u); }) : [];
+await applySchoolWarCountsToUsers(work);
+rankTop3CardHtmlList = buildTop3CardHtmlList(work);
 rankTop3ModeIndex = 0;
 paintRankTop3Slide();
 startRankTop3Rotation();
@@ -4851,6 +5299,7 @@ const v = c.val();
 if (!v) return;
 arr.push({ ...v, id: v.id != null ? v.id : c.key });
 });
+await applySchoolWarCountsToUsers(arr);
 var usersById = {};
 arr.forEach(function (u) { usersById[String(u.id)] = u; });
 var currentModes = computeTop3SnapshotModes(arr, LOGIN_TOP3_MODES);
