@@ -3,10 +3,10 @@
     "id": 1,
     "session": "24-02",
     "question": "등각투상도가 왼쪽 그림과 같다면 제1각법의 표현 방법에 의해 A에 놓일 그림으로 적절한 것은?",
-    "options": ["그림 ①", "그림 ②", "그림 ③", "그림 ④"],
+    "options": ["automation/24_02/automation_24_02_01_op1.png", "automation/24_02/automation_24_02_01_op2.png", "automation/24_02/automation_24_02_01_op3.png", "automation/24_02/automation_24_02_01_op4.png"],
     "answer": 1,
     "explanation": "제1각법에 의해 표현되므로 A에는 우측면도가 위치해야 합니다. 제시된 투상도에서 우측에서 본 모양은 수평선과 점선(숨은선)으로 구성된 ①번 형상입니다.",
-    "image_file": null
+    "image_file": "automation/24_02/automation_24_02_01.png"
   },
   {
     "id": 2,
