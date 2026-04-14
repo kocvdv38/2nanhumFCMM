@@ -26,6 +26,18 @@
         "path": "maintenance/maintenance_23_03.json",
         "label": "2023년 3회차"
       }
+    ],
+    "milling": [
+      {
+        "code": "24-01",
+        "path": "milling/milling_24_01.json",
+        "label": "2024년 1회차"
+      },
+      {
+        "code": "24-02",
+        "path": "milling/milling_24_02.json",
+        "label": "2024년 2회차"
+      }      
     ]
   }
 }
