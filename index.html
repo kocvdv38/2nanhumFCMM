@@ -513,6 +513,52 @@ word-break: keep-all;
 text-align: center;
 color: #111;
 }
+.custom-alert-backdrop {
+position: fixed;
+inset: 0;
+background: rgba(0, 0, 0, 0.4);
+display: flex;
+align-items: center;
+justify-content: center;
+padding: 18px;
+z-index: 9999;
+}
+.custom-alert-backdrop.hidden {
+display: none;
+}
+.custom-alert-card {
+width: min(360px, 100%);
+background: #fff;
+border-radius: 14px;
+box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
+border: 1px solid #e9ecef;
+padding: 16px 14px 12px;
+text-align: center;
+}
+.custom-alert-title {
+font-size: 15px;
+font-weight: 700;
+color: #212529;
+margin: 0 0 8px;
+}
+.custom-alert-message {
+font-size: 14px;
+line-height: 1.5;
+color: #495057;
+white-space: pre-wrap;
+word-break: break-word;
+margin: 0 0 12px;
+}
+.custom-alert-ok {
+border: none;
+border-radius: 10px;
+padding: 8px 18px;
+font-size: 14px;
+font-weight: 700;
+color: #fff;
+background: linear-gradient(135deg, #20c997 0%, #0ca678 100%);
+cursor: pointer;
+}
 
 button:hover { 
 opacity: 0.9; 
@@ -1485,7 +1531,7 @@ min-height: 108px;
 <option value="schoolwar">🏫 학교 점령전</option>
 <option value="survival">💔 생존 풀이</option>
 <option value="timeattack">⏱️ 스피드 풀이</option>
-<option value="king">⚔️ 왕중왕</option>
+<option value="king">⚔️ 토너먼트</option>
 </select>
 </div>
 <div id="rank-my-record" class="hidden" style="margin-bottom:14px;"></div>
@@ -5224,7 +5270,7 @@ const LOGIN_TOP3_MODES = [
 { key: 'schoolwar', field: '__schoolwar_cells', label: '학교 점령전', icon: '🏫', cardClass: 'login-top3-card--daily' },
 { key: 'survival', field: 'survival_score', label: '생존 풀이', icon: '💔', cardClass: 'login-top3-card--survival' },
 { key: 'timeattack', field: 'timeattack_score', label: '스피드 풀이', icon: '⏱️', cardClass: 'login-top3-card--timeattack' },
-{ key: 'king', field: 'king_score', label: '왕중왕', icon: '⚔️', cardClass: 'login-top3-card--king' }
+{ key: 'king', field: 'king_score', label: '토너먼트', icon: '⚔️', cardClass: 'login-top3-card--king' }
 ];
 const TOP3_EVENTS_MAX_AGE_MS = 1 * 60 * 60 * 1000;
 let loginTop3RotateInt = null;
@@ -5770,6 +5816,41 @@ alert('이미지를 처리하지 못했습니다.');
 inp.value = '';
 });
 });
+})();
+
+(function initCustomAlertModal() {
+if (window.__customAlertReady) return;
+window.__customAlertReady = true;
+var wrap = document.createElement('div');
+wrap.id = 'custom-alert-backdrop';
+wrap.className = 'custom-alert-backdrop hidden';
+wrap.innerHTML = '' +
+'<div class="custom-alert-card" role="dialog" aria-modal="true" aria-label="알림">' +
+'  <p class="custom-alert-title">알림</p>' +
+'  <p id="custom-alert-message" class="custom-alert-message"></p>' +
+'  <button id="custom-alert-ok" type="button" class="custom-alert-ok">확인</button>' +
+'</div>';
+document.body.appendChild(wrap);
+var msgEl = document.getElementById('custom-alert-message');
+var okBtn = document.getElementById('custom-alert-ok');
+function closeAlert() {
+wrap.classList.add('hidden');
+}
+okBtn.addEventListener('click', closeAlert);
+wrap.addEventListener('click', function (e) {
+if (e.target === wrap) closeAlert();
+});
+document.addEventListener('keydown', function (e) {
+if (e.key === 'Escape' && !wrap.classList.contains('hidden')) closeAlert();
+});
+window.alert = function (message) {
+if (!msgEl) return;
+msgEl.textContent = message == null ? '' : String(message);
+wrap.classList.remove('hidden');
+setTimeout(function () {
+okBtn.focus();
+}, 0);
+};
 })();
 
 attachBoardCommentsListener();
