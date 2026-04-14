@@ -446,7 +446,7 @@ border-radius: 16px;
 display: flex;
 flex-direction: column;
 align-items: center;
-justify-content: center;
+justify-content: flex-start;
 gap: 6px;
 font-size: 12px;
 font-weight: 600;
@@ -454,6 +454,7 @@ line-height: 1.15;
 background: transparent !important;
 color: #111 !important;
 box-shadow: none;
+min-height: 98px;
 }
 .mode-app-icon {
 width: 52px;
@@ -492,7 +493,7 @@ border-color: #1f9fb0;
 background: linear-gradient(135deg, #4c6ef5 0%, #364fc7 100%);
 border-color: #3b5bdb;
 }
-.mode-app-grid .mode-app-btn:nth-child(5) .mode-app-icon {
+.mode-app-grid .mode-app-btn:nth-child(7) .mode-app-icon {
 background: linear-gradient(135deg, #20c997 0%, #0ca678 100%);
 border-color: #109b78;
 }
@@ -501,10 +502,15 @@ background: linear-gradient(135deg, #8a57d2 0%, #2f7dff 100%);
 border-color: #4f63cf;
 }
 .mode-app-label {
-display: block;
+display: flex;
+align-items: flex-start;
+justify-content: center;
+min-height: 28px;
 font-size: 11px;
+line-height: 1.15;
 letter-spacing: -0.15px;
 word-break: keep-all;
+text-align: center;
 color: #111;
 }
 
@@ -1203,19 +1209,19 @@ min-height: 108px;
 </div>
 <p id="mode-user-line" style="font-size:14px;color:#555;margin:0 0 12px 0;"></p>
 <div id="mode-subject-pref-bar" class="mode-subject-pref-bar">
-<p class="mode-subject-pref-bar-title">풀이 과목 <span class="mode-subject-pref-hint">(왕중왕전 제외 · 저장됨)</span></p>
+<p class="mode-subject-pref-bar-title">풀이 과목 <span class="mode-subject-pref-hint">(토너먼트 제외 · 저장됨)</span></p>
 <p id="mode-pref-inline-line" class="mode-pref-inline-line">불러오는 중…</p>
 <button type="button" class="btn-gray mode-pref-open-btn" onclick="openSubjectPrefModal()">과목 선택</button>
 </div>
 <div class="mode-app-grid" aria-label="게임 모드 선택">
-<button class="mode-app-btn btn-blue" style="background:linear-gradient(135deg,#20c997 0%,#17a2b8 100%);" onclick="selectMode('daily')"><span class="mode-app-icon" aria-hidden="true">📅</span><span class="mode-app-label">데일리 챌린지</span></button>
-<button class="mode-app-btn btn-green" onclick="selectMode('practice')"><span class="mode-app-icon" aria-hidden="true">📖</span><span class="mode-app-label">연습하기</span></button>
-<button class="mode-app-btn btn-purple" onclick="selectMode('classic')"><span class="mode-app-icon" aria-hidden="true">🏆</span><span class="mode-app-label">클래식 도전</span></button>
+<button class="mode-app-btn btn-blue" style="background:linear-gradient(135deg,#20c997 0%,#17a2b8 100%);" onclick="selectMode('daily')"><span class="mode-app-icon" aria-hidden="true">📅</span><span class="mode-app-label">데일리 풀이</span></button>
+<button class="mode-app-btn btn-green" onclick="selectMode('practice')"><span class="mode-app-icon" aria-hidden="true">📖</span><span class="mode-app-label">연습 풀이<br>(오답노트제공)</span></button>
+<button class="mode-app-btn btn-purple" onclick="selectMode('classic')"><span class="mode-app-icon" aria-hidden="true">🏆</span><span class="mode-app-label">끝장 풀이</span></button>
 <button class="mode-app-btn btn-blue" style="background:linear-gradient(135deg,#4c6ef5 0%,#364fc7 100%);" onclick="selectMode('mock')"><span class="mode-app-icon" aria-hidden="true">📝</span><span class="mode-app-label">모의고사</span></button>
+<button class="mode-app-btn btn-red" onclick="selectMode('survival')"><span class="mode-app-icon" aria-hidden="true">💔</span><span class="mode-app-label">생존 풀이</span></button>
+<button class="mode-app-btn btn-orange" onclick="selectMode('timeattack')"><span class="mode-app-icon" aria-hidden="true">⏱️</span><span class="mode-app-label">스피드 풀이</span></button>
 <button class="mode-app-btn btn-blue" style="background:linear-gradient(135deg,#12b886 0%,#0ca678 100%);" onclick="selectMode('schoolwar')"><span class="mode-app-icon" aria-hidden="true">🏫</span><span class="mode-app-label">학교 점령전</span></button>
-<button class="mode-app-btn btn-red" onclick="selectMode('survival')"><span class="mode-app-icon" aria-hidden="true">💔</span><span class="mode-app-label">서바이벌</span></button>
-<button class="mode-app-btn btn-orange" onclick="selectMode('timeattack')"><span class="mode-app-icon" aria-hidden="true">⏱️</span><span class="mode-app-label">타임 어택</span></button>
-<button class="mode-app-btn btn-blue" style="background:linear-gradient(135deg,#6f42c1 0%,#007bff 100%);" onclick="selectMode('king')"><span class="mode-app-icon" aria-hidden="true">⚔️</span><span class="mode-app-label">왕중왕전</span></button>
+<button class="mode-app-btn btn-blue" style="background:linear-gradient(135deg,#6f42c1 0%,#007bff 100%);" onclick="selectMode('king')"><span class="mode-app-icon" aria-hidden="true">⚔️</span><span class="mode-app-label">토너먼트</span></button>
 </div>
 <div class="board-comments" id="board-comments-wrap-mode" aria-label="한줄 댓글">
 <div class="board-comments-head">
@@ -1245,7 +1251,7 @@ min-height: 108px;
 
 <!-- 3-0. 왕중왕전 -->
 <div id="king-entry-box" class="card hidden">
-<h2>⚔️ 왕중왕전</h2>
+<h2>⚔️ 토너먼트</h2>
 <p style="font-size:14px;color:#555;text-align:left;margin:0 0 12px 0;"><strong>방 코드 6자리</strong>는 방을 구분하는 고유 코드입니다. 참가 방법은 두 가지입니다: (1) 아래 <strong>열린 방 목록</strong>에서 입장 (2) 방장에게 받은 <strong>코드로 입장</strong>. 방을 만들면 <strong>과목명·방 코드</strong>가 대기실에 표시됩니다. 방장은 과목 선택과 첫 게임 시작만 합니다. 라운드마다 <strong>5문제 · 3분</strong>, 전원 제출 또는 시간 종료 시 <strong>상위 50%</strong>가 선정되고 축하 연출 후 <strong>3초 뒤</strong> 다음 라운드가 자동으로 진행됩니다. <strong>최종 우승자</strong>가 새 방장이 됩니다.</p>
 <label class="profile-field-label profile-field-label--first" for="king-subject-select">방 주제(과목) — 방 만들 때 1회 선택</label>
 <select id="king-subject-select">
@@ -1419,7 +1425,7 @@ min-height: 108px;
 <div class="subject-pref-modal-backdrop" onclick="closeSubjectPrefModal()"></div>
 <div class="subject-pref-modal-card" role="dialog" aria-modal="true" aria-labelledby="subject-pref-modal-title" onclick="event.stopPropagation()">
 <h3 id="subject-pref-modal-title">풀이 과목 선택</h3>
-<p class="subject-pref-modal-hint">여러 과목을 동시에 선택할 수 있습니다. <strong>모든 과목</strong>을 끄면 개별 과목을 고르세요. 왕중왕전을 제외한 모드에 적용되며, 이 기기에 저장됩니다.</p>
+<p class="subject-pref-modal-hint">여러 과목을 동시에 선택할 수 있습니다. <strong>모든 과목</strong>을 끄면 개별 과목을 고르세요. 토너먼트를 제외한 모드에 적용되며, 이 기기에 저장됩니다.</p>
 <div id="subject-pref-modal-body" class="subject-pref-modal-body"></div>
 <div class="subject-pref-modal-actions">
 <button type="button" class="btn-blue" onclick="applySubjectPrefModal()">적용</button>
@@ -1472,13 +1478,13 @@ min-height: 108px;
 <div class="rank-mode-row">
 <label for="rank-mode-select">모드</label>
 <select id="rank-mode-select" aria-label="랭킹 모드 선택" onchange="fetchRanking(this.value)">
-<option value="daily">📅 데일리 챌린지</option>
-<option value="practice">📚 연습왕</option>
-<option value="classic">🎯 클래식</option>
+<option value="daily">📅 데일리 풀이</option>
+<option value="practice">📚 연습 풀이(오답노트제공)</option>
+<option value="classic">🎯 끝장 풀이</option>
 <option value="mock">📝 모의고사</option>
 <option value="schoolwar">🏫 학교 점령전</option>
-<option value="survival">💔 서바이벌</option>
-<option value="timeattack">⏱️ 타임어택</option>
+<option value="survival">💔 생존 풀이</option>
+<option value="timeattack">⏱️ 스피드 풀이</option>
 <option value="king">⚔️ 왕중왕</option>
 </select>
 </div>
@@ -3041,21 +3047,21 @@ function updateSubjectRankHelp() {
     var m = mode;
     var html = '';
     if (m === 'daily') {
-        html = '<h3>📅 데일리 챌린지 — 랭킹 반영</h3><ul><li>그날 문제를 <strong>1문제 이상</strong> 풀고 <strong>그만두기</strong>로 종료하면 <strong>연속 출석</strong>과 <strong>플레이 시간</strong>이 랭킹에 반영됩니다.</li></ul>';
+        html = '<h3>📅 데일리 풀이 — 랭킹 반영</h3><ul><li>그날 문제를 <strong>1문제 이상</strong> 풀고 <strong>그만두기</strong>로 종료하면 <strong>연속 출석</strong>과 <strong>플레이 시간</strong>이 랭킹에 반영됩니다.</li></ul>';
     } else if (m === 'practice') {
-        html = '<h3>📖 연습하기 — 랭킹 반영</h3><ul><li>회차별 연습에서 각 문제를 <strong>처음 제출</strong>할 때마다 풀이 수가 누적되고, 종료 시 <strong>연습왕(누적 문제 수)</strong> 랭킹에 반영됩니다.</li><li><strong>오답노트</strong>만 풀 때는 랭킹·누적 연습 기록에 반영되지 않습니다.</li></ul>';
+        html = '<h3>📖 연습 풀이(오답노트제공) — 랭킹 반영</h3><ul><li>회차별 연습에서 각 문제를 <strong>처음 제출</strong>할 때마다 풀이 수가 누적되고, 종료 시 <strong>연습 풀이(누적 문제 수)</strong> 랭킹에 반영됩니다.</li><li><strong>오답노트</strong>만 풀 때는 랭킹·누적 연습 기록에 반영되지 않습니다.</li></ul>';
     } else if (m === 'classic') {
-        html = '<h3>🏆 클래식 도전 — 랭킹 반영</h3><ul><li>게임이 끝나거나 <strong>그만두기</strong>할 때, <strong>이번 점수</strong>가 본인 <strong>역대 최고점</strong>보다 높을 때만 랭킹 점수가 갱신됩니다.</li></ul>';
+        html = '<h3>🏆 끝장 풀이 — 랭킹 반영</h3><ul><li>게임이 끝나거나 <strong>그만두기</strong>할 때, <strong>이번 점수</strong>가 본인 <strong>역대 최고점</strong>보다 높을 때만 랭킹 점수가 갱신됩니다.</li></ul>';
     } else if (m === 'mock') {
         html = '<h3>📝 모의고사 — 랭킹 반영</h3><ul><li><strong>60문제 · 60분</strong> 제한이며, 제출 시 정답 수를 <strong>100점 만점 환산(소수 둘째 자리)</strong>으로 계산합니다.</li><li>환산점수별 포인트: <strong>100점=3점, 80~99점=2점, 60~79점=1점</strong>. 누적 포인트로 랭킹이 결정됩니다.</li></ul>';
     } else if (m === 'survival') {
-        html = '<h3>💔 서바이벌 — 랭킹 반영</h3><ul><li>게임이 끝나거나 <strong>그만두기</strong>할 때, <strong>이번 점수</strong>가 본인 <strong>역대 최고점</strong>보다 높을 때만 랭킹 점수가 갱신됩니다.</li></ul>';
+        html = '<h3>💔 생존 풀이 — 랭킹 반영</h3><ul><li>게임이 끝나거나 <strong>그만두기</strong>할 때, <strong>이번 점수</strong>가 본인 <strong>역대 최고점</strong>보다 높을 때만 랭킹 점수가 갱신됩니다.</li></ul>';
     } else if (m === 'timeattack') {
-        html = '<h3>⏱️ 타임 어택 — 랭킹 반영</h3><ul><li>게임이 끝나거나 <strong>그만두기</strong>할 때, <strong>이번 점수</strong>가 본인 <strong>역대 최고점</strong>보다 높을 때만 랭킹 점수가 갱신됩니다.</li></ul>';
+        html = '<h3>⏱️ 스피드 풀이 — 랭킹 반영</h3><ul><li>게임이 끝나거나 <strong>그만두기</strong>할 때, <strong>이번 점수</strong>가 본인 <strong>역대 최고점</strong>보다 높을 때만 랭킹 점수가 갱신됩니다.</li></ul>';
     } else if (m === 'schoolwar') {
         html = '<h3>🏫 학교 점령전 — 실시간 반영</h3><ul><li>정답 시 1칸 점령, 오답 시 내 땅 1칸 상실. 점령 현황은 같은 학교 접속자에게 실시간으로 반영됩니다.</li></ul>';
     } else if (m === 'king') {
-        html = '<h3>⚔️ 왕중왕전 — 랭킹 반영</h3><ul><li>한 게임을 시작할 때 <strong>참가자가 5명 이상</strong>인 방에서 <strong>우승</strong>한 경우에만 인증 횟수(왕중왕 랭킹)가 올라갑니다.</li></ul>';
+        html = '<h3>⚔️ 토너먼트 — 랭킹 반영</h3><ul><li>한 게임을 시작할 때 <strong>참가자가 5명 이상</strong>인 방에서 <strong>우승</strong>한 경우에만 인증 횟수(토너먼트 랭킹)가 올라갑니다.</li></ul>';
     } else {
         html = '<h3>랭킹 반영</h3><p class="sub">모드를 선택하면 이 안내가 표시됩니다.</p>';
     }
@@ -5212,12 +5218,12 @@ const LOGIN_TOP3_ROTATE_MS = 5000;
 /** 로그인 화면 TOP3 미리보기·스냅샷 공통 (key는 Firebase meta/top3_snapshot.modes 와 동일) */
 const LOGIN_TOP3_MODES = [
 { key: 'daily', field: 'daily_streak', label: '데일리', icon: '📅', cardClass: 'login-top3-card--daily' },
-{ key: 'practice', field: 'practice_score', label: '연습왕', icon: '📚', cardClass: 'login-top3-card--practice' },
-{ key: 'classic', field: 'classic_score', label: '클래식', icon: '🎯', cardClass: 'login-top3-card--classic' },
+{ key: 'practice', field: 'practice_score', label: '연습 풀이', icon: '📚', cardClass: 'login-top3-card--practice' },
+{ key: 'classic', field: 'classic_score', label: '끝장 풀이', icon: '🎯', cardClass: 'login-top3-card--classic' },
 { key: 'mock', field: 'mock_rank_points', label: '모의고사', icon: '📝', cardClass: 'login-top3-card--classic' },
 { key: 'schoolwar', field: '__schoolwar_cells', label: '학교 점령전', icon: '🏫', cardClass: 'login-top3-card--daily' },
-{ key: 'survival', field: 'survival_score', label: '서바이벌', icon: '💔', cardClass: 'login-top3-card--survival' },
-{ key: 'timeattack', field: 'timeattack_score', label: '타임어택', icon: '⏱️', cardClass: 'login-top3-card--timeattack' },
+{ key: 'survival', field: 'survival_score', label: '생존 풀이', icon: '💔', cardClass: 'login-top3-card--survival' },
+{ key: 'timeattack', field: 'timeattack_score', label: '스피드 풀이', icon: '⏱️', cardClass: 'login-top3-card--timeattack' },
 { key: 'king', field: 'king_score', label: '왕중왕', icon: '⚔️', cardClass: 'login-top3-card--king' }
 ];
 const TOP3_EVENTS_MAX_AGE_MS = 1 * 60 * 60 * 1000;
