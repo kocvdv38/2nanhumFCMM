@@ -38,6 +38,13 @@
         "path": "milling/milling_24_02.json",
         "label": "2024년 2회차"
       }      
+    ],
+    "automation": [
+      {
+        "code": "24-01",
+        "path": "automation/automation_24_01.json",
+        "label": "2024년 1회차"
+      }
     ]
   }
 }
