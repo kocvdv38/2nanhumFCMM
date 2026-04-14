@@ -720,7 +720,13 @@ background: #f0f2f5;
 .rank-admin-cb { width: 17px; height: 17px; cursor: pointer; vertical-align: middle; }
 .rank-admin-actions { margin: 12px 0; text-align: left; }
 .rank-admin-actions label { cursor: pointer; user-select: none; }
+.rank-top-divider {
+margin: 10px 4px 8px;
+border-top: 1px dashed #ced4da;
+}
 .rank-1 { background: #fff9e6; border: 1px solid #ffd700; box-shadow: 0 2px 5px rgba(255,215,0,0.2); }
+.rank-2 { background: #f8f9fb; border: 1px solid #d6dde5; box-shadow: 0 2px 5px rgba(160,171,185,0.18); }
+.rank-3 { background: #fff5ee; border: 1px solid #f1c7a9; box-shadow: 0 2px 5px rgba(214,144,92,0.16); }
 .rank-school { font-size: 11px; color: #666; margin-top: 2px; }
 .rank-info { flex: 1; text-align: left; }
 .rank-my-box {
@@ -4879,7 +4885,7 @@ const avatarHtml = (i < 3 && u.profile_photo)
 ? `<img class="rank-avatar" src="${escapeAttr(String(u.profile_photo))}" width="48" height="48" alt="" loading="lazy">`
 : '';
 return `
-                   <div class="rank-item ${i===0?'rank-1':''}${showAdmin ? ' rank-item--admin' : ''}">
+                   <div class="rank-item ${i===0?'rank-1':(i===1?'rank-2':(i===2?'rank-3':''))}${showAdmin ? ' rank-item--admin' : ''}">
                        ${cb}
                        <span class="rank-pos-badge" title="${i + 1}등">${posLabel}</span>
                        ${avatarHtml}
@@ -4892,6 +4898,7 @@ return `
                            </small>
                        </div>
                    </div>
+                   ${i === 2 && top.length > 3 ? '<div class="rank-top-divider" role="separator" aria-label="상위 3등 구분선"></div>' : ''}
                `;
 }).join('');
 if(top.length === 0) list.innerHTML = '<p style="color:#666;">표시할 기록이 없습니다.</p>';
