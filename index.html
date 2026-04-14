@@ -3228,7 +3228,7 @@ async function deleteCurrentWrongNote() {
 if (!wrongNoteOnly || !user || !user.id || !quizSubjectFile) return;
 const p = quizList[currentIdx];
 if (!p) return;
-if (!confirm('이 문제를 오답노트에서 삭제할까요?')) return;
+if (!(await showCustomConfirm('이 문제를 오답노트에서 삭제할까요?'))) return;
 const sk = subjectStorageKey(quizSubjectFile);
 const id = makeWrongNoteId(quizSubjectFile, p);
 try {
@@ -3393,8 +3393,8 @@ function closeProfile() {
 document.getElementById('profile-box').classList.add('hidden');
 document.getElementById('mode-box').classList.remove('hidden');
 }
-function logout() {
-if (!confirm('로그아웃하고 첫 화면(로그인)으로 돌아갈까요?')) return;
+async function logout() {
+if (!(await showCustomConfirm('로그아웃하고 첫 화면(로그인)으로 돌아갈까요?'))) return;
 location.reload();
 }
 function saveProfile() {
@@ -4706,14 +4706,14 @@ startWrongReviewRound(wrMain);
 async function endGame() {
 await persistGameResultAndShowRanking();
 }
-function quitGame() {
+async function quitGame() {
 if (wrongReviewSession) {
-if (!confirm('오답 복습을 종료할까요?')) return;
+if (!(await showCustomConfirm('오답 복습을 종료할까요?'))) return;
 persistGameResultAndShowRanking().catch(() => alert('화면 전환에 실패했습니다.'));
 return;
 }
 if (mode === 'schoolwar') {
-if (!confirm('점령전 문제 풀이를 종료하고 점령전 화면으로 돌아갈까요?')) return;
+if (!(await showCustomConfirm('점령전 문제 풀이를 종료하고 점령전 화면으로 돌아갈까요?'))) return;
 pendingQuitWrongReview = true;
 persistGameResultAndShowRanking().catch(() => alert('화면 전환에 실패했습니다.'));
 return;
@@ -4722,7 +4722,7 @@ if (wrongNoteOnly) {
 persistGameResultAndShowRanking().catch(() => alert('화면 전환에 실패했습니다.'));
 return;
 }
-if (!confirm('그만두시겠습니까? 지금까지의 기록이 저장되고 랭킹으로 이동합니다.')) return;
+if (!(await showCustomConfirm('그만두시겠습니까? 지금까지의 기록이 저장되고 랭킹으로 이동합니다.'))) return;
 pendingQuitWrongReview = (mode === 'classic' || mode === 'survival' || mode === 'timeattack');
 persistGameResultAndShowRanking().catch(() => alert('저장에 실패했습니다.'));
 }
@@ -4745,7 +4745,7 @@ const cbs = [...document.querySelectorAll('#board-comments-list-mode .board-comm
 if (cbs.length === 0) return alert('삭제할 댓글을 선택하세요.');
 const keys = cbs.map(function (cb) { return cb.getAttribute('data-key'); }).filter(Boolean);
 if (keys.length === 0) return;
-if (!confirm(keys.length + '개의 댓글을 삭제합니다. 되돌릴 수 없습니다. 계속하시겠습니까?')) return;
+if (!(await showCustomConfirm(keys.length + '개의 댓글을 삭제합니다. 되돌릴 수 없습니다. 계속하시겠습니까?'))) return;
 const ref = db.ref(BOARD_COMMENTS_PATH);
 try {
 await Promise.all(keys.map(function (k) { return ref.child(k).remove(); }));
@@ -4761,7 +4761,7 @@ const cbs = [...document.querySelectorAll('#rank-list .rank-admin-cb:checked')];
 if(cbs.length === 0) return alert('삭제할 항목을 선택하세요.');
 const ids = cbs.map(cb => cb.getAttribute('data-uid')).filter(Boolean);
 if(ids.length === 0) return;
-if(!confirm(ids.length + '명의 회원 데이터를 삭제합니다. 되돌릴 수 없습니다. 계속하시겠습니까?')) return;
+if(!(await showCustomConfirm(ids.length + '명의 회원 데이터를 삭제합니다. 되돌릴 수 없습니다. 계속하시겠습니까?'))) return;
 const updates = {};
 ids.forEach(id => { updates['users/' + id] = null; });
 try {
@@ -5828,28 +5828,50 @@ wrap.innerHTML = '' +
 '<div class="custom-alert-card" role="dialog" aria-modal="true" aria-label="알림">' +
 '  <p class="custom-alert-title">알림</p>' +
 '  <p id="custom-alert-message" class="custom-alert-message"></p>' +
-'  <button id="custom-alert-ok" type="button" class="custom-alert-ok">확인</button>' +
+'  <div style="display:flex;gap:8px;justify-content:center;">' +
+'    <button id="custom-alert-cancel" type="button" class="btn-gray hidden">취소</button>' +
+'    <button id="custom-alert-ok" type="button" class="custom-alert-ok">확인</button>' +
+'  </div>' +
 '</div>';
 document.body.appendChild(wrap);
 var msgEl = document.getElementById('custom-alert-message');
 var okBtn = document.getElementById('custom-alert-ok');
-function closeAlert() {
+var cancelBtn = document.getElementById('custom-alert-cancel');
+var resolver = null;
+function closeAlert(result) {
 wrap.classList.add('hidden');
+if (resolver) {
+var fn = resolver;
+resolver = null;
+fn(!!result);
 }
-okBtn.addEventListener('click', closeAlert);
+}
+okBtn.addEventListener('click', function () { closeAlert(true); });
+if (cancelBtn) cancelBtn.addEventListener('click', function () { closeAlert(false); });
 wrap.addEventListener('click', function (e) {
-if (e.target === wrap) closeAlert();
+if (e.target === wrap) closeAlert(false);
 });
 document.addEventListener('keydown', function (e) {
-if (e.key === 'Escape' && !wrap.classList.contains('hidden')) closeAlert();
+if (e.key === 'Escape' && !wrap.classList.contains('hidden')) closeAlert(false);
 });
-window.alert = function (message) {
+function openDialog(message, isConfirm) {
 if (!msgEl) return;
 msgEl.textContent = message == null ? '' : String(message);
+if (cancelBtn) cancelBtn.classList.toggle('hidden', !isConfirm);
 wrap.classList.remove('hidden');
 setTimeout(function () {
-okBtn.focus();
+if (isConfirm && cancelBtn) cancelBtn.focus();
+else okBtn.focus();
 }, 0);
+}
+window.showCustomConfirm = function (message) {
+return new Promise(function (resolve) {
+resolver = resolve;
+openDialog(message, true);
+});
+};
+window.alert = function (message) {
+openDialog(message, false);
 };
 })();
 
