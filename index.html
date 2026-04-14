@@ -616,6 +616,31 @@ transform: translateX(-50%) translateY(0) scale(1);
 }
 
 .option-btn { background: #f8f9fa; color: #333 !important; border: 1px solid #ddd; text-align: left; }
+#q-opts.option-grid-image,
+#king-q-opts.option-grid-image {
+display: grid;
+grid-template-columns: repeat(2, minmax(0, 1fr));
+gap: 8px;
+}
+#q-opts.option-grid-image .option-btn,
+#king-q-opts.option-grid-image .option-btn {
+margin: 0;
+padding: 8px 6px;
+min-height: 96px;
+}
+.option-btn.option-btn--image {
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: flex-start;
+text-align: center !important;
+}
+.option-btn.option-btn--image .opt-num {
+align-self: flex-start;
+font-size: 12px;
+color: #495057;
+margin-bottom: 4px;
+}
 
 /* 문제 풀이(연습·모드·왕중왕전): 본문·이미지·보기 중앙 정렬 */
 #quiz-box #q-txt,
@@ -646,7 +671,10 @@ word-break: break-all;
 #quiz-box #q-opts .option-btn .opt-img-inline,
 #king-game-box #king-q-opts .option-btn .opt-img-inline {
 max-width: 100%;
-height: auto;
+max-height: 84px;
+height: 84px;
+width: 100%;
+object-fit: contain;
 display: block;
 margin-top: 6px;
 }
@@ -2906,10 +2934,25 @@ function setOptionButtonContent(btn, index0, o) {
 const prefix = (index0 + 1) + '. ';
 if (optionIsImageFilename(o)) {
 const srcAttr = imageSrcForHtmlAttr(o.trim());
+btn.classList.add('option-btn--image');
 btn.innerHTML = '<span class="opt-num">' + escapeHtml(prefix) + '</span><img class="opt-img-inline" src="' + srcAttr + '" alt="보기 ' + (index0 + 1) + '">';
 } else {
+btn.classList.remove('option-btn--image');
 btn.textContent = prefix + o;
 }
+}
+function applyOptionGridLayout(container, options) {
+if (!container) return;
+var arr = Array.isArray(options) ? options : [];
+if (arr.length < 2) {
+container.classList.remove('option-grid-image');
+return;
+}
+var imageCount = 0;
+for (var i = 0; i < arr.length; i++) {
+if (optionIsImageFilename(arr[i])) imageCount++;
+}
+container.classList.toggle('option-grid-image', imageCount === arr.length);
 }
 /** passage 없음·빈 문자열·공백만 → 박스 숨김 */
 function setQuizPassageBox(elementId, p) {
@@ -2935,6 +2978,7 @@ document.getElementById('king-q-img').innerHTML = p.image_file ? '<img src="' + 
 document.getElementById('king-game-progress').textContent = (kingGameIdx + 1) + '/' + kingQuizLocal.length;
 const opt = document.getElementById('king-q-opts');
 opt.innerHTML = '';
+applyOptionGridLayout(opt, p.options);
 p.options.forEach((o, i) => {
 const btn = document.createElement('button');
 btn.className = 'option-btn';
@@ -4142,6 +4186,7 @@ nextBtn.disabled = false;
 const submitBtn = document.getElementById('mock-submit-btn');
 if (submitBtn) submitBtn.classList.toggle('hidden', mode !== 'mock');
 const optDiv = document.getElementById('q-opts'); optDiv.innerHTML = "";
+applyOptionGridLayout(optDiv, p.options);
 p.options.forEach((o, i) => {
 const btn = document.createElement('button');
 btn.className = "option-btn";
