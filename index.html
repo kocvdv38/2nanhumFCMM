@@ -372,6 +372,132 @@ background: rgba(0,0,0,0.35);
 .schoolwar-owner-modal:not(.hidden) {
 display: flex;
 }
+/* 학교 점령전: 지도에서 학교 선택 모달 */
+.schoolwar-picker-modal {
+position: fixed;
+inset: 0;
+z-index: 10052;
+display: none;
+align-items: center;
+justify-content: center;
+padding: 12px;
+background: rgba(0, 0, 0, 0.48);
+overflow-y: auto;
+}
+.schoolwar-picker-modal:not(.hidden) {
+display: flex;
+}
+#schoolwar-region-list-modal {
+z-index: 10054;
+}
+.schoolwar-picker-card {
+position: relative;
+z-index: 1;
+width: 100%;
+max-width: min(520px, 100%);
+max-height: 92vh;
+overflow: auto;
+background: #fff;
+border-radius: 14px;
+padding: 14px 16px 16px;
+box-shadow: 0 16px 44px rgba(0, 0, 0, 0.22);
+text-align: left;
+}
+.schoolwar-picker-card h3 {
+margin: 0 0 8px 0;
+font-size: 1.05rem;
+color: #212529;
+}
+.schoolwar-picker-hint {
+font-size: 12px;
+color: #6c757d;
+margin: 0 0 10px 0;
+line-height: 1.45;
+}
+.schoolwar-map-stage {
+position: relative;
+width: 100%;
+max-width: 480px;
+margin: 0 auto 12px auto;
+border-radius: 10px;
+overflow: hidden;
+border: 1px solid #dee2e6;
+background: #e9ecef;
+}
+.schoolwar-map-stage img {
+display: block;
+width: 100%;
+height: auto;
+vertical-align: top;
+}
+.schoolwar-map-hit {
+position: absolute;
+cursor: pointer;
+background: transparent;
+border: none;
+padding: 0;
+border-radius: 4px;
+transition: background 0.15s;
+}
+.schoolwar-map-hit:hover,
+.schoolwar-map-hit:focus {
+background: rgba(13, 110, 253, 0.16);
+outline: none;
+}
+.schoolwar-map-hit:focus-visible {
+box-shadow: 0 0 0 2px #fff, 0 0 0 4px #0d6efd;
+}
+/* 조정용: 실제 PNG와 겹치는지 확인 */
+.schoolwar-map-stage.schoolwar-map-debug .schoolwar-map-hit {
+background: rgba(220, 53, 69, 0.2);
+border: 1px dashed rgba(200, 35, 51, 0.9);
+box-sizing: border-box;
+}
+.schoolwar-map-stage.schoolwar-map-debug .schoolwar-map-hit::after {
+content: attr(data-label);
+position: absolute;
+left: 2px;
+top: 2px;
+font-size: 10px;
+line-height: 1.15;
+font-weight: 700;
+color: #c92a2a;
+pointer-events: none;
+text-shadow: 0 0 4px #fff, 0 0 4px #fff, 0 0 4px #fff;
+}
+.schoolwar-picker-actions {
+display: flex;
+flex-wrap: wrap;
+gap: 8px;
+margin-top: 4px;
+}
+.schoolwar-picker-actions button {
+flex: 1 1 auto;
+min-width: 120px;
+}
+.schoolwar-region-school-btn {
+display: block;
+width: 100%;
+text-align: left;
+padding: 10px 12px;
+margin: 6px 0;
+border: 1px solid #dee2e6;
+border-radius: 8px;
+background: #f8f9fa;
+font-size: 14px;
+cursor: pointer;
+color: #212529;
+}
+.schoolwar-region-school-btn:hover {
+background: #e7f1ff;
+border-color: #9ec5fe;
+}
+.schoolwar-region-empty {
+font-size: 14px;
+color: #6c757d;
+padding: 12px 4px;
+line-height: 1.5;
+}
 .wrong-review-loading-backdrop {
 position: fixed;
 inset: 0;
@@ -1608,7 +1734,9 @@ min-height: 108px;
 <div id="schoolwar-box" class="card hidden">
 <h2>학교 점령전</h2>
 <p style="font-size:13px;color:#555;text-align:left;margin:0 0 10px 0;">학교를 선택하고 문제를 풀어 땅을 점령하세요. 정답 시 1칸 점령, 오답 시 내 땅 1칸 상실.</p>
-<select id="schoolwar-school-select" aria-label="학교 선택">
+<div class="schoolwar-school-picker-wrap" style="margin:0 0 10px 0;">
+<button type="button" id="schoolwar-school-picker-btn" class="btn-blue" onclick="openSchoolWarMapPickerModal()" aria-haspopup="dialog" style="width:100%;">지도에서 학교 선택</button>
+<select id="schoolwar-school-select" class="hidden" tabindex="-1" aria-hidden="true">
 <option value="">학교 선택</option>
 <option value="군산기계공업고등학교">군산기계공업고</option>
 <option value="수소에너지고등학교">수소에너지고</option>
@@ -1622,6 +1750,7 @@ min-height: 108px;
 <option value="경북기계공업고등학교">경북기계공업고</option>
 <option value="기타">기타</option>
 </select>
+</div>
 <p id="schoolwar-status" style="font-size:13px;color:#666;margin:8px 0;">학교를 선택하세요.</p>
 <div style="display:flex;gap:8px;align-items:center;justify-content:center;margin:6px 0 10px 0;">
 <label for="schoolwar-color" style="font-size:13px;color:#555;">내 점령 색상</label>
@@ -1649,6 +1778,37 @@ min-height: 108px;
 <button type="button" class="btn-blue" onclick="closeSchoolWarOwnerInfoModal()" style="margin-top:14px;">확인</button>
 </div>
 </div>
+
+<!-- 학교 점령전: 한국 지도에서 지역 선택 -->
+<div id="schoolwar-map-picker-modal" class="schoolwar-picker-modal hidden" role="dialog" aria-modal="true" aria-labelledby="schoolwar-map-picker-title" onclick="if (event.target === this) closeSchoolWarMapPickerModal()">
+<div class="schoolwar-picker-card" onclick="event.stopPropagation()">
+<h3 id="schoolwar-map-picker-title">지역을 눌러 학교 선택</h3>
+<p class="schoolwar-picker-hint">지도에서 지역을 누르면 그 지역에 묶어 둔 학교 목록이 열립니다. (이미지: <code style="background:#f1f3f5;padding:2px 6px;border-radius:4px;">schattack/map_korea.png</code>)<br><span style="color:#868e96;">클릭 영역은 이미지마다 다릅니다. 아래를 켜서 글자와 맞는지 확인한 뒤, 코드의 <code style="background:#f1f3f5;padding:1px 5px;border-radius:4px;">SCHOOLWAR_MAP_REGION_LAYOUT</code> 의 l,t,w,h(%)만 조정하면 됩니다.</span></p>
+<label style="font-size:12px;color:#495057;display:flex;align-items:flex-start;gap:8px;margin:0 0 10px 0;cursor:pointer;text-align:left;line-height:1.45;">
+<input type="checkbox" id="schoolwar-map-debug-cb" onchange="onSchoolWarMapDebugChange(this)" style="margin-top:3px;flex-shrink:0;">
+<span>히트 영역 표시 (빨간 점선·지역명) — 실제 지도 글자와 겹치는지 확인용</span>
+</label>
+<div class="schoolwar-map-stage" id="schoolwar-map-stage">
+<img id="schoolwar-map-img" src="schattack/map_korea.png" alt="대한민국 행정구역 지도">
+<div id="schoolwar-map-hits"></div>
+</div>
+<div class="schoolwar-picker-actions">
+<button type="button" class="btn-gray" onclick="openSchoolWarFullSchoolListModal()">전체 학교 목록</button>
+<button type="button" class="btn-gray" onclick="closeSchoolWarMapPickerModal()">닫기</button>
+</div>
+</div>
+</div>
+<!-- 학교 점령전: 지역별 학교 목록 -->
+<div id="schoolwar-region-list-modal" class="schoolwar-picker-modal hidden" role="dialog" aria-modal="true" aria-labelledby="schoolwar-region-list-title" onclick="if (event.target === this) closeSchoolWarRegionListModal()">
+<div class="schoolwar-picker-card" onclick="event.stopPropagation()">
+<h3 id="schoolwar-region-list-title">지역 학교</h3>
+<div id="schoolwar-region-list-body"></div>
+<div class="schoolwar-picker-actions" style="margin-top:12px;">
+<button type="button" class="btn-gray" onclick="closeSchoolWarRegionListModal()">뒤로 (지도)</button>
+</div>
+</div>
+</div>
+
 <div id="wrong-review-loading" class="wrong-review-loading-backdrop hidden" aria-live="polite">
 <div class="wrong-review-loading-card">
 <p class="wrong-review-loading-title">오답 복습 문제 로딩 중...</p>
@@ -1771,6 +1931,40 @@ let schoolWarUserColors = {};
 let schoolWarUserSchools = {};
 const SCHOOL_WAR_ALLOWED_COLORS = ['#ff4d4f', '#ff922b', '#ffd43b', '#51cf66', '#364fc7', '#ae3ec9'];
 const SCHOOL_WAR_ALLY_COLOR = '#4dabf7';
+/** 학교 점령전: 한국 지도 (저장소 루트의 schattack/map_korea.png) */
+const SCHOOLWAR_MAP_IMAGE_URL = 'schattack/map_korea.png';
+/** 지도 클릭 영역(%). 실제 PNG에 맞게 조정 가능. z는 겹침 시 위쪽 우선. */
+const SCHOOLWAR_MAP_REGION_LAYOUT = [
+{ id: 'ulleung', name: '울릉', l: 68, t: 6, w: 14, h: 10, z: 5 },
+{ id: 'dokdo', name: '독도', l: 78, t: 7, w: 9, h: 7, z: 9 },
+{ id: 'gangwon', name: '강원', l: 48, t: 12, w: 28, h: 26, z: 2 },
+{ id: 'gyeonggi', name: '경기', l: 30, t: 16, w: 32, h: 32, z: 1 },
+{ id: 'incheon', name: '인천', l: 28, t: 22, w: 14, h: 12, z: 6 },
+{ id: 'seoul', name: '서울', l: 40, t: 26, w: 12, h: 10, z: 8 },
+{ id: 'chungbuk', name: '충북', l: 38, t: 38, w: 18, h: 16, z: 2 },
+{ id: 'chungnam', name: '충남', l: 22, t: 34, w: 18, h: 22, z: 2 },
+{ id: 'sejong', name: '세종', l: 34, t: 40, w: 10, h: 9, z: 8 },
+{ id: 'daejeon', name: '대전', l: 32, t: 44, w: 12, h: 10, z: 8 },
+{ id: 'jeonbuk', name: '전북', l: 22, t: 46, w: 22, h: 22, z: 3 },
+{ id: 'gwangju', name: '광주', l: 26, t: 58, w: 12, h: 10, z: 8 },
+{ id: 'jeonnam', name: '전남', l: 18, t: 54, w: 26, h: 22, z: 2 },
+{ id: 'gyeongbuk', name: '경북', l: 46, t: 40, w: 24, h: 26, z: 2 },
+{ id: 'daegu', name: '대구', l: 48, t: 48, w: 14, h: 12, z: 8 },
+{ id: 'gyeongnam', name: '경남', l: 44, t: 54, w: 26, h: 24, z: 2 },
+{ id: 'ulsan', name: '울산', l: 56, t: 50, w: 12, h: 10, z: 8 },
+{ id: 'busan', name: '부산', l: 52, t: 58, w: 16, h: 12, z: 8 },
+{ id: 'jeju', name: '제주', l: 6, t: 74, w: 22, h: 18, z: 4 }
+];
+/** 지역 id → 점령전에 등록된 학교 value 목록 */
+const SCHOOLWAR_REGION_SCHOOLS = {
+jeonbuk: ['군산기계공업고등학교', '수소에너지고등학교', '이리공업고등학교', '전북기계공업고등학교', '전북자동차고등학교', '전주공업고등학교'],
+daejeon: ['대전도시과학고등학교'],
+chungnam: ['충남기계공업고등학교'],
+daegu: ['대구일마이스터고등학교'],
+gyeongbuk: ['경북기계공업고등학교']
+};
+const SCHOOLWAR_MAP_HITS_RENDER_VERSION = 2;
+let schoolWarMapHitsRenderVer = 0;
 let schoolWarTodayLimit = 10;
 let schoolWarCorrectCount = 0;
 let schoolWarWrongCount = 0;
@@ -4111,6 +4305,170 @@ opt.textContent = shortSchoolNameForSelect(v) + ' (' + n + '칸 점령)';
 }
 }
 } catch (e1) {}
+syncSchoolWarPickerButton();
+}
+function syncSchoolWarPickerButton() {
+var btn = document.getElementById('schoolwar-school-picker-btn');
+var sel = document.getElementById('schoolwar-school-select');
+if (!btn || !sel) return;
+if (sel.selectedIndex <= 0 || !String(sel.value || '').trim()) {
+btn.textContent = '지도에서 학교 선택';
+btn.setAttribute('aria-label', '학교를 선택합니다. 대한민국 지도에서 지역을 누른 뒤 학교를 고릅니다.');
+return;
+}
+var lab = sel.options[sel.selectedIndex].textContent;
+btn.textContent = lab;
+btn.setAttribute('aria-label', '선택된 학교: ' + lab);
+}
+function ensureSchoolWarMapHitsRendered() {
+if (schoolWarMapHitsRenderVer === SCHOOLWAR_MAP_HITS_RENDER_VERSION) return;
+var wrap = document.getElementById('schoolwar-map-hits');
+if (!wrap) return;
+wrap.innerHTML = '';
+schoolWarMapHitsRenderVer = SCHOOLWAR_MAP_HITS_RENDER_VERSION;
+SCHOOLWAR_MAP_REGION_LAYOUT.forEach(function (r) {
+var b = document.createElement('button');
+b.type = 'button';
+b.className = 'schoolwar-map-hit';
+b.style.left = r.l + '%';
+b.style.top = r.t + '%';
+b.style.width = r.w + '%';
+b.style.height = r.h + '%';
+b.style.zIndex = String(r.z != null ? r.z : 1);
+b.setAttribute('data-label', r.name);
+b.setAttribute('aria-label', r.name + ' 지역 학교 보기');
+b.addEventListener('click', function (ev) {
+ev.stopPropagation();
+openSchoolWarRegionSchoolModal(r.id, r.name);
+});
+wrap.appendChild(b);
+});
+}
+function syncSchoolWarMapDebugUi() {
+var stage = document.getElementById('schoolwar-map-stage');
+var cb = document.getElementById('schoolwar-map-debug-cb');
+var on = false;
+try {
+on = localStorage.getItem('catch_cert_schoolwar_map_debug') === '1';
+} catch (e0) {}
+if (cb) cb.checked = on;
+if (!stage) return;
+if (on) stage.classList.add('schoolwar-map-debug');
+else stage.classList.remove('schoolwar-map-debug');
+}
+function onSchoolWarMapDebugChange(el) {
+var on = !!(el && el.checked);
+try {
+localStorage.setItem('catch_cert_schoolwar_map_debug', on ? '1' : '0');
+} catch (e1) {}
+var stage = document.getElementById('schoolwar-map-stage');
+if (!stage) return;
+if (on) stage.classList.add('schoolwar-map-debug');
+else stage.classList.remove('schoolwar-map-debug');
+}
+function openSchoolWarMapPickerModal() {
+ensureSchoolWarMapHitsRendered();
+var m = document.getElementById('schoolwar-map-picker-modal');
+if (!m) return;
+var im = document.getElementById('schoolwar-map-img');
+if (im) im.src = SCHOOLWAR_MAP_IMAGE_URL;
+syncSchoolWarMapDebugUi();
+m.classList.remove('hidden');
+m.setAttribute('aria-hidden', 'false');
+}
+function closeSchoolWarMapPickerModal() {
+var m = document.getElementById('schoolwar-map-picker-modal');
+if (!m) return;
+m.classList.add('hidden');
+m.setAttribute('aria-hidden', 'true');
+}
+function closeSchoolWarRegionListModal() {
+var m = document.getElementById('schoolwar-region-list-modal');
+if (!m) return;
+m.classList.add('hidden');
+m.setAttribute('aria-hidden', 'true');
+}
+function schoolWarOptionLabelForValue(val) {
+var sel = document.getElementById('schoolwar-school-select');
+if (!sel) return String(val || '');
+for (var i = 0; i < sel.options.length; i++) {
+if (sel.options[i].value === val) return sel.options[i].textContent;
+}
+return String(val || '');
+}
+function openSchoolWarRegionSchoolModal(regionId, regionName) {
+var names = SCHOOLWAR_REGION_SCHOOLS[regionId] || [];
+var titleEl = document.getElementById('schoolwar-region-list-title');
+var body = document.getElementById('schoolwar-region-list-body');
+if (!titleEl || !body) return;
+titleEl.textContent = regionName + ' 소속 학교';
+body.innerHTML = '';
+if (names.length === 0) {
+body.innerHTML = '<p class="schoolwar-region-empty">이 지역에 등록된 점령전 학교가 아직 없어요. 「전체 학교 목록」에서 고르거나 다른 지역을 눌러 보세요.</p>';
+} else {
+names.forEach(function (val) {
+var label = schoolWarOptionLabelForValue(val);
+if (!label) return;
+var btn = document.createElement('button');
+btn.type = 'button';
+btn.className = 'schoolwar-region-school-btn';
+btn.textContent = label;
+btn.addEventListener('click', function () {
+applySchoolWarSchoolChoice(val);
+});
+body.appendChild(btn);
+});
+}
+var rm = document.getElementById('schoolwar-region-list-modal');
+if (rm) {
+rm.classList.remove('hidden');
+rm.setAttribute('aria-hidden', 'false');
+}
+}
+function openSchoolWarFullSchoolListModal() {
+var titleEl = document.getElementById('schoolwar-region-list-title');
+var body = document.getElementById('schoolwar-region-list-body');
+if (!titleEl || !body) return;
+titleEl.textContent = '전체 학교 목록';
+body.innerHTML = '';
+var sel = document.getElementById('schoolwar-school-select');
+if (!sel) return;
+for (var i = 0; i < sel.options.length; i++) {
+var opt = sel.options[i];
+var val = opt.value;
+if (!val) continue;
+(function (value, labelText) {
+var btn = document.createElement('button');
+btn.type = 'button';
+btn.className = 'schoolwar-region-school-btn';
+btn.textContent = labelText;
+btn.addEventListener('click', function () {
+applySchoolWarSchoolChoice(value);
+});
+body.appendChild(btn);
+})(val, opt.textContent);
+}
+var rm = document.getElementById('schoolwar-region-list-modal');
+if (rm) {
+rm.classList.remove('hidden');
+rm.setAttribute('aria-hidden', 'false');
+}
+}
+function applySchoolWarSchoolChoice(value) {
+var sel = document.getElementById('schoolwar-school-select');
+if (!sel) return;
+var ok = false;
+for (var i = 0; i < sel.options.length; i++) {
+if (sel.options[i].value === value) {
+sel.selectedIndex = i;
+ok = true;
+break;
+}
+}
+if (!ok) return;
+sel.dispatchEvent(new Event('change', { bubbles: true }));
+closeSchoolWarRegionListModal();
+closeSchoolWarMapPickerModal();
 }
 function openSchoolWarMode() {
 schoolWarSelectionMode = false;
@@ -4146,6 +4504,7 @@ if (cEl) {
 if (SCHOOL_WAR_ALLOWED_COLORS.indexOf(savedMyColor) >= 0) cEl.value = savedMyColor;
 else cEl.value = '#ff4d4f';
 }
+syncSchoolWarPickerButton();
 }
 document.getElementById('schoolwar-school-select').addEventListener('change', function () {
 schoolWarSchool = this.value || '';
@@ -4155,6 +4514,7 @@ document.getElementById('schoolwar-status').textContent = '학교를 선택하�
 schoolWarCells = {};
 renderSchoolWarMap();
 renderSchoolWarStats();
+syncSchoolWarPickerButton();
 return;
 }
 const today = getLocalDateStringForDaily(new Date());
@@ -4162,6 +4522,7 @@ const used = (String(user && user.schoolwar_daily_date || '') === today) ? (Numb
 const left = Math.max(0, 10 - used);
 document.getElementById('schoolwar-status').textContent = '선택 학교: ' + schoolWarSchool + ' · 오늘 남은 문제: ' + left + '개';
 attachSchoolWarListener(schoolWarSchool);
+syncSchoolWarPickerButton();
 });
 function prepareQuizSubjectMergedFromPreferred() {
 wrongNoteOnly = false;
