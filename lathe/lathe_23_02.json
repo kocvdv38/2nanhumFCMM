@@ -602,7 +602,7 @@
     ],
     "answer": 1,
     "explanation": "상향절삭은 커터의 회전 방향과 이송 방향이 반대이므로 백래시가 자연스럽게 제거되어 별도의 제거 장치가 필요하지 않습니다.",
-    "image_file": "lathe/23_03/lathe_23_02_43.png"
+    "image_file": "lathe/23_02/lathe_23_02_43.png"
   },
   {
     "id": 44,
