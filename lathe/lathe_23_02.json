@@ -95,21 +95,21 @@
     ],
     "answer": 4,
     "explanation": "피치원 지름(D) = 모듈(m) × 잇수(Z)입니다. 도면에 PCD 76으로 표시되어 있으므로 76 = 2 × Z가 되어 잇수 Z는 38이 됩니다.",
-    "image_file": "lathe/23_02_lathe_23_02_7.png"
+    "image_file": "lathe/23_02/lathe_23_02_7.png"
   },
   {
     "id": 8,
     "session": "23-02",
     "question": "표면거칠기 지시방법에서 '제거가공을 허용하지 않는다'는 것을 지시하는 기호는?",
     "options": [
-      "lathe_23_02_8_op1.png",
-      "lathe_23_02_8_op2.png",
-      "lathe_23_02_8_op3.png",
-      "lathe_23_02_8_op4.png"
+      "lathe/23_02/lathe_23_02_8_op1.png",
+      "lathe/23_02/lathe_23_02_8_op2.png",
+      "lathe/23_02/lathe_23_02_8_op3.png",
+      "lathe/23_02/lathe_23_02_8_op4.png"
     ],
     "answer": 2,
     "explanation": "표면거칠기 기호 중 원형이 포함된 기호는 주조나 단조 상태 그대로 두어 제거가공을 금지함을 의미합니다. ",
-    "image_file": "lathe/23_02_lathe_23_02_8.png"
+    "image_file": "lathe/23_02/lathe_23_02_8.png"
   },
   {
     "id": 9,
@@ -123,17 +123,17 @@
     ],
     "answer": 2,
     "explanation": "",
-    "image_file": "lathe/23_02_lathe_23_02_9.png"
+    "image_file": "lathe/23_02/lathe_23_02_9.png"
   },
   {
     "id": 10,
     "session": "23-02",
     "question": "표면의 결 도시기호에서 가공에 의한 컷의 줄무늬가 여러 방향으로 교차 또는 무방향으로 도시된 기호는?",
     "options": [
-      "lathe_23_02_10_op1.png",
-      "lathe_23_02_10_op2.png",
-      "lathe_23_02_10_op3.png",
-      "lathe_23_02_10_op4.png"
+      "lathe/23_02/lathe_23_02_10_op1.png",
+      "lathe/23_02/lathe_23_02_10_op2.png",
+      "lathe/23_02/lathe_23_02_10_op3.png",
+      "lathe/23_02/lathe_23_02_10_op4.png"
     ],
     "answer": 2,
     "explanation": "M(Multi) 기호는 가공 줄무늬가 여러 방향으로 교차하거나 특정한 방향이 없는 무방향성 결을 나타냅니다.",
