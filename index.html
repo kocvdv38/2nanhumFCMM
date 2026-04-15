@@ -3910,7 +3910,10 @@ schoolWarCells = {};
 renderSchoolWarMap();
 renderSchoolWarStats();
 }
-loadSchoolWarUserNames().then(renderSchoolWarStats);
+loadSchoolWarUserNames().then(function () {
+renderSchoolWarMap();
+renderSchoolWarStats();
+});
 refreshSchoolWarSchoolSelectOccupiedCounts();
 const cEl = document.getElementById('schoolwar-color');
 const savedMyColor = String(user && user.schoolwar_color || '').trim().toLowerCase();
