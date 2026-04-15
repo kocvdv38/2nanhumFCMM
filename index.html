@@ -4754,14 +4754,24 @@ return out;
 async function applySchoolWarCountsToUsers(arr) {
 if (!Array.isArray(arr)) return arr;
 try {
-const swSnap = await db.ref('schoolWars').once('value');
-const counts = computeSchoolWarCountsFromMap(swSnap.val());
+const uidSchoolMap = {};
 arr.forEach(function (u) {
-u.__schoolwar_cells = counts[String(u.id)] || 0;
+uidSchoolMap[String(u.id)] = String(u.school || '').trim();
+});
+const swSnap = await db.ref('schoolWars').once('value');
+const swVal = swSnap.val();
+const counts = computeSchoolWarCountsFromMap(swVal);
+const schoolOwnedCounts = computeSchoolWarOwnedCountsBySchool(swVal, uidSchoolMap);
+arr.forEach(function (u) {
+const uid = String(u.id);
+const school = String(u.school || '').trim();
+u.__schoolwar_cells = counts[uid] || 0;
+u.__schoolwar_school_owned = school ? (schoolOwnedCounts[school] || 0) : 0;
 });
 } catch (e) {
 arr.forEach(function (u) {
 if (u.__schoolwar_cells == null) u.__schoolwar_cells = 0;
+if (u.__schoolwar_school_owned == null) u.__schoolwar_school_owned = 0;
 });
 }
 return arr;
@@ -5618,6 +5628,22 @@ var u = usersById[uid];
 if (!u) return String(uid || '');
 return publicDisplayNameForUser(u);
 }
+function buildSchoolWarTopSchoolRowsFromUsers(arr, limit) {
+var outMap = {};
+var rows = Array.isArray(arr) ? arr : [];
+rows.forEach(function (u) {
+var school = String(u && u.school || '').trim();
+if (!school) return;
+var cells = Number(u.__schoolwar_cells) || 0;
+if (cells <= 0) return;
+if (outMap[school] == null || cells > outMap[school]) outMap[school] = cells;
+});
+var out = Object.keys(outMap).map(function (school) {
+return { school: school, cells: Number(outMap[school]) || 0 };
+});
+out.sort(function (a, b) { return b.cells - a.cells; });
+return out.slice(0, Math.max(1, Number(limit) || 3));
+}
 
 function sortUsersForLoginTop3Mode(arr, def) {
 var sorted = arr.slice();
@@ -5654,6 +5680,21 @@ return (Number(u[def.field]) || 0) > 0;
 /** 로그인·랭킹 화면 TOP3 카드 HTML 목록 (동일 데이터 소스) */
 function buildTop3CardHtmlList(arr) {
 return LOGIN_TOP3_MODES.map(function (m) {
+if (m.key === 'schoolwar') {
+var schoolTop = buildSchoolWarTopSchoolRowsFromUsers(arr, 3);
+var schoolLines = schoolTop.length
+? schoolTop.map(function (r, i) {
+return '<div class="login-top3-line"><span class="login-top3-rank" title="' + (i + 1) + '등">' + topRankIcon(i) + '</span>' + escapeHtml(r.school) + ' <span class="login-top3-muted">·</span> ' + escapeHtml(String(r.cells)) + '칸</div>';
+}).join('')
+: '<div class="login-top3-empty">기록 없음</div>';
+return '<div class="login-top3-card ' + m.cardClass + '" role="region" aria-label="' + escapeHtml(m.label) + ' 순위">' +
+'<div class="login-top3-card-head">' +
+'<span class="login-top3-mode-icon" aria-hidden="true">' + m.icon + '</span>' +
+'<span class="login-top3-mode-title">' + escapeHtml(m.label) + ' TOP3</span>' +
+'</div>' +
+'<div class="login-top3-card-body">' + schoolLines + '</div>' +
+'</div>';
+}
 var top = sortUsersForLoginTop3Mode(arr, m);
 var lines = top.length
 ? top.map(function (u, i) {
@@ -5678,6 +5719,11 @@ var rows = modesObj[m.key];
 if (!Array.isArray(rows)) rows = [];
 var lines = rows.length
 ? rows.map(function (u, i) {
+if (m.key === 'schoolwar') {
+var schoolNm = u && u.school != null && String(u.school).trim() !== '' ? String(u.school) : (u && u.id != null ? String(u.id) : '');
+var cellsTxt = (u && u.cells != null && !isNaN(Number(u.cells))) ? (String(Number(u.cells)) + '칸') : '';
+return '<div class="login-top3-line"><span class="login-top3-rank" title="' + (i + 1) + '등">' + topRankIcon(i) + '</span>' + escapeHtml(schoolNm || '학교 없음') + (cellsTxt ? ' <span class="login-top3-muted">·</span> ' + escapeHtml(cellsTxt) : '') + '</div>';
+}
 var id = u && u.id != null ? String(u.id) : '';
 var school = u && u.school != null && String(u.school).trim() !== '' ? String(u.school) : '학교 없음';
 return '<div class="login-top3-line"><span class="login-top3-rank" title="' + (i + 1) + '등">' + topRankIcon(i) + '</span>' + escapeHtml(id) + ' <span class="login-top3-muted">·</span> ' + escapeHtml(school) + '</div>';
@@ -5696,6 +5742,15 @@ return '<div class="login-top3-card ' + m.cardClass + '" role="region" aria-labe
 function computeTop3SnapshotModes(arr, defs) {
 var modes = {};
 defs.forEach(function (def) {
+if (def.key === 'schoolwar') {
+var schoolTop = buildSchoolWarTopSchoolRowsFromUsers(arr, 3);
+var schoolIds = ['', '', ''];
+for (var si = 0; si < schoolTop.length; si++) {
+schoolIds[si] = String(schoolTop[si].school || '');
+}
+modes[def.key] = schoolIds;
+return;
+}
 var top = sortUsersForLoginTop3Mode(arr, def);
 var ids = ['', '', ''];
 for (var i = 0; i < top.length; i++) {
@@ -5725,11 +5780,13 @@ if (pn[i]) nextRank[pn[i]] = i;
 }
 Object.keys(nextRank).forEach(function (uid) {
 var ni = nextRank[uid];
-var name = loginTop3DisplayName(usersById, uid);
+var name = def.key === 'schoolwar' ? uid : loginTop3DisplayName(usersById, uid);
 if (prevRank[uid] == null) {
-msgs.push(name + '님이 ' + label + ' TOP3 ' + (ni + 1) + '위에 새로 올랐습니다');
+if (def.key === 'schoolwar') msgs.push(name + '가 ' + label + ' TOP3 ' + (ni + 1) + '위에 새로 올랐습니다');
+else msgs.push(name + '님이 ' + label + ' TOP3 ' + (ni + 1) + '위에 새로 올랐습니다');
 } else if (prevRank[uid] !== ni) {
-msgs.push(name + '님 ' + label + ' TOP3 ' + (prevRank[uid] + 1) + '위→' + (ni + 1) + '위');
+if (def.key === 'schoolwar') msgs.push(name + ' ' + label + ' TOP3 ' + (prevRank[uid] + 1) + '위→' + (ni + 1) + '위');
+else msgs.push(name + '님 ' + label + ' TOP3 ' + (prevRank[uid] + 1) + '위→' + (ni + 1) + '위');
 }
 });
 });
