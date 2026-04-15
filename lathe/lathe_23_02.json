@@ -60,10 +60,10 @@
     "session": "23-02",
     "question": "다음 입체도에서 화살표 방향을 정면으로 할 때, 평면도로 가장 적합한 것은?",
     "options": [
-      "lathe_23_02_5_op1.png",
-      "lathe_23_02_5_op2.png",
-      "lathe_23_02_5_op3.png",
-      "lathe_23_02_5_op4.png"
+      "lathe/23_02/lathe_23_02_5_op1.png",
+      "lathe/23_02/lathe_23_02_5_op2.png",
+      "lathe/23_02/lathe_23_02_5_op3.png",
+      "lathe/23_02/lathe_23_02_5_op4.png"
     ],
     "answer": 4,
     "explanation": "입체도를 위에서 내려다본 평면도 형상을 찾으면 됩니다. 입체도의 단차와 굴곡을 고려했을 때 ②번이 가장 적절합니다.",
