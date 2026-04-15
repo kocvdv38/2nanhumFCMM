@@ -313,6 +313,39 @@ background: rgba(0,0,0,0.35);
 .schoolwar-owner-modal:not(.hidden) {
 display: flex;
 }
+.wrong-review-loading-backdrop {
+position: fixed;
+inset: 0;
+z-index: 10070;
+display: none;
+align-items: center;
+justify-content: center;
+padding: 20px;
+background: rgba(255,255,255,0.88);
+}
+.wrong-review-loading-backdrop:not(.hidden) {
+display: flex;
+}
+.wrong-review-loading-card {
+width: min(360px, 100%);
+background: #fff;
+border: 1px solid #e9ecef;
+border-radius: 14px;
+box-shadow: 0 16px 36px rgba(0,0,0,0.16);
+padding: 16px 14px;
+text-align: center;
+}
+.wrong-review-loading-title {
+font-size: 16px;
+font-weight: 700;
+color: #212529;
+margin: 0 0 8px 0;
+}
+.wrong-review-loading-sub {
+font-size: 13px;
+color: #495057;
+margin: 0;
+}
 .subject-pref-modal-backdrop {
 position: absolute;
 inset: 0;
@@ -1283,6 +1316,10 @@ min-height: 108px;
 <option value="전북기계공업고등학교">전북기계공업고등학교</option>
 <option value="전북자동차고등학교">전북자동차고등학교</option>
 <option value="전주공업고등학교">전주공업고등학교</option>
+<option value="대전도시과학고등학교">대전도시과학고등학교</option>
+<option value="충남기계공업고등학교">충남기계공업고등학교</option>
+<option value="대구일마이스터고등학교">대구일마이스터고등학교</option>
+<option value="경북기계공업고등학교">경북기계공업고등학교</option>
 <option value="기타">기타</option>
 </select>
 
@@ -1448,6 +1485,10 @@ min-height: 108px;
 <option value="전북기계공업고등학교">전북기계공업고등학교</option>
 <option value="전북자동차고등학교">전북자동차고등학교</option>
 <option value="전주공업고등학교">전주공업고등학교</option>
+<option value="대전도시과학고등학교">대전도시과학고등학교</option>
+<option value="충남기계공업고등학교">충남기계공업고등학교</option>
+<option value="대구일마이스터고등학교">대구일마이스터고등학교</option>
+<option value="경북기계공업고등학교">경북기계공업고등학교</option>
 </select>
 <label for="p-sid" class="profile-field-label">학번</label>
 <input type="text" id="p-sid" placeholder="학번 (5자리)" inputmode="numeric">
@@ -1502,6 +1543,10 @@ min-height: 108px;
 <option value="전북기계공업고등학교">전북기계공업고</option>
 <option value="전북자동차고등학교">전북자동차고</option>
 <option value="전주공업고등학교">전주공업고</option>
+<option value="대전도시과학고등학교">대전도시과학고</option>
+<option value="충남기계공업고등학교">충남기계공업고</option>
+<option value="대구일마이스터고등학교">대구일마이스터고</option>
+<option value="경북기계공업고등학교">경북기계공업고</option>
 <option value="기타">기타</option>
 </select>
 <p id="schoolwar-status" style="font-size:13px;color:#666;margin:8px 0;">학교를 선택하세요.</p>
@@ -1529,6 +1574,12 @@ min-height: 108px;
 <h3 id="schoolwar-owner-modal-title" style="margin:0 0 10px 0;font-size:17px;color:#212529;">점령 칸 정보</h3>
 <div id="schoolwar-owner-modal-body" style="font-size:14px;line-height:1.55;color:#343a40;"></div>
 <button type="button" class="btn-blue" onclick="closeSchoolWarOwnerInfoModal()" style="margin-top:14px;">확인</button>
+</div>
+</div>
+<div id="wrong-review-loading" class="wrong-review-loading-backdrop hidden" aria-live="polite">
+<div class="wrong-review-loading-card">
+<p class="wrong-review-loading-title">오답 복습 문제 로딩 중...</p>
+<p class="wrong-review-loading-sub">잠시만 기다려 주세요.</p>
 </div>
 </div>
 
@@ -1570,10 +1621,10 @@ min-height: 108px;
 
 <div id="explanation-box" style="display:none; background:#eee; padding:10px; margin-top:10px; text-align:left; font-size:14px;"></div>
 <div class="quiz-action-row">
-<button type="button" id="prev-question-btn" class="btn-gray hidden" onclick="goToPreviousQuestion()">← 이전</button>
+<button type="button" id="prev-question-btn" class="btn-gray hidden" onclick="goToPreviousQuestion()">이전</button>
 <button type="button" id="mock-submit-btn" class="btn-green hidden" onclick="submitMockExam()">제출</button>
 <button type="button" id="quit-btn" class="btn-gray" onclick="quitGame()">그만</button>
-<button id="next-btn" class="btn-blue hidden" onclick="nextPracticeQuestion()">다음 →</button>
+<button id="next-btn" class="btn-blue hidden" onclick="nextPracticeQuestion()">다음</button>
 </div>
 <button type="button" id="btn-wrong-delete" class="btn-red hidden" onclick="deleteCurrentWrongNote()" style="margin-top:8px;">문제 삭제</button>
 </div>
@@ -2411,6 +2462,20 @@ document.getElementById('mock-submit-btn').classList.add('hidden');
 startTimer();
 updateUI();
 showQuestion();
+}
+async function startWrongReviewRoundWithLoading(wrongQs) {
+if (!wrongQs || !wrongQs.length) return;
+var loadingEl = document.getElementById('wrong-review-loading');
+var t0 = Date.now();
+if (loadingEl) loadingEl.classList.remove('hidden');
+await new Promise(function (resolve) { setTimeout(resolve, 60); });
+startWrongReviewRound(wrongQs);
+var elapsed = Date.now() - t0;
+var remain = Math.max(0, 2000 - elapsed);
+if (remain > 0) {
+await new Promise(function (resolve) { setTimeout(resolve, remain); });
+}
+if (loadingEl) loadingEl.classList.add('hidden');
 }
 let items = { hint: 0, shield: 0, time: 0 }, streak = 0, isIdCheck = false, lastId = "";
 let isIdentityCheck = false, lastIdentityName = "", lastIdentityBirth = "";
@@ -3885,6 +3950,12 @@ var enc = encodeURIComponent(schoolValue);
 if (Object.prototype.hasOwnProperty.call(countMap, enc)) return countMap[enc];
 return 0;
 }
+function shortSchoolNameForSelect(name) {
+var s = String(name || '').trim();
+if (!s) return s;
+if (s === '기타') return s;
+return s.replace(/고등학교$/, '고');
+}
 async function refreshSchoolWarSchoolSelectOccupiedCounts() {
 var sel = document.getElementById('schoolwar-school-select');
 if (!sel) return;
@@ -3898,7 +3969,7 @@ if (!v) {
 opt.textContent = '학교 선택';
 } else {
 var n = schoolWarOccupiedCountForSchool(cm, v);
-opt.textContent = v + ' (' + n + '칸 점령)';
+opt.textContent = shortSchoolNameForSelect(v) + ' (' + n + '칸 점령)';
 }
 }
 } catch (e1) {}
@@ -4284,7 +4355,7 @@ nextBtn.classList.remove('hidden');
 nextBtn.disabled = false;
 }
 } else if (mode === 'mock') {
-nextBtn.textContent = '다음 문제';
+nextBtn.textContent = '다음';
 nextBtn.classList.remove('hidden');
 nextBtn.disabled = false;
 } else if (mode === 'schoolwar') {
@@ -4655,6 +4726,31 @@ out[uid] = (out[uid] || 0) + 1;
 });
 return out;
 }
+function computeSchoolWarOwnedCountsBySchool(allSchoolWars, uidSchoolMap) {
+const out = {};
+const root = allSchoolWars || {};
+const userSchool = uidSchoolMap || {};
+Object.keys(root).forEach(function (schoolKey) {
+const schoolNode = root[schoolKey] || {};
+const cells = schoolNode && schoolNode.cells ? schoolNode.cells : {};
+let schoolName = String(schoolKey || '');
+try {
+const dec = decodeURIComponent(schoolName);
+if (dec) schoolName = dec;
+} catch (e) {}
+if (!schoolName) return;
+Object.keys(cells).forEach(function (cellId) {
+const uid = String(cells[cellId] || '').trim();
+if (!uid) return;
+const ownerSchool = String(userSchool[uid] || '').trim();
+if (!ownerSchool) return;
+if (ownerSchool === schoolName) {
+out[schoolName] = (out[schoolName] || 0) + 1;
+}
+});
+});
+return out;
+}
 async function applySchoolWarCountsToUsers(arr) {
 if (!Array.isArray(arr)) return arr;
 try {
@@ -4769,7 +4865,7 @@ pendingQuitWrongReview = false;
 if (wrSw.length > 0) {
 reviewBaseMode = 'schoolwar';
 document.getElementById('schoolwar-box').classList.add('hidden');
-startWrongReviewRound(wrSw);
+await startWrongReviewRoundWithLoading(wrSw);
 return;
 }
 }
@@ -4877,7 +4973,7 @@ var wrMain = buildWrongQuestionsFromSession();
 if (wrMain.length > 0) {
 reviewBaseMode = mode;
 document.getElementById('rank-box').classList.add('hidden');
-startWrongReviewRound(wrMain);
+await startWrongReviewRoundWithLoading(wrMain);
 }
 }
 }
@@ -4993,11 +5089,57 @@ if(!v) return;
 arr.push({ ...v, id: v.id != null ? v.id : c.key });
 });
 if (rankMode === 'schoolwar') {
-const swSnap = await db.ref('schoolWars').once('value');
-const counts = computeSchoolWarCountsFromMap(swSnap.val());
+const uidSchoolMap = {};
 arr.forEach(function (u) {
-u.__schoolwar_cells = counts[String(u.id)] || 0;
+uidSchoolMap[String(u.id)] = String(u.school || '').trim();
 });
+const swSnap = await db.ref('schoolWars').once('value');
+const schoolCounts = computeSchoolWarOwnedCountsBySchool(swSnap.val(), uidSchoolMap);
+const schoolRows = Object.keys(schoolCounts).map(function (schoolName) {
+return { school: schoolName, cells: Number(schoolCounts[schoolName]) || 0 };
+}).filter(function (r) { return r.cells > 0; });
+schoolRows.sort(function (a, b) { return b.cells - a.cells; });
+let rankInfoSw = null;
+if (user && user.id) {
+const mySchool = String(user.school || '').trim();
+const idxSw = schoolRows.findIndex(function (r) { return r.school === mySchool; });
+const myCells = mySchool ? (Number(schoolCounts[mySchool]) || 0) : 0;
+user.__schoolwar_cells = myCells;
+if (idxSw >= 0) {
+rankInfoSw = {
+overallRank: idxSw + 1,
+totalRanked: schoolRows.length,
+inTop50: idxSw < 50
+};
+} else {
+rankInfoSw = { overallRank: null, totalRanked: schoolRows.length, noRecord: true };
+}
+}
+updateMyRecordPanel(rankMode, rankInfoSw);
+const topSchools = schoolRows.slice(0, 50);
+list.innerHTML = topSchools.map((r, i) => {
+const posLabel = topRankIcon(i);
+return `
+                   <div class="rank-item ${i===0?'rank-1':(i===1?'rank-2':(i===2?'rank-3':''))}">
+                       <span class="rank-pos-badge" title="${i + 1}등">${posLabel}</span>
+                       <div class="rank-info">
+                           <b>${escapeHtml(r.school || '학교 정보 없음')}</b><br>
+                           <div class="rank-school">학교 점령전</div>
+                           <small style="color:#dc3545; font-weight:bold;">자교 점령 ${Number(r.cells) || 0}칸</small>
+                       </div>
+                   </div>
+                   ${i === 2 && topSchools.length > 3 ? '<div class="rank-top-divider" role="separator" aria-label="상위 3등 구분선"></div>' : ''}
+               `;
+}).join('');
+if(topSchools.length === 0) list.innerHTML = '<p style="color:#666;">표시할 기록이 없습니다.</p>';
+if(adminBar) adminBar.classList.add('hidden');
+updateRankTop3Carousel(arr);
+var rankHintSw = document.querySelector('#rank-top3-preview .login-top3-rotator-hint');
+if (rankHintSw) {
+rankHintSw.textContent = '모드별 TOP3 · 좌우로 넘기면 이동 · ' + Math.round(LOGIN_TOP3_ROTATE_MS / 1000) + '초마다 순환';
+}
+updateRankBackButton();
+return;
 }
 const arrWithRecord = arr.filter(u => {
 if (rankMode === 'practice') return getPracticeScoreFromUser(u) > 0;
