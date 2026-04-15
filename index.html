@@ -1572,6 +1572,7 @@ min-height: 108px;
 <div id="rank-list"></div>
 <div id="rank-admin-actions" class="rank-admin-actions hidden">
 <label><input type="checkbox" id="rank-admin-select-all" onchange="toggleRankSelectAll(this.checked)"> 전체 선택</label>
+<button type="button" class="btn-orange" onclick="adminTriggerGlobalCacheRefresh()" style="width:100%;margin-top:10px;">최신화(전체 캐시 무효화)</button>
 <button type="button" class="btn-red" onclick="adminDeleteSelectedUsers()" style="width:100%;margin-top:10px;">선택한 회원 삭제</button>
 </div>
 <button type="button" id="rank-back-btn" class="btn-blue" onclick="goBackFromRanking()">메인으로</button>
@@ -1653,6 +1654,10 @@ quizSessionManifestPromise = null;
 }
 const QUIZ_JSON_CACHE_STORAGE_KEY = 'catch_cert_quiz_json_cache_v3';
 const SUBJECT_MANIFEST_CACHE_STORAGE_KEY = 'catch_cert_subject_manifest_cache_v3';
+const QUIZ_JSON_CACHE_STORAGE_OLD_KEYS = ['catch_cert_quiz_json_cache_v1', 'catch_cert_quiz_json_cache_v2'];
+const SUBJECT_MANIFEST_CACHE_STORAGE_OLD_KEYS = ['catch_cert_subject_manifest_cache_v1', 'catch_cert_subject_manifest_cache_v2'];
+const GLOBAL_CACHE_BUST_DB_PATH = 'app_meta/cache_bust_token';
+const GLOBAL_CACHE_BUST_SEEN_KEY = 'catch_cert_cache_bust_seen_v1';
 const QUIZ_JSON_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const SUBJECT_MANIFEST_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const QUIZ_JSON_CACHE_MAX_ENTRIES = 16;
@@ -1684,6 +1689,41 @@ return quizJsonCacheMem;
 function ensureSubjectManifestCacheMem() {
 if (!subjectManifestCacheMem) subjectManifestCacheMem = readLocalObjectCache(SUBJECT_MANIFEST_CACHE_STORAGE_KEY);
 return subjectManifestCacheMem;
+}
+function removeLocalStorageKeySilent(key) {
+try { localStorage.removeItem(key); } catch (e) {}
+}
+function clearQuizCachesLocal() {
+removeLocalStorageKeySilent(QUIZ_JSON_CACHE_STORAGE_KEY);
+removeLocalStorageKeySilent(SUBJECT_MANIFEST_CACHE_STORAGE_KEY);
+for (var i = 0; i < QUIZ_JSON_CACHE_STORAGE_OLD_KEYS.length; i++) removeLocalStorageKeySilent(QUIZ_JSON_CACHE_STORAGE_OLD_KEYS[i]);
+for (var j = 0; j < SUBJECT_MANIFEST_CACHE_STORAGE_OLD_KEYS.length; j++) removeLocalStorageKeySilent(SUBJECT_MANIFEST_CACHE_STORAGE_OLD_KEYS[j]);
+quizJsonCacheMem = null;
+subjectManifestCacheMem = null;
+resetQuizSessionManifestFetch();
+subjectSessionManifestCache = {};
+}
+function getLocalSeenCacheBustToken() {
+try { return String(localStorage.getItem(GLOBAL_CACHE_BUST_SEEN_KEY) || ''); } catch (e) { return ''; }
+}
+function setLocalSeenCacheBustToken(token) {
+try { localStorage.setItem(GLOBAL_CACHE_BUST_SEEN_KEY, String(token || '')); } catch (e) {}
+}
+function applyGlobalCacheBustToken(tokenRaw) {
+var token = String(tokenRaw || '').trim();
+if (!token) return;
+var seen = getLocalSeenCacheBustToken();
+if (token === seen) return;
+clearQuizCachesLocal();
+setLocalSeenCacheBustToken(token);
+if (user && user.id) {
+alert('관리자 최신화가 적용되어 캐시를 갱신했습니다.\n회차/문제 목록을 다시 불러옵니다.');
+}
+}
+function initGlobalCacheBustListener() {
+db.ref(GLOBAL_CACHE_BUST_DB_PATH).on('value', function (snap) {
+applyGlobalCacheBustToken(snap && snap.val ? snap.val() : '');
+}, function () {});
 }
 function pruneCacheMapBySize(map, maxEntries) {
 var keys = Object.keys(map || {});
@@ -4828,6 +4868,18 @@ await fetchRanking(currentRankMode);
 alert('삭제에 실패했습니다. Firebase 규칙에서 관리자 쓰기를 허용했는지 확인하세요.');
 }
 }
+async function adminTriggerGlobalCacheRefresh() {
+if (!isAdmin()) return;
+if (!(await showCustomConfirm('모든 사용자 캐시를 최신화할까요?\n접속 중인 기기는 다음 동작 시 최신 데이터를 다시 불러옵니다.'))) return;
+var token = String(Date.now()) + '_' + String(user && user.id ? user.id : 'admin');
+try {
+await db.ref(GLOBAL_CACHE_BUST_DB_PATH).set(token);
+applyGlobalCacheBustToken(token);
+alert('전체 캐시 최신화 요청을 보냈습니다.');
+} catch (e) {
+alert('최신화 요청에 실패했습니다. Firebase 규칙에서 app_meta 쓰기를 허용했는지 확인해 주세요.');
+}
+}
 
 async function fetchRanking(rankMode) {
 currentRankMode = rankMode;
@@ -5933,6 +5985,7 @@ attachBoardCommentEnterHandlers();
 initBoardCommentsLoginSwipe();
 initLoginTop3SwipeDelegate();
 initRankTop3SwipeDelegate();
+initGlobalCacheBustListener();
 loadPreferredSubjectsFromStorage();
 syncPreferredSubjectUi();
 loadLoginTop3Preview();
