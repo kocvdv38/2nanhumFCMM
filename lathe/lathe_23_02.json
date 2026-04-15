@@ -658,7 +658,7 @@
     ],
     "answer": 3,
     "explanation": "시계 방향 원호 가공은 G02를 사용하며, 전원(360°) 가공 시에는 R 대신 중심점까지의 벡터값(I, J, K)을 사용해야 합니다.",
-    "image_file": "lathe/23_03/lathe_23_02_47.png"
+    "image_file": "lathe/23_02/lathe_23_02_47.png"
   },
   {
     "id": 48,
