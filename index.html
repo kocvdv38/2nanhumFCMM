@@ -1499,7 +1499,6 @@ min-height: 108px;
 <option value="#ff922b">주황</option>
 <option value="#ffd43b">노랑</option>
 <option value="#51cf66">초록</option>
-<option value="#4dabf7">파랑</option>
 <option value="#364fc7">남색</option>
 <option value="#ae3ec9">보라</option>
 </select>
@@ -1631,7 +1630,8 @@ let schoolWarCellsHandler = null;
 let schoolWarUserNames = {};
 let schoolWarUserColors = {};
 let schoolWarUserSchools = {};
-const SCHOOL_WAR_ALLOWED_COLORS = ['#ff4d4f', '#ff922b', '#ffd43b', '#51cf66', '#4dabf7', '#364fc7', '#ae3ec9'];
+const SCHOOL_WAR_ALLOWED_COLORS = ['#ff4d4f', '#ff922b', '#ffd43b', '#51cf66', '#364fc7', '#ae3ec9'];
+const SCHOOL_WAR_ALLY_COLOR = '#4dabf7';
 let schoolWarTodayLimit = 10;
 let schoolWarCorrectCount = 0;
 let schoolWarWrongCount = 0;
@@ -3660,10 +3660,10 @@ const uid = String(ownerUid);
 if (user && String(user.id) === uid) {
 const mine = schoolWarUserColors && schoolWarUserColors[uid];
 if (mine && SCHOOL_WAR_ALLOWED_COLORS.indexOf(String(mine).toLowerCase()) >= 0) return mine;
-return '#4dabf7';
+return '#ff4d4f';
 }
 const ownerSchool = schoolWarUserSchools[uid] || '';
-if (schoolWarSchool && ownerSchool && String(ownerSchool) === String(schoolWarSchool)) return '#d9f3ff';
+if (schoolWarSchool && ownerSchool && String(ownerSchool) === String(schoolWarSchool)) return SCHOOL_WAR_ALLY_COLOR;
 return '#ff69b4';
 }
 function openSchoolWarOwnerInfoModal(ownerName, ownerUid, ownerSchool) {
@@ -3812,7 +3812,7 @@ async function saveSchoolWarColor() {
 if (!user || !user.id) return alert('로그인이 필요합니다.');
 const el = document.getElementById('schoolwar-color');
 const c = el ? String(el.value || '').trim().toLowerCase() : '';
-if (SCHOOL_WAR_ALLOWED_COLORS.indexOf(c) < 0) return alert('빨강/주황/노랑/초록/파랑/남색/보라 중에서 선택해 주세요.');
+if (SCHOOL_WAR_ALLOWED_COLORS.indexOf(c) < 0) return alert('빨강/주황/노랑/초록/남색/보라 중에서 선택해 주세요.');
 try {
 await db.ref('users/' + user.id + '/schoolwar_color').set(c);
 schoolWarUserColors[String(user.id)] = c;
@@ -3903,7 +3903,7 @@ const cEl = document.getElementById('schoolwar-color');
 const savedMyColor = String(user && user.schoolwar_color || '').trim().toLowerCase();
 if (cEl) {
 if (SCHOOL_WAR_ALLOWED_COLORS.indexOf(savedMyColor) >= 0) cEl.value = savedMyColor;
-else cEl.value = '#4dabf7';
+else cEl.value = '#ff4d4f';
 }
 }
 document.getElementById('schoolwar-school-select').addEventListener('change', function () {
