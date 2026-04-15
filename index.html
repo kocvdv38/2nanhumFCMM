@@ -1401,7 +1401,7 @@ min-height: 108px;
 <!-- 3-0. 왕중왕전 -->
 <div id="king-entry-box" class="card hidden">
 <h2>⚔️ 토너먼트</h2>
-<p style="font-size:14px;color:#555;text-align:left;margin:0 0 12px 0;"><strong>방 코드 6자리</strong>는 방을 구분하는 고유 코드입니다. 참가 방법은 두 가지입니다: (1) 아래 <strong>열린 방 목록</strong>에서 입장 (2) 방장에게 받은 <strong>코드로 입장</strong>. 방을 만들면 <strong>과목명·방 코드</strong>가 대기실에 표시됩니다. 방장은 과목 선택과 첫 게임 시작만 합니다. 라운드마다 <strong>5문제 · 3분</strong>, 전원 제출 또는 시간 종료 시 <strong>상위 50%</strong>가 선정되고 축하 연출 후 <strong>3초 뒤</strong> 다음 라운드가 자동으로 진행됩니다. <strong>최종 우승자</strong>가 새 방장이 됩니다.</p>
+<p style="font-size:14px;color:#555;text-align:left;margin:0 0 12px 0;"><strong>방 코드 6자리</strong>는 방을 구분하는 고유 코드입니다. 참가 방법은 두 가지입니다:<br>(1) 아래 <strong>열린 방 목록</strong>에서 입장<br>(2) 방장에게 받은 <strong>코드로 입장</strong><br>방을 만들면 <strong>과목명·방 코드</strong>가 대기실에 표시됩니다.</p>
 <label class="profile-field-label profile-field-label--first" for="king-subject-select">방 주제(과목) — 방 만들 때 1회 선택</label>
 <select id="king-subject-select">
 <option value="all">전체 과목 (랜덤)</option>
@@ -2738,7 +2738,7 @@ document.getElementById('king-entry-box').classList.add('hidden');
 document.getElementById('king-lobby-box').classList.remove('hidden');
 document.getElementById('king-game-box').classList.add('hidden');
 document.getElementById('king-room-code-disp').textContent = kingRoomId;
-document.getElementById('king-lobby-hint').textContent = '이 6자리 코드로 다른 사람이 입장할 수 있습니다. 전원이 5문제를 풀거나 시간이 지나면 상위 50%가 선정되고, 3초 뒤 다음 라운드가 자동으로 시작됩니다.';
+document.getElementById('king-lobby-hint').textContent = '이 6자리 코드로 다른 사람이 입장할 수 있습니다. 방장은 과목 선택과 첫 게임 시작만 합니다. 라운드마다 5문제 · 3분, 전원 제출 또는 시간 종료 시 상위 50%가 선정되고, 축하 연출 후 3초 뒤 다음 라운드가 자동으로 시작됩니다. 최종 우승자가 새 방장이 됩니다.';
 }
 function kingLobbySubjectChange(subjectKey) {
 if (!kingRoomId || !user || !kingLastSnap || String(kingLastSnap.hostId) !== String(user.id)) return;
@@ -5634,7 +5634,7 @@ var rows = Array.isArray(arr) ? arr : [];
 rows.forEach(function (u) {
 var school = String(u && u.school || '').trim();
 if (!school) return;
-var cells = Number(u.__schoolwar_cells) || 0;
+var cells = Number(u.__schoolwar_school_owned) || 0;
 if (cells <= 0) return;
 if (outMap[school] == null || cells > outMap[school]) outMap[school] = cells;
 });
