@@ -580,6 +580,19 @@ button:hover {
 opacity: 0.9; 
 transform: translateY(-1px); 
 }
+.quiz-action-row {
+display: flex;
+gap: 8px;
+margin-top: 10px;
+}
+.quiz-action-row > button {
+flex: 1 1 0;
+width: auto;
+margin: 0;
+padding: 12px 8px;
+font-size: 14px;
+white-space: nowrap;
+}
 
 /* 게임 UI */
 #game-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 13px; font-weight: bold; }
@@ -1556,10 +1569,12 @@ min-height: 108px;
 </div>
 
 <div id="explanation-box" style="display:none; background:#eee; padding:10px; margin-top:10px; text-align:left; font-size:14px;"></div>
-<button id="next-btn" class="btn-blue hidden" onclick="nextPracticeQuestion()">다음 문제</button>
-<button type="button" id="prev-question-btn" class="btn-gray hidden" onclick="goToPreviousQuestion()" style="margin-top:10px;">← 이전 문제</button>
-<button type="button" id="mock-submit-btn" class="btn-green hidden" onclick="submitMockExam()" style="margin-top:10px;">모의고사 제출</button>
-<button type="button" class="btn-gray" onclick="quitGame()" style="margin-top:14px;">그만하기</button>
+<div class="quiz-action-row">
+<button type="button" id="prev-question-btn" class="btn-gray hidden" onclick="goToPreviousQuestion()">← 이전</button>
+<button type="button" id="mock-submit-btn" class="btn-green hidden" onclick="submitMockExam()">제출</button>
+<button type="button" id="quit-btn" class="btn-gray" onclick="quitGame()">그만</button>
+<button id="next-btn" class="btn-blue hidden" onclick="nextPracticeQuestion()">다음 →</button>
+</div>
 <button type="button" id="btn-wrong-delete" class="btn-red hidden" onclick="deleteCurrentWrongNote()" style="margin-top:8px;">문제 삭제</button>
 </div>
 
@@ -4160,9 +4175,34 @@ classicProceedTimer = null;
 currentIdx--;
 showQuestion();
 }
+function getNextUnansweredMockIndex(fromIdx) {
+if (mode !== 'mock' || !Array.isArray(quizList) || quizList.length === 0) return -1;
+var n = quizList.length;
+var start = Number(fromIdx);
+if (!isFinite(start)) start = 0;
+for (var step = 1; step <= n; step++) {
+var idx = (start + step) % n;
+if (mockAnswers[idx] == null) return idx;
+}
+return -1;
+}
 function nextPracticeQuestion() {
 if (!wrongReviewSession && mode !== 'practice' && mode !== 'daily' && mode !== 'mock' && mode !== 'schoolwar') return;
-if (mode === 'mock' && currentIdx >= quizList.length - 1) return;
+if (mode === 'mock') {
+if (currentIdx < quizList.length - 1) {
+currentIdx++;
+showQuestion();
+return;
+}
+var nextUnanswered = getNextUnansweredMockIndex(currentIdx);
+if (nextUnanswered >= 0) {
+currentIdx = nextUnanswered;
+showQuestion();
+} else {
+alert('모든 문제에 답했습니다. 모의고사 제출을 눌러주세요.');
+}
+return;
+}
 currentIdx++;
 showQuestion();
 }
@@ -4246,7 +4286,7 @@ nextBtn.disabled = false;
 } else if (mode === 'mock') {
 nextBtn.textContent = '다음 문제';
 nextBtn.classList.remove('hidden');
-nextBtn.disabled = currentIdx >= quizList.length - 1;
+nextBtn.disabled = false;
 } else if (mode === 'schoolwar') {
 nextBtn.textContent = '다음 문제';
 nextBtn.classList.remove('hidden');
@@ -4271,6 +4311,10 @@ if (mode === 'mock') mockPickAnswer(i + 1);
 else checkAnswer(i + 1, btn);
 };
 if (mode === 'mock' && Number(mockAnswers[currentIdx]) === (i + 1)) btn.classList.add('correct');
+if (mode === 'mock' && mockAnswers[currentIdx] != null) {
+btn.disabled = true;
+btn.style.pointerEvents = 'none';
+}
 optDiv.appendChild(btn);
 });
 if (((mode === 'practice' || mode === 'daily') && !wrongNoteOnly || wrongReviewSession) && practiceFirstSubmit[currentIdx]) {
@@ -4438,12 +4482,16 @@ updateUI();
 }
 function mockPickAnswer(ans) {
 if (mode !== 'mock') return;
+if (mockAnswers[currentIdx] != null) return;
 mockAnswers[currentIdx] = ans;
 updateUI();
 showQuestion();
 }
-function submitMockExam(timeOver) {
+async function submitMockExam(timeOver) {
 if (mode !== 'mock' || mockSubmitted) return;
+if (!timeOver) {
+if (!(await showCustomConfirm('모의고사를 제출하시겠습니까?'))) return;
+}
 mockSubmitted = true;
 endGame();
 }
@@ -4759,7 +4807,11 @@ if (skEnd) clearResumeForSubject(mode, skEnd);
 savePracticeDailyResumeFromCurrentState();
 }
 }
+if (!pendingQuitWrongReview) {
 document.getElementById('rank-box').classList.remove('hidden');
+} else {
+document.getElementById('rank-box').classList.add('hidden');
+}
 const timeStr = document.getElementById('timer-text').innerText;
 const updates = {};
 if(mode === 'practice') {
