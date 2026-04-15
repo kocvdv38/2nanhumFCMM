@@ -505,7 +505,7 @@ box-shadow: inset 0 1px 0 rgba(255,255,255,0.62), 0 6px 14px rgba(250, 176, 5, 0
 background: linear-gradient(135deg, #39d7bf 0%, #1fb0c4 100%);
 border-color: #1f9fb0;
 }
-.mode-app-grid .mode-app-btn:nth-child(4) .mode-app-icon {
+.mode-app-grid .mode-app-btn:nth-child(3) .mode-app-icon {
 background: linear-gradient(135deg, #4c6ef5 0%, #364fc7 100%);
 border-color: #3b5bdb;
 }
@@ -1315,8 +1315,8 @@ min-height: 108px;
 <div class="mode-app-grid" aria-label="게임 모드 선택">
 <button class="mode-app-btn btn-blue" style="background:linear-gradient(135deg,#20c997 0%,#17a2b8 100%);" onclick="selectMode('daily')"><span class="mode-app-icon" aria-hidden="true">📅</span><span class="mode-app-label">데일리 풀이</span></button>
 <button class="mode-app-btn btn-green" onclick="selectMode('practice')"><span class="mode-app-icon" aria-hidden="true">📖</span><span class="mode-app-label">연습 풀이<br>(오답노트제공)</span></button>
-<button class="mode-app-btn btn-purple" onclick="selectMode('classic')"><span class="mode-app-icon" aria-hidden="true">🔥</span><span class="mode-app-label">끝장 풀이</span></button>
 <button class="mode-app-btn btn-blue" style="background:linear-gradient(135deg,#4c6ef5 0%,#364fc7 100%);" onclick="selectMode('mock')"><span class="mode-app-icon" aria-hidden="true">📝</span><span class="mode-app-label">모의고사</span></button>
+<button class="mode-app-btn btn-purple" onclick="selectMode('classic')"><span class="mode-app-icon" aria-hidden="true">🔥</span><span class="mode-app-label">끝장 풀이</span></button>
 <button class="mode-app-btn btn-red" onclick="selectMode('survival')"><span class="mode-app-icon" aria-hidden="true">❤️</span><span class="mode-app-label">생존 풀이</span></button>
 <button class="mode-app-btn btn-orange" onclick="selectMode('timeattack')"><span class="mode-app-icon" aria-hidden="true">⏱️</span><span class="mode-app-label">스피드 풀이</span></button>
 <button class="mode-app-btn btn-blue" style="background:linear-gradient(135deg,#12b886 0%,#0ca678 100%);" onclick="selectMode('schoolwar')"><span class="mode-app-icon" aria-hidden="true">🏫</span><span class="mode-app-label">학교 점령전</span></button>
@@ -3654,6 +3654,19 @@ if (startPracticeBtn) startPracticeBtn.disabled = on;
 var quickStartBtn = document.querySelector('#subject-quick-start-wrap .btn-green');
 if (quickStartBtn) quickStartBtn.disabled = on;
 }
+function normalizeSchoolName(name) {
+return String(name == null ? '' : name)
+.replace(/\s+/g, '')
+.replace(/[·ㆍ]/g, '')
+.trim()
+.toLowerCase();
+}
+function isSameSchoolName(a, b) {
+var na = normalizeSchoolName(a);
+var nb = normalizeSchoolName(b);
+if (!na || !nb) return false;
+return na === nb;
+}
 function schoolWarCellColor(ownerUid) {
 if (!ownerUid) return '#f8f9fa';
 const uid = String(ownerUid);
@@ -3663,7 +3676,7 @@ if (mine && SCHOOL_WAR_ALLOWED_COLORS.indexOf(String(mine).toLowerCase()) >= 0) 
 return '#ff4d4f';
 }
 const ownerSchool = schoolWarUserSchools[uid] || '';
-if (schoolWarSchool && ownerSchool && String(ownerSchool) === String(schoolWarSchool)) return SCHOOL_WAR_ALLY_COLOR;
+if (isSameSchoolName(ownerSchool, schoolWarSchool)) return SCHOOL_WAR_ALLY_COLOR;
 return '#ff69b4';
 }
 function openSchoolWarOwnerInfoModal(ownerName, ownerUid, ownerSchool) {
