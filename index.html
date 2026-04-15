@@ -1383,8 +1383,8 @@ min-height: 108px;
 </select>
 
 <input type="text" id="r-name" placeholder="이름 (한글 3~5자)" oninput="resetIdentityCheck()">
-<input type="text" id="r-sid" placeholder="학번 (5자리)">
-<p class="sid-format-hint">예시) 2학년 7반 1번 -&gt; 20701</p>
+<input type="text" id="r-sid" placeholder="학번 (선택, 5자리)">
+<p class="sid-format-hint">선택 입력. 입력 시 예시) 2학년 7반 1번 -&gt; 20701</p>
 <input type="text" id="r-birth" placeholder="생년월일 (숫자 6자리)" oninput="resetIdentityCheck()">
 <button type="button" class="btn-gray" onclick="checkDuplicateIdentity()">이름·생년월일 중복확인</button>
 <input type="email" id="r-email" placeholder="예: hong@naver.com (선택)" autocomplete="email" inputmode="email">
@@ -3753,7 +3753,7 @@ if(!isIdentityCheck || n !== lastIdentityName || b !== lastIdentityBirth) return
 if(!school) return alert("학교를 선택해주세요.");
 if(!pw) return alert("비밀번호를 입력하세요.");
 if(!/^[가-힣]{3,5}$/.test(n)) return alert("이름: 한글 3~5자");
-if(!/^[1-3][0-9]{2}(0[1-9]|1[0-9]|2[0-2])$/.test(s)) return alert("학번: 5자리 (01~22)");
+if(s && !/^[1-3][0-9]{2}(0[1-9]|1[0-9]|2[0-2])$/.test(s)) return alert("학번: 5자리 (01~22) 또는 비워 두세요.");
 if(!/^\d{6}$/.test(b)) return alert("생년월일: 숫자 6자");
 if (emailRaw && !isValidEmailFormat(emailRaw)) return alert("이메일은 예: 아이디@gmail.com 또는 아이디@naver.com 형식으로 입력해 주세요.");
 if (phoneRaw && !isValidPhone010Hyphen(phoneRaw)) return alert("휴대폰은 010-1234-5678 형식으로 입력해 주세요.");
@@ -3769,7 +3769,7 @@ alert("이미 동일한 이름과 생년월일로 가입된 계정이 있습니�
 return Promise.reject(new Error('__identity_dup'));
 }
 const newUser = {
-id, pw, school, name:n, student_id: s, birth:b,
+id, pw, school, name:n, student_id: s || '', birth:b,
 hide_name_in_ranking: false,
 practice_count:0, practice_time:'00:00', practice_time_seconds:0, practice_score:0, classic_score:0, mock_rank_points:0, mock_submit_count:0, mock_last_score:0, survival_score:0, timeattack_score:0, king_score:0,
 daily_streak:0, daily_best_streak:0, daily_last_date:'', daily_time:'--:--', daily_time_seconds:0
