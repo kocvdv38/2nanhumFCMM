@@ -3,11 +3,6 @@
   "subjects": {
     "lathe": [
       {
-        "code": "23-01",
-        "path": "lathe/lathe_23_01.json",
-        "label": "2023년 1회차"
-      },
-      {
         "code": "23-02",
         "path": "lathe/lathe_23_02.json",
         "label": "2023년 2회차"
