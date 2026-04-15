@@ -3973,11 +3973,7 @@ if (!el) continue;
 const cellId = String(i);
 const ownerUid = String(schoolWarCells[String(i)] || '').trim();
 el.style.background = schoolWarCellColor(ownerUid);
-if (isSchoolWarBonusCell(cellId) && !ownerUid) {
-el.style.boxShadow = 'inset 0 0 0 1px rgba(255, 193, 7, 0.9)';
-} else {
 el.style.boxShadow = '';
-}
 if (schoolWarSelectionMode && schoolWarSelectedCells[String(i)]) {
 el.style.outline = '2px solid #0d6efd';
 el.style.outlineOffset = '-2px';
@@ -5014,6 +5010,13 @@ el.innerHTML = `<div class="rank-my-box"><b>나의 기록</b> · <strong>${sc}</
 async function persistGameResultAndShowRanking() {
 clearInterval(timerInterval);
 document.getElementById('quiz-box').classList.add('hidden');
+var loadingElGlobal = document.getElementById('wrong-review-loading');
+if (pendingQuitWrongReview && loadingElGlobal) {
+document.getElementById('rank-box').classList.add('hidden');
+document.getElementById('subject-box').classList.add('hidden');
+document.getElementById('schoolwar-box').classList.add('hidden');
+loadingElGlobal.classList.remove('hidden');
+}
 if (wrongReviewSession) {
 wrongReviewSession = false;
 var bmDone = reviewBaseMode;
@@ -5049,6 +5052,7 @@ await startWrongReviewRoundWithLoading(wrSw);
 return;
 }
 }
+if (loadingElGlobal) loadingElGlobal.classList.add('hidden');
 document.getElementById('rank-box').classList.add('hidden');
 document.getElementById('schoolwar-box').classList.remove('hidden');
 refreshSchoolWarSchoolSelectOccupiedCounts();
@@ -5154,8 +5158,10 @@ if (wrMain.length > 0) {
 reviewBaseMode = mode;
 document.getElementById('rank-box').classList.add('hidden');
 await startWrongReviewRoundWithLoading(wrMain);
+return;
 }
 }
+if (loadingElGlobal) loadingElGlobal.classList.add('hidden');
 }
 async function endGame() {
 if (!wrongReviewSession && !wrongNoteOnly && (mode === 'classic' || mode === 'survival' || mode === 'timeattack')) {
