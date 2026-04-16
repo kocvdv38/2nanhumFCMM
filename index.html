@@ -350,6 +350,48 @@ box-sizing: border-box;
 .subject-quick-start-wrap .btn-gray {
 box-sizing: border-box;
 }
+/* 과목·회차: 연습/데일리(윗줄 시작·이어 / 아랫줄 모드), 모의고사(모드·시작 한 줄) */
+#session-action-row.session-action-row {
+display: flex;
+flex-wrap: wrap;
+gap: 8px;
+margin-top: 10px;
+align-items: stretch;
+box-sizing: border-box;
+}
+#session-action-row.session-action-row .session-action-start-btn,
+#session-action-row.session-action-row #btn-resume-study {
+min-width: 88px;
+box-sizing: border-box;
+}
+#session-action-row.session-action-row.session-action-row--stack .session-action-start-btn {
+flex: 1;
+order: 1;
+}
+#session-action-row.session-action-row.session-action-row--stack #btn-resume-study {
+flex: 1;
+order: 2;
+}
+#session-action-row.session-action-row.session-action-row--stack #session-btn-back-mode {
+width: 100%;
+flex-basis: 100%;
+order: 3;
+margin-top: 8px;
+box-sizing: border-box;
+}
+#session-action-row.session-action-row.session-action-row--mock #session-btn-back-mode {
+flex: 1;
+order: 1;
+min-width: 88px;
+}
+#session-action-row.session-action-row.session-action-row--mock .session-action-start-btn {
+flex: 1;
+order: 2;
+min-width: 88px;
+}
+#session-action-row.session-action-row.session-action-row--mock #btn-resume-study {
+display: none !important;
+}
 .subject-pref-modal {
 position: fixed;
 inset: 0;
@@ -1733,12 +1775,10 @@ min-height: 108px;
 <p id="session-subject-label" style="font-size:14px;color:#555;margin:0 0 10px 0;"></p>
 <button type="button" class="btn-orange btn-wrong-note" onclick="startWrongNoteQuiz()">📕 오답노트</button>
 <select id="session-val" aria-label="회차 선택"><option value="">과목을 먼저 선택하세요</option></select>
-<div id="session-action-row" style="margin-top:10px;">
-<div style="display:flex;gap:8px;align-items:stretch;flex-wrap:wrap;">
-<button type="button" class="btn-green" style="flex:1;min-width:88px;" onclick="startPracticeFromSelection()">이 회차로 시작</button>
-<button type="button" id="btn-resume-study" class="btn-blue hidden" style="flex:1;min-width:88px;" onclick="void(resumePracticeDailyFromStorage())">이어 공부하기</button>
-</div>
-<button type="button" class="btn-gray" style="width:100%;margin-top:8px;box-sizing:border-box;" onclick="backToModeSelect()">모드 선택</button>
+<div id="session-action-row" class="session-action-row session-action-row--stack">
+<button type="button" class="btn-green session-action-start-btn" onclick="startPracticeFromSelection()">이 회차로 시작</button>
+<button type="button" id="btn-resume-study" class="btn-blue hidden" onclick="void(resumePracticeDailyFromStorage())">이어 공부하기</button>
+<button type="button" id="session-btn-back-mode" class="btn-gray" onclick="backToModeSelect()">모드 선택</button>
 </div>
 <p id="resume-study-hint" class="hidden" style="font-size:13px;color:#555;margin:6px 0 0 0;">같은 과목에 저장된 진행이 있으면 저장된 회차·문제부터 이어갑니다. 다른 회차를 새로 풀려면 「이 회차로 시작」을 누르세요.</p>
 </div>
@@ -3570,7 +3610,7 @@ function updateSubjectRankHelp() {
     if (m === 'daily') {
         html = '<h3>📅 데일리 풀이 — 랭킹 반영</h3><ul><li>그날 문제를 <strong>1문제 이상</strong> 풀고 <strong>그만두기</strong>로 종료하면 <strong>연속 출석</strong>과 <strong>플레이 시간</strong>이 랭킹에 반영됩니다.</li></ul>';
     } else if (m === 'practice') {
-        html = '<h3>📖 연습 풀이(오답노트제공) — 랭킹 반영</h3><ul><li>회차별 연습에서 각 문제를 <strong>처음 제출</strong>할 때마다 풀이 수가 누적되고, 종료 시 <strong>연습 풀이(누적 문제 수)</strong> 랭킹에 반영됩니다.</li><li><strong>오답노트</strong>만 풀 때는 랭킹·누적 연습 기록에 반영되지 않습니다.</li></ul>';
+        html = '<h3>📖 연습 풀이(오답노트제공) — 랭킹 반영</h3><ul><li>회차별 연습에서 각 문제를 <strong>처음 제출</strong>할 때마다 풀이 수가 누적되고, 종료 시 <strong>연습 풀이(누적 문제 수)</strong> 랭킹에 반영됩니다.</li></ul>';
     } else if (m === 'classic') {
         html = '<h3>🏆 끝장 풀이 — 랭킹 반영</h3><ul><li>게임이 끝나거나 <strong>그만두기</strong>할 때, <strong>이번 점수</strong>가 본인 <strong>역대 최고점</strong>보다 높을 때만 랭킹 점수가 갱신됩니다.</li></ul>';
     } else if (m === 'mock') {
@@ -3616,6 +3656,16 @@ if (m === 'practice' || m === 'daily' || m === 'mock') {
 document.getElementById('subject-quick-start-wrap').classList.add('hidden');
 document.getElementById('session-select-div').classList.remove('hidden');
 document.getElementById('subject-title').classList.add('hidden');
+var sar = document.getElementById('session-action-row');
+if (sar) {
+if (m === 'mock') {
+sar.classList.add('session-action-row--mock');
+sar.classList.remove('session-action-row--stack');
+} else {
+sar.classList.add('session-action-row--stack');
+sar.classList.remove('session-action-row--mock');
+}
+}
 document.getElementById('session-subject-label').textContent =
 '적용 과목: ' + getPreferredSubjectSummaryHtml();
 var wn = document.querySelector('#session-select-div .btn-wrong-note');
@@ -5473,6 +5523,11 @@ document.getElementById('subject-pref-summary-wrap').classList.remove('hidden');
 document.getElementById('subject-quick-start-wrap').classList.add('hidden');
 document.getElementById('session-select-div').classList.remove('hidden');
 document.getElementById('subject-title').classList.add('hidden');
+var sarWn = document.getElementById('session-action-row');
+if (sarWn) {
+sarWn.classList.add('session-action-row--stack');
+sarWn.classList.remove('session-action-row--mock');
+}
 document.getElementById('session-subject-label').textContent =
 '적용 과목: ' + getPreferredSubjectSummaryHtml();
 updateSubjectRankHelp();
@@ -5796,7 +5851,7 @@ const cb = showAdmin
 ? `<label class="rank-admin-label"><input type="checkbox" class="rank-admin-cb" data-uid="${escapeAttr(uid)}" aria-label="${escapeAttr(uid)} 선택"></label>`
 : '';
 const posLabel = topRankIcon(i);
-const avatarHtml = (i < 3 && u.profile_photo)
+const avatarHtml = (i < 10 && u.profile_photo)
 ? `<img class="rank-avatar" src="${escapeAttr(String(u.profile_photo))}" width="48" height="48" alt="" loading="lazy">`
 : '';
 return `
