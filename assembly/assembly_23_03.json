@@ -35,7 +35,7 @@
     "id": 4,
     "session": "23-03",
     "question": "가공에 의한 줄무늬 방향의 기호 중 대략 동심원 모양을 나타내는 것은?",
-    "options": ["assembly/23_03/assembly_23_03_02_op1.png", "assembly/23_03/assembly_23_03_02_op2.png", "assembly/23_03/assembly_23_03_02_op3.png", "assembly/23_03/assembly_23_03_02_op4.png"],
+    "options": ["assembly/23_03/assembly_23_03_04_op1.png", "assembly/23_03/assembly_23_03_04_op2.png", "assembly/23_03/assembly_23_03_04_op3.png", "assembly/23_03/assembly_23_03_04_op4.png"],
     "answer": 1,
     "explanation": "기호 C는 가공 줄무늬가 중심에 대해 대략 동심원 모양임을 나타냅니다. ",
     "image_file": null
