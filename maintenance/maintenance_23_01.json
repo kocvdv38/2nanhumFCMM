@@ -105,7 +105,7 @@
     "options": ["1점 쇄선", "가는 실선", "굵은 파선", "굵은 실선"],
     "answer": 4,
     "explanation": "굵은 실선(외형선) : 대상물의 보이는 부분의 겉모양을 표시하는 선.",
-    "image_file": "table_lines.png"
+    "image_file": null
   },
   {
     "id": 13,
