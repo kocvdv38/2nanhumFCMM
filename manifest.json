@@ -27,6 +27,11 @@
     ],
     "maintenance": [
       {
+        "code": "23-01",
+        "path": "maintenance/maintenance_23_01.json",
+        "label": "2023년 1회차"
+      },
+      {
         "code": "23-03",
         "path": "maintenance/maintenance_23_03.json",
         "label": "2023년 3회차"
