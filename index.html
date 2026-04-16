@@ -2034,9 +2034,17 @@ let schoolWarSchool = '';
 let schoolWarCells = {};
 let schoolWarCellsRef = null;
 let schoolWarCellsHandler = null;
+let schoolWarAlertRef = null;
+let schoolWarAlertHandler = null;
+let schoolWarPrevCellsSnapshot = null;
 let schoolWarUserNames = {};
 let schoolWarUserColors = {};
 let schoolWarUserSchools = {};
+let modeAlertState = { schoolwar: [], king: [] };
+let modeAlertTargetOnClose = '';
+let kingRoomsAlertRef = null;
+let kingRoomsAlertHandler = null;
+let kingOpenRoomsSnapshot = null;
 const SCHOOL_WAR_ALLOWED_COLORS = ['#ff4d4f', '#ff922b', '#ffd43b', '#51cf66', '#364fc7', '#ae3ec9'];
 const SCHOOL_WAR_ALLY_COLOR = '#4dabf7';
 /** 학교 점령전: 한국 지도 (저장소 루트의 schattack/map_korea.png) */
@@ -3868,6 +3876,7 @@ document.getElementById('login-box').classList.add('hidden');
 document.getElementById('mode-box').classList.remove('hidden');
 loadPreferredSubjectsFromStorage();
 syncPreferredSubjectUi();
+startModeAlertListeners();
 updateBoardCommentsAuthUI();
 renderBoardComments();
 }
@@ -3970,6 +3979,7 @@ document.getElementById('mode-box').classList.remove('hidden');
 }
 async function logout() {
 if (!(await showCustomConfirm('로그아웃하고 첫 화면(로그인)으로 돌아갈까요?'))) return;
+stopModeAlertListeners();
 location.reload();
 }
 function saveProfile() {
@@ -4008,6 +4018,7 @@ removeProfilePhotoPending = false;
 document.getElementById('p-pw').value = '';
 const line = (user.name ? user.name + ' · ' : '') + user.id;
 document.getElementById('mode-user-line').textContent = line;
+startSchoolWarAlertListener();
 alert("저장되었습니다.");
 closeProfile();
 }).catch(() => alert("저장에 실패했습니다."));
@@ -4159,6 +4170,178 @@ function closeSchoolWarOwnerInfoModal() {
 var modal = document.getElementById('schoolwar-owner-modal');
 if (!modal) return;
 modal.classList.add('hidden');
+}
+function getOpenKingLobbyRoomsInfo(rootVal) {
+var out = [];
+var root = rootVal || {};
+Object.keys(root).forEach(function (code) {
+var v = root[code] || {};
+if (v.status === 'ended') return;
+if (v.status === 'lobby' && (v.round === 0 || v.round == null)) {
+out.push({
+code: code,
+subjectKey: v.subjectKey || 'all',
+createdAt: Number(v.createdAt) || 0
+});
+}
+});
+out.sort(function (a, b) { return b.createdAt - a.createdAt; });
+return out;
+}
+function updateModeAlertBadge(modeKey) {
+var badge = document.getElementById('mode-badge-' + modeKey);
+if (!badge) return;
+var cnt = (modeAlertState[modeKey] || []).length;
+badge.classList.toggle('mode-app-badge--on', cnt > 0);
+badge.textContent = cnt > 9 ? '9+' : String(cnt || '!');
+}
+function pushModeAlert(modeKey, message) {
+if (!modeAlertState[modeKey]) modeAlertState[modeKey] = [];
+modeAlertState[modeKey].push({
+message: String(message || '').trim(),
+at: Date.now()
+});
+updateModeAlertBadge(modeKey);
+}
+function clearModeAlerts(modeKey) {
+modeAlertState[modeKey] = [];
+updateModeAlertBadge(modeKey);
+}
+function openModeAlertModal(modeKey, targetMode) {
+var modal = document.getElementById('mode-alert-modal');
+var body = document.getElementById('mode-alert-modal-body');
+var rows = modeAlertState[modeKey] || [];
+if (!modal || !body) return;
+var titleEl = document.getElementById('mode-alert-modal-title');
+if (titleEl) titleEl.textContent = modeKey === 'king' ? '토너먼트 알림' : '학교 점령전 알림';
+body.innerHTML = rows.map(function (row) {
+return '<div style="padding:10px 0;border-bottom:1px solid #f1f3f5;">' + escapeHtml(row.message) + '</div>';
+}).join('') || '<div style="padding:4px 0;color:#666;">새 알림이 없습니다.</div>';
+modeAlertTargetOnClose = targetMode || '';
+modal.classList.remove('hidden');
+}
+function closeModeAlertModal() {
+var modal = document.getElementById('mode-alert-modal');
+if (modal) modal.classList.add('hidden');
+var target = modeAlertTargetOnClose;
+modeAlertTargetOnClose = '';
+if (target === 'schoolwar' || target === 'king') {
+clearModeAlerts(target);
+selectMode(target);
+}
+}
+function openSchoolWarFromMode() {
+if ((modeAlertState.schoolwar || []).length > 0) {
+openModeAlertModal('schoolwar', 'schoolwar');
+return;
+}
+selectMode('schoolwar');
+}
+function openKingFromMode() {
+if ((modeAlertState.king || []).length > 0) {
+openModeAlertModal('king', 'king');
+return;
+}
+selectMode('king');
+}
+function stopSchoolWarAlertListener() {
+if (schoolWarAlertRef && schoolWarAlertHandler) schoolWarAlertRef.off('value', schoolWarAlertHandler);
+schoolWarAlertRef = null;
+schoolWarAlertHandler = null;
+schoolWarPrevCellsSnapshot = null;
+}
+function getSchoolWarAlertStorageKey() {
+if (!user || !user.id || !user.school) return '';
+return 'schoolwar_alert_last_count_v1_' + encodeURIComponent(String(user.id)) + '_' + encodeURIComponent(String(user.school));
+}
+function loadSchoolWarLastSeenCount() {
+try {
+var key = getSchoolWarAlertStorageKey();
+if (!key) return null;
+var raw = localStorage.getItem(key);
+if (raw == null || raw === '') return null;
+var n = Number(raw);
+if (isNaN(n) || n < 0) return null;
+return n;
+} catch (e) {
+return null;
+}
+}
+function saveSchoolWarLastSeenCount(count) {
+try {
+var key = getSchoolWarAlertStorageKey();
+if (!key) return;
+var n = Math.max(0, Number(count) || 0);
+localStorage.setItem(key, String(n));
+} catch (e) {}
+}
+function startSchoolWarAlertListener() {
+stopSchoolWarAlertListener();
+if (!user || !user.id || !user.school) return;
+schoolWarAlertRef = db.ref('schoolWars/' + encodeURIComponent(user.school) + '/cells');
+schoolWarAlertHandler = function (snap) {
+var next = snap.val() || {};
+var currentMineCount = 0;
+Object.keys(next).forEach(function (cid) {
+if (String(next[cid] || '') === String(user.id)) currentMineCount++;
+});
+if (schoolWarPrevCellsSnapshot) {
+var lost = 0;
+Object.keys(schoolWarPrevCellsSnapshot).forEach(function (cid) {
+if (String(schoolWarPrevCellsSnapshot[cid] || '') !== String(user.id)) return;
+if (String(next[cid] || '') !== String(user.id)) lost++;
+});
+if (lost > 0) {
+pushModeAlert('schoolwar', '학교 점령전에서 내 점령 칸 ' + lost + '칸을 빼앗겼습니다.');
+}
+} else {
+var lastSeen = loadSchoolWarLastSeenCount();
+if (lastSeen != null && currentMineCount < lastSeen) {
+pushModeAlert('schoolwar', '로그아웃 중 내 점령 칸 ' + (lastSeen - currentMineCount) + '칸이 빼앗겼습니다.');
+}
+}
+schoolWarPrevCellsSnapshot = Object.assign({}, next);
+saveSchoolWarLastSeenCount(currentMineCount);
+};
+schoolWarAlertRef.on('value', schoolWarAlertHandler);
+}
+function stopKingRoomsAlertListener() {
+if (kingRoomsAlertRef && kingRoomsAlertHandler) kingRoomsAlertRef.off('value', kingRoomsAlertHandler);
+kingRoomsAlertRef = null;
+kingRoomsAlertHandler = null;
+kingOpenRoomsSnapshot = null;
+}
+function startKingRoomsAlertListener() {
+stopKingRoomsAlertListener();
+kingRoomsAlertRef = db.ref('kingRooms');
+kingRoomsAlertHandler = function (snap) {
+var rooms = getOpenKingLobbyRoomsInfo(snap.val());
+if (kingOpenRoomsSnapshot) {
+var prevCodes = {};
+kingOpenRoomsSnapshot.forEach(function (row) { prevCodes[row.code] = true; });
+var newRooms = rooms.filter(function (row) { return !prevCodes[row.code]; });
+	if (newRooms.length > 0) {
+var names = newRooms.slice(0, 3).map(function (row) {
+return row.code + ' (' + kingSubjectLabel(row.subjectKey) + ')';
+}).join(', ');
+pushModeAlert('king', '새 토너먼트 방이 열렸습니다. ' + names);
+}
+}
+kingOpenRoomsSnapshot = rooms.slice();
+};
+kingRoomsAlertRef.on('value', kingRoomsAlertHandler);
+}
+function startModeAlertListeners() {
+clearModeAlerts('schoolwar');
+clearModeAlerts('king');
+startSchoolWarAlertListener();
+startKingRoomsAlertListener();
+}
+function stopModeAlertListeners() {
+stopSchoolWarAlertListener();
+stopKingRoomsAlertListener();
+clearModeAlerts('schoolwar');
+clearModeAlerts('king');
 }
 function regenerateSchoolWarBonusCells() {
 const total = 2500;
