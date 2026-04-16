@@ -1733,10 +1733,12 @@ min-height: 108px;
 <p id="session-subject-label" style="font-size:14px;color:#555;margin:0 0 10px 0;"></p>
 <button type="button" class="btn-orange btn-wrong-note" onclick="startWrongNoteQuiz()">📕 오답노트</button>
 <select id="session-val" aria-label="회차 선택"><option value="">과목을 먼저 선택하세요</option></select>
-<div id="session-action-row" style="display:flex;gap:8px;align-items:stretch;flex-wrap:wrap;margin-top:10px;">
-<button type="button" class="btn-gray" style="flex:1;min-width:88px;" onclick="backToModeSelect()">모드 선택</button>
+<div id="session-action-row" style="margin-top:10px;">
+<div style="display:flex;gap:8px;align-items:stretch;flex-wrap:wrap;">
 <button type="button" class="btn-green" style="flex:1;min-width:88px;" onclick="startPracticeFromSelection()">이 회차로 시작</button>
 <button type="button" id="btn-resume-study" class="btn-blue hidden" style="flex:1;min-width:88px;" onclick="void(resumePracticeDailyFromStorage())">이어 공부하기</button>
+</div>
+<button type="button" class="btn-gray" style="width:100%;margin-top:8px;box-sizing:border-box;" onclick="backToModeSelect()">모드 선택</button>
 </div>
 <p id="resume-study-hint" class="hidden" style="font-size:13px;color:#555;margin:6px 0 0 0;">같은 과목에 저장된 진행이 있으면 저장된 회차·문제부터 이어갑니다. 다른 회차를 새로 풀려면 「이 회차로 시작」을 누르세요.</p>
 </div>
@@ -1750,8 +1752,8 @@ min-height: 108px;
 <div style="display:flex;gap:8px;align-items:stretch;flex-wrap:wrap;">
 <button type="button" class="btn-gray" style="flex:1;min-width:92px;" onclick="backToModeSelect()">모드 선택</button>
 <button type="button" class="btn-green" style="flex:1;min-width:92px;" onclick="startSchoolWarQuiz()">문제 풀기</button>
-<button type="button" id="schoolwar-school-picker-btn" class="btn-blue" onclick="openSchoolWarMapPickerModal()" aria-haspopup="dialog" style="flex:1;min-width:92px;">학교 선택</button>
 </div>
+<button type="button" id="schoolwar-school-picker-btn" class="btn-blue" onclick="openSchoolWarMapPickerModal()" aria-haspopup="dialog" style="width:100%;margin-top:8px;box-sizing:border-box;">학교 선택</button>
 <select id="schoolwar-school-select" class="hidden" tabindex="-1" aria-hidden="true">
 <option value="">학교 선택</option>
 <option value="군산기계공업고등학교">군산기계공업고</option>
