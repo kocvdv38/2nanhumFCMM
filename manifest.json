@@ -20,6 +20,11 @@
     ],
     "assembly": [
       {
+        "code": "23-03",
+        "path": "assembly/assembly_23_03.json",
+        "label": "2023년 3회차"
+      },
+      {
         "code": "24-04",
         "path": "assembly/assembly_24_04.json",
         "label": "2024년 4회차"
