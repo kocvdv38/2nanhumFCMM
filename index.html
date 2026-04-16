@@ -5225,7 +5225,7 @@ el.style.pointerEvents = 'none';
 }
 syncPrevQuestionBtn();
 }
-async function schoolWarAutoLoseCells(count) {
+async function schoolWarAutoLoseCells(count, preferredCellIds) {
 if (!user || !user.id || !schoolWarSchool) return 0;
 let need = Math.max(0, Number(count) || 0);
 if (!need) return 0;
@@ -5234,7 +5234,24 @@ for (let i = 0; i < 2500; i++) {
 if (String(schoolWarCells[String(i)] || '') === String(user.id)) mine.push(String(i));
 }
 if (!mine.length) return 0;
+const preferred = Array.isArray(preferredCellIds) ? preferredCellIds.map(function (x) { return String(x); }) : [];
 let lost = 0;
+for (let p = 0; p < preferred.length && need > 0; p++) {
+const prefId = preferred[p];
+const pos = mine.indexOf(prefId);
+if (pos < 0) continue;
+mine.splice(pos, 1);
+const prefRef = db.ref('schoolWars/' + encodeURIComponent(schoolWarSchool) + '/cells/' + prefId);
+let prefOk = false;
+await prefRef.transaction(function (owner) {
+if (String(owner || '') !== String(user.id)) return owner;
+return null;
+}, function (err, committed) { prefOk = !err && !!committed; });
+if (prefOk) {
+need--;
+lost++;
+}
+}
 while (need > 0 && mine.length > 0) {
 const idx = Math.floor(Math.random() * mine.length);
 const cellId = mine.splice(idx, 1)[0];
@@ -5282,11 +5299,6 @@ schoolWarCaptureQuota = 0;
 schoolWarSelectedCells = {};
 updateSchoolWarSelectionUi();
 renderSchoolWarMap();
-let lost = 0;
-if ((schoolWarPendingLoseCount || 0) > 0) {
-lost = await schoolWarAutoLoseCells(schoolWarPendingLoseCount || 0);
-}
-schoolWarPendingLoseCount = 0;
 const root = db.ref('schoolWars/' + encodeURIComponent(schoolWarSchool) + '/cells');
 let done = 0;
 const capturedIds = [];
@@ -5311,6 +5323,13 @@ if (bonusExtraQuota > 0) {
 bonusExtraDone = await captureSchoolWarExtraCells(bonusExtraQuota);
 alert('🎁 보너스칸 점령 성공!\n보너스칸 ' + bonusHitCount + '개로 추가 점령 기회 ' + bonusExtraQuota + '칸이 열렸고, 실제 ' + bonusExtraDone + '칸을 더 점령했습니다.');
 }
+try {
+const freshSnap = await root.once('value');
+schoolWarCells = freshSnap.val() || {};
+} catch (e) {}
+const pendingLose = Math.max(0, Number(schoolWarPendingLoseCount) || 0);
+schoolWarPendingLoseCount = 0;
+const lost = pendingLose > 0 ? await schoolWarAutoLoseCells(pendingLose, capturedIds) : 0;
 updateSchoolWarSelectionUi();
 renderSchoolWarMap();
 renderSchoolWarStats();
