@@ -1783,11 +1783,14 @@ min-height: 108px;
 <div id="schoolwar-map-picker-modal" class="schoolwar-picker-modal hidden" role="dialog" aria-modal="true" aria-labelledby="schoolwar-map-picker-title" onclick="if (event.target === this) closeSchoolWarMapPickerModal()">
 <div class="schoolwar-picker-card" onclick="event.stopPropagation()">
 <h3 id="schoolwar-map-picker-title">지역을 눌러 학교 선택</h3>
-<p class="schoolwar-picker-hint">지도에서 지역을 누르면 그 지역에 묶어 둔 학교 목록이 열립니다. (이미지: <code style="background:#f1f3f5;padding:2px 6px;border-radius:4px;">schattack/map_korea.png</code>)<br><span style="color:#868e96;">클릭 영역은 이미지마다 다릅니다. 아래를 켜서 글자와 맞는지 확인한 뒤, 코드의 <code style="background:#f1f3f5;padding:1px 5px;border-radius:4px;">SCHOOLWAR_MAP_REGION_LAYOUT</code> 의 l,t,w,h(%)만 조정하면 됩니다.</span></p>
+<p class="schoolwar-picker-hint" id="schoolwar-map-hint-public">지도에서 지역을 누르면 해당 지역의 학교 목록이 열립니다.</p>
+<p class="schoolwar-picker-hint hidden" id="schoolwar-map-hint-admin">지도에서 지역을 누르면 그 지역에 묶어 둔 학교 목록이 열립니다. (이미지: <code style="background:#f1f3f5;padding:2px 6px;border-radius:4px;">schattack/map_korea.png</code>)<br><span style="color:#868e96;">클릭 영역은 이미지마다 다릅니다. 아래를 켜서 글자와 맞는지 확인한 뒤, 코드의 <code style="background:#f1f3f5;padding:1px 5px;border-radius:4px;">SCHOOLWAR_MAP_REGION_LAYOUT</code> 의 l,t,w,h(%)만 조정하면 됩니다.</span></p>
+<div id="schoolwar-map-debug-admin-wrap" class="hidden">
 <label style="font-size:12px;color:#495057;display:flex;align-items:flex-start;gap:8px;margin:0 0 10px 0;cursor:pointer;text-align:left;line-height:1.45;">
 <input type="checkbox" id="schoolwar-map-debug-cb" onchange="onSchoolWarMapDebugChange(this)" style="margin-top:3px;flex-shrink:0;">
 <span>히트 영역 표시 (빨간 점선·지역명) — 실제 지도 글자와 겹치는지 확인용</span>
 </label>
+</div>
 <div class="schoolwar-map-stage" id="schoolwar-map-stage">
 <img id="schoolwar-map-img" src="schattack/map_korea.png" alt="대한민국 행정구역 지도">
 <div id="schoolwar-map-hits"></div>
@@ -4344,9 +4347,27 @@ openSchoolWarRegionSchoolModal(r.id, r.name);
 wrap.appendChild(b);
 });
 }
+function syncSchoolWarMapPickerAdminOnlyUi() {
+var admin = typeof isAdmin === 'function' && isAdmin();
+var hintAdmin = document.getElementById('schoolwar-map-hint-admin');
+var dbgWrap = document.getElementById('schoolwar-map-debug-admin-wrap');
+if (hintAdmin) {
+if (admin) hintAdmin.classList.remove('hidden');
+else hintAdmin.classList.add('hidden');
+}
+if (dbgWrap) {
+if (admin) dbgWrap.classList.remove('hidden');
+else dbgWrap.classList.add('hidden');
+}
+}
 function syncSchoolWarMapDebugUi() {
 var stage = document.getElementById('schoolwar-map-stage');
 var cb = document.getElementById('schoolwar-map-debug-cb');
+if (typeof isAdmin !== 'function' || !isAdmin()) {
+if (cb) cb.checked = false;
+if (stage) stage.classList.remove('schoolwar-map-debug');
+return;
+}
 var on = false;
 try {
 on = localStorage.getItem('catch_cert_schoolwar_map_debug') === '1';
@@ -4357,6 +4378,7 @@ if (on) stage.classList.add('schoolwar-map-debug');
 else stage.classList.remove('schoolwar-map-debug');
 }
 function onSchoolWarMapDebugChange(el) {
+if (typeof isAdmin !== 'function' || !isAdmin()) return;
 var on = !!(el && el.checked);
 try {
 localStorage.setItem('catch_cert_schoolwar_map_debug', on ? '1' : '0');
@@ -4372,6 +4394,7 @@ var m = document.getElementById('schoolwar-map-picker-modal');
 if (!m) return;
 var im = document.getElementById('schoolwar-map-img');
 if (im) im.src = SCHOOLWAR_MAP_IMAGE_URL;
+syncSchoolWarMapPickerAdminOnlyUi();
 syncSchoolWarMapDebugUi();
 m.classList.remove('hidden');
 m.setAttribute('aria-hidden', 'false');
