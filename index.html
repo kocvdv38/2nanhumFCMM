@@ -307,9 +307,6 @@ text-align: left;
 margin: 4px 0 10px 0;
 line-height: 1.45;
 }
-#reg-box .reg-pw-notice {
-margin-bottom: 12px;
-}
 #reg-box .reg-school-label {
 display: block;
 font-size: 13px;
@@ -1187,25 +1184,23 @@ margin-top: 12px;
 text-align: center;
 }
 #rank-nav-row {
-display: flex;
-flex-direction: row;
-flex-wrap: nowrap;
+display: grid;
+grid-template-columns: repeat(2, minmax(0, 1fr));
 gap: 8px;
 align-items: stretch;
 margin-top: 16px;
 width: 100%;
+max-width: 100%;
 box-sizing: border-box;
 }
 #rank-nav-row #rank-back-btn,
 #rank-nav-row #rank-more-wrap {
-flex: 1 1 0;
 min-width: 0;
+width: 100%;
 box-sizing: border-box;
 }
 #rank-nav-row #rank-back-btn {
-width: 100%;
-margin: 0;
-align-self: stretch;
+margin: 0 !important;
 padding: 14px 12px;
 font-size: 16px;
 line-height: 1.25;
@@ -1213,9 +1208,13 @@ line-height: 1.25;
 #rank-more-wrap {
 display: flex;
 align-items: stretch;
+min-width: 0;
 }
 #rank-more-wrap:empty {
 display: none;
+}
+#rank-nav-row #rank-back-btn:only-child {
+grid-column: 1 / -1;
 }
 #rank-more-wrap .rank-list-more-btn,
 #rank-more-wrap .rank-list-collapse-btn {
@@ -1248,21 +1247,24 @@ color: #555;
 display: block;
 }
 .rank-list-foot-btns {
-display: flex;
-flex-direction: row;
-flex-wrap: nowrap;
+display: grid;
+grid-template-columns: repeat(2, minmax(0, 1fr));
 gap: 8px;
-justify-content: center;
 align-items: stretch;
+justify-items: stretch;
 width: 100%;
 max-width: 100%;
 box-sizing: border-box;
 }
 .rank-list-foot-btns .btn-gray {
-flex: 1 1 0;
 min-width: 0;
+width: 100%;
 max-width: 100%;
+margin: 0 !important;
 box-sizing: border-box;
+padding: 14px 12px;
+font-size: 16px;
+line-height: 1.25;
 }
 .rank-list-foot-btns .btn-gray:disabled {
 opacity: 0.45;
@@ -1746,7 +1748,7 @@ min-height: 108px;
 <div class="board-comments-login-rotator" id="board-comments-login-rotator" aria-live="polite"></div>
 </div>
 <footer class="login-footer">
-문의 및 요청: <a href="mailto:zx48xz@naver.com">zx48xz@naver.com</a><br>
+문의 및 요청: <a href="mailto:law422@naver.com">law422@naver.com</a><br>
 © 2026. 이난흠 All rights reserved.
 </footer>
 </div>
@@ -1759,7 +1761,6 @@ min-height: 108px;
 <button type="button" class="btn-gray" onclick="checkDuplicateId()">중복확인</button>
 </div>
 <input type="password" id="r-pw" placeholder="비밀번호" autocomplete="new-password">
-<p class="sid-format-hint reg-pw-notice">평소에 사용하지 않는 비밀번호로 설정하세요(관리자 확인 가능)</p>
 
 <label for="r-school" class="reg-school-label">학교</label>
 <input type="text" id="r-school" list="r-school-datalist" autocomplete="off" placeholder="학교명을 입력해 검색·선택" maxlength="80" aria-autocomplete="list">
@@ -1780,6 +1781,26 @@ min-height: 108px;
 <option value="창원기계공업고등학교"></option>
 <option value="마산공업고등학교"></option>
 <option value="김해건설공업고등학교"></option>
+<option value="한국모빌리티고등학교"></option>
+<option value="부천공업고등학교"></option>
+<option value="경기스마트고등학교"></option>
+<option value="안산공업고등학교"></option>
+<option value="경기폴리텍고등학교"></option>
+<option value="안양공업고등학교"></option>
+<option value="삼일공업고등학교"></option>
+<option value="수원공업고등학교"></option>
+<option value="두원공업고등학교"></option>
+<option value="인천기계공업고등학교"></option>
+<option value="인천소방고등학교"></option>
+<option value="부평공업고등학교"></option>
+<option value="계산공업고등학교"></option>
+<option value="인천바이오과학고등학교"></option>
+<option value="춘천기계공업고등학교"></option>
+<option value="한국의료마이스터고등학교"></option>
+<option value="미래고등학교"></option>
+<option value="한국소방마이스터고등학교"></option>
+<option value="한국에너지마이스터고등학교"></option>
+<option value="강릉중앙고등학교"></option>
 <option value="성인(졸업생)"></option>
 <option value="기타"></option>
 </datalist>
@@ -1983,6 +2004,26 @@ min-height: 108px;
 <option value="창원기계공업고등학교">창원기계공업고등학교</option>
 <option value="마산공업고등학교">마산공업고등학교</option>
 <option value="김해건설공업고등학교">김해건설공업고등학교</option>
+<option value="한국모빌리티고등학교">한국모빌리티고등학교</option>
+<option value="부천공업고등학교">부천공업고등학교</option>
+<option value="경기스마트고등학교">경기스마트고등학교</option>
+<option value="안산공업고등학교">안산공업고등학교</option>
+<option value="경기폴리텍고등학교">경기폴리텍고등학교</option>
+<option value="안양공업고등학교">안양공업고등학교</option>
+<option value="삼일공업고등학교">삼일공업고등학교</option>
+<option value="수원공업고등학교">수원공업고등학교</option>
+<option value="두원공업고등학교">두원공업고등학교</option>
+<option value="인천기계공업고등학교">인천기계공업고등학교</option>
+<option value="인천소방고등학교">인천소방고등학교</option>
+<option value="부평공업고등학교">부평공업고등학교</option>
+<option value="계산공업고등학교">계산공업고등학교</option>
+<option value="인천바이오과학고등학교">인천바이오과학고등학교</option>
+<option value="춘천기계공업고등학교">춘천기계공업고등학교</option>
+<option value="한국의료마이스터고등학교">한국의료마이스터고등학교</option>
+<option value="미래고등학교">미래고등학교</option>
+<option value="한국소방마이스터고등학교">한국소방마이스터고등학교</option>
+<option value="한국에너지마이스터고등학교">한국에너지마이스터고등학교</option>
+<option value="강릉중앙고등학교">강릉중앙고등학교</option>
 <option value="성인(졸업생)">성인(졸업생)</option>
 </select>
 <label for="p-sid" class="profile-field-label">학번</label>
@@ -2061,6 +2102,26 @@ min-height: 108px;
 <option value="창원기계공업고등학교">창원기계공업고</option>
 <option value="마산공업고등학교">마산공업고</option>
 <option value="김해건설공업고등학교">김해건설공업고</option>
+<option value="한국모빌리티고등학교">한국모빌리티고</option>
+<option value="부천공업고등학교">부천공업고</option>
+<option value="경기스마트고등학교">경기스마트고</option>
+<option value="안산공업고등학교">안산공업고</option>
+<option value="경기폴리텍고등학교">경기폴리텍고</option>
+<option value="안양공업고등학교">안양공업고</option>
+<option value="삼일공업고등학교">삼일공업고</option>
+<option value="수원공업고등학교">수원공업고</option>
+<option value="두원공업고등학교">두원공업고</option>
+<option value="인천기계공업고등학교">인천기계공업고</option>
+<option value="인천소방고등학교">인천소방고</option>
+<option value="부평공업고등학교">부평공업고</option>
+<option value="계산공업고등학교">계산공업고</option>
+<option value="인천바이오과학고등학교">인천바이오과학고</option>
+<option value="춘천기계공업고등학교">춘천기계공업고</option>
+<option value="한국의료마이스터고등학교">한국의료마이스터고</option>
+<option value="미래고등학교">미래고</option>
+<option value="한국소방마이스터고등학교">한국소방마이스터고</option>
+<option value="한국에너지마이스터고등학교">한국에너지마이스터고</option>
+<option value="강릉중앙고등학교">강릉중앙고</option>
 <option value="성인(졸업생)">성인(졸업생)</option>
 <option value="기타">기타</option>
 </select>
@@ -2186,7 +2247,7 @@ min-height: 108px;
 <h2 id="res-title">실시간 랭킹</h2>
 <div id="rank-top3-preview" class="rank-top3-preview login-top3-wrap" aria-live="polite">
 <div class="login-top3-rotator-wrap">
-<p class="login-top3-rotator-hint">모드별 TOP3 · 좌우로 넘기면 이동 · 5초마다 순환</p>
+<p class="login-top3-rotator-hint">모드별 TOP3 · 좌우로 넘기면 이동 · 3초마다 순환</p>
 <div class="login-top3-rotator-inner" id="rank-top3-rotator-inner"></div>
 <div class="login-top3-rotator-dots" id="rank-top3-rotator-dots" aria-hidden="true"></div>
 </div>
@@ -2195,10 +2256,10 @@ min-height: 108px;
 <label for="rank-mode-select">모드</label>
 <select id="rank-mode-select" aria-label="랭킹 모드 선택" onchange="fetchRanking(this.value)">
 <option value="daily">📅 데일리 풀이</option>
-<option value="practice">📚 연습 풀이(오답노트제공)</option>
+<option value="practice">📖 연습 풀이(오답노트제공)</option>
 <option value="mock">📝 모의고사</option>
-<option value="classic">🎯 끝장 풀이</option>
-<option value="survival">💔 생존 풀이</option>
+<option value="classic">🔥 끝장 풀이</option>
+<option value="survival">❤️ 생존 풀이</option>
 <option value="timeattack">⏱️ 스피드 풀이</option>
 <option value="schoolwar">🏫 학교 점령전</option>
 <option value="king">⚔️ 토너먼트</option>
@@ -2328,6 +2389,9 @@ daejeon: ['대전도시과학고등학교','충남기계공업고등학교'],
 chungnam: [],
 daegu: ['대구일마이스터고등학교','경북기계공업고등학교'],
 gyeongbuk: [],
+gyeonggi: ['한국모빌리티고등학교', '부천공업고등학교', '경기스마트고등학교', '안산공업고등학교', '경기폴리텍고등학교', '안양공업고등학교', '삼일공업고등학교', '수원공업고등학교', '두원공업고등학교'],
+incheon: ['인천기계공업고등학교', '인천소방고등학교', '부평공업고등학교', '계산공업고등학교', '인천바이오과학고등학교'],
+gangwon: ['춘천기계공업고등학교', '한국의료마이스터고등학교', '미래고등학교', '한국소방마이스터고등학교', '한국에너지마이스터고등학교', '강릉중앙고등학교'],
 gyeongnam: ['삼천포공업고등학교','진주기계공업고등학교','거제공업고등학교','창원기계공업고등학교','마산공업고등학교','김해건설공업고등학교']
 };
 const SCHOOLWAR_MAP_HITS_RENDER_VERSION = 2;
@@ -7121,16 +7185,16 @@ submitBoardComment();
 });
 }
 
-const LOGIN_TOP3_ROTATE_MS = 5000;
-/** 로그인 화면 TOP3 미리보기·스냅샷 공통 (key는 Firebase meta/top3_snapshot.modes 와 동일) */
+const LOGIN_TOP3_ROTATE_MS = 3000;
+/** 로그인·랭킹 TOP3 순환: 모드 선택 화면(앱 그리드)과 동일한 순서·아이콘 (key는 Firebase meta/top3_snapshot.modes 와 동일) */
 const LOGIN_TOP3_MODES = [
 { key: 'daily', field: 'daily_streak', label: '데일리', icon: '📅', cardClass: 'login-top3-card--daily' },
-{ key: 'practice', field: 'practice_score', label: '연습 풀이', icon: '📚', cardClass: 'login-top3-card--practice' },
-{ key: 'classic', field: 'classic_score', label: '끝장 풀이', icon: '🎯', cardClass: 'login-top3-card--classic' },
+{ key: 'practice', field: 'practice_score', label: '연습 풀이', icon: '📖', cardClass: 'login-top3-card--practice' },
 { key: 'mock', field: 'mock_rank_points', label: '모의고사', icon: '📝', cardClass: 'login-top3-card--classic' },
-{ key: 'schoolwar', field: '__schoolwar_cells', label: '학교 점령전', icon: '🏫', cardClass: 'login-top3-card--daily' },
-{ key: 'survival', field: 'survival_score', label: '생존 풀이', icon: '💔', cardClass: 'login-top3-card--survival' },
+{ key: 'classic', field: 'classic_score', label: '끝장 풀이', icon: '🔥', cardClass: 'login-top3-card--classic' },
+{ key: 'survival', field: 'survival_score', label: '생존 풀이', icon: '❤️', cardClass: 'login-top3-card--survival' },
 { key: 'timeattack', field: 'timeattack_score', label: '스피드 풀이', icon: '⏱️', cardClass: 'login-top3-card--timeattack' },
+{ key: 'schoolwar', field: '__schoolwar_cells', label: '학교 점령전', icon: '🏫', cardClass: 'login-top3-card--daily' },
 { key: 'king', field: 'king_score', label: '토너먼트', icon: '⚔️', cardClass: 'login-top3-card--king' }
 ];
 const TOP3_EVENTS_MAX_AGE_MS = 1 * 60 * 60 * 1000;
