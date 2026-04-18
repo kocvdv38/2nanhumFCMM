@@ -3944,7 +3944,7 @@ return user && ADMIN_USER_IDS.includes(String(user.id));
 function isForbiddenSignupUserId(id) {
 if(!id) return false;
 const t = String(id).trim();
-return t.toLowerCase().includes('admin') || t.includes('관리자');
+return t.toLowerCase().includes('') || t.includes('관리자');
 }
 
 /** 이메일: 아이디@도메인.com (예: user@gmail.com, user@naver.com) */
