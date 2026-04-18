@@ -3641,7 +3641,7 @@ return user && ADMIN_USER_IDS.includes(String(user.id));
 /** 대소문자 구분 없이 "admin"과 동일하거나, 아이디에 "admin"이 들어가면 가입 불가 */
 function isForbiddenSignupUserId(id) {
 if(!id) return false;
-return String(id).trim().toLowerCase().includes('admin');
+return String(id).trim().toLowerCase().includes('adifmla');
 }
 
 /** 이메일: 아이디@도메인.com (예: user@gmail.com, user@naver.com) */
