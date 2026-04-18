@@ -517,6 +517,20 @@ outline: none;
 .schoolwar-map-hit:focus-visible {
 box-shadow: 0 0 0 2px #fff, 0 0 0 4px #0d6efd;
 }
+/* 일반 계정: 지역 히트 영역 hover/클릭 포커스 시 반응 숨김 (관리자는 유지) */
+.schoolwar-map-stage.schoolwar-map-hide-hit-feedback .schoolwar-map-hit {
+-webkit-tap-highlight-color: transparent;
+}
+.schoolwar-map-stage.schoolwar-map-hide-hit-feedback .schoolwar-map-hit:hover,
+.schoolwar-map-stage.schoolwar-map-hide-hit-feedback .schoolwar-map-hit:focus {
+background: transparent;
+}
+.schoolwar-map-stage.schoolwar-map-hide-hit-feedback .schoolwar-map-hit:focus-visible {
+box-shadow: none;
+}
+.schoolwar-map-stage.schoolwar-map-hide-hit-feedback .schoolwar-map-hit:active {
+background: transparent;
+}
 /* 조정용: 실제 PNG와 겹치는지 확인 */
 .schoolwar-map-stage.schoolwar-map-debug .schoolwar-map-hit {
 background: rgba(220, 53, 69, 0.2);
@@ -593,6 +607,31 @@ font-size: 12px;
 color: #6c757d;
 margin: 0 0 4px 0;
 line-height: 1.45;
+}
+.schoolwar-level-wrap {
+text-align: center;
+margin: 0 0 10px 0;
+padding: 10px 12px;
+background: linear-gradient(180deg, #f8fafc 0%, #fff 100%);
+border: 1px solid #e9ecef;
+border-radius: 12px;
+}
+.schoolwar-level-wrap.hidden {
+display: none !important;
+}
+.schoolwar-level-img {
+display: block;
+max-width: min(320px, 100%);
+height: auto;
+margin: 0 auto 6px auto;
+border-radius: 10px;
+box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+.schoolwar-level-meta {
+margin: 0;
+font-size: 13px;
+font-weight: 600;
+color: #495057;
 }
 .wrong-review-loading-backdrop {
 position: fixed;
@@ -1630,6 +1669,7 @@ min-height: 108px;
 <option value="창원기계공업고등학교"></option>
 <option value="마산공업고등학교"></option>
 <option value="김해건설공업고등학교"></option>
+<option value="성인(졸업생)"></option>
 <option value="기타"></option>
 </datalist>
 <p class="reg-school-hint">글자를 입력하면 목록이 좁혀집니다. 목록에서 고르거나, 등록된 학교명을 그대로 입력해 주세요.</p>
@@ -1832,6 +1872,7 @@ min-height: 108px;
 <option value="창원기계공업고등학교">창원기계공업고등학교</option>
 <option value="마산공업고등학교">마산공업고등학교</option>
 <option value="김해건설공업고등학교">김해건설공업고등학교</option>
+<option value="성인(졸업생)">성인(졸업생)</option>
 </select>
 <label for="p-sid" class="profile-field-label">학번</label>
 <input type="text" id="p-sid" placeholder="학번 (5자리)" inputmode="numeric">
@@ -1907,10 +1948,15 @@ min-height: 108px;
 <option value="창원기계공업고등학교">창원기계공업고</option>
 <option value="마산공업고등학교">마산공업고</option>
 <option value="김해건설공업고등학교">김해건설공업고</option>
+<option value="성인(졸업생)">성인(졸업생)</option>
 <option value="기타">기타</option>
 </select>
 </div>
 <p id="schoolwar-status" style="font-size:13px;color:#666;margin:8px 0;">학교를 선택하세요.</p>
+<div id="schoolwar-level-wrap" class="schoolwar-level-wrap hidden" aria-live="polite">
+<img id="schoolwar-level-img" class="schoolwar-level-img" src="schattack/school_lv1.png" alt="학교 점령 레벨">
+<p id="schoolwar-level-meta" class="schoolwar-level-meta"></p>
+</div>
 <div style="display:flex;gap:8px;align-items:center;justify-content:center;margin:6px 0 10px 0;">
 <label for="schoolwar-color" style="font-size:13px;color:#555;">내 점령 색상</label>
 <select id="schoolwar-color" style="width:auto;min-width:130px;padding:6px 8px;border:1px solid #ddd;border-radius:6px;">
@@ -2101,6 +2147,39 @@ const SCHOOL_WAR_ALLOWED_COLORS = ['#ff4d4f', '#ff922b', '#ffd43b', '#51cf66', '
 const SCHOOL_WAR_ALLY_COLOR = '#4dabf7';
 /** 학교 점령전: 한국 지도 (저장소 루트의 schattack/map_korea.png) */
 const SCHOOLWAR_MAP_IMAGE_URL = 'schattack/map_korea.png';
+/** 학교 전체 점령 칸 수 → 레벨 일러스트 (schattack/school_lv1~5.png) */
+function schoolWarOccupiedCellCount() {
+var cells = schoolWarCells || {};
+var n = 0;
+Object.keys(cells).forEach(function (k) {
+if (String(cells[k] || '').trim()) n++;
+});
+return n;
+}
+function schoolWarLevelForOccupiedCount(n) {
+var c = Math.max(0, Math.min(2500, Number(n) || 0));
+if (c <= 100) return { lv: 1, src: 'schattack/school_lv1.png' };
+if (c <= 800) return { lv: 2, src: 'schattack/school_lv2.png' };
+if (c <= 1500) return { lv: 3, src: 'schattack/school_lv3.png' };
+if (c <= 2200) return { lv: 4, src: 'schattack/school_lv4.png' };
+return { lv: 5, src: 'schattack/school_lv5.png' };
+}
+function updateSchoolWarLevelUi() {
+var wrap = document.getElementById('schoolwar-level-wrap');
+var img = document.getElementById('schoolwar-level-img');
+var meta = document.getElementById('schoolwar-level-meta');
+if (!wrap || !img || !meta) return;
+if (!schoolWarSchool) {
+wrap.classList.add('hidden');
+return;
+}
+wrap.classList.remove('hidden');
+var total = schoolWarOccupiedCellCount();
+var info = schoolWarLevelForOccupiedCount(total);
+img.src = info.src;
+img.alt = '학교 점령 LV' + info.lv + ' (전체 점령 ' + total + '칸)';
+meta.textContent = '전체 점령 ' + total + '칸 · LV' + info.lv;
+}
 /** 지도 클릭 영역(%). 실제 PNG에 맞게 조정 가능. z는 겹침 시 위쪽 우선. */
 const SCHOOLWAR_MAP_REGION_LAYOUT = [
 { id: 'ulleung', name: '울릉', l: 78, t: 14, w: 11, h: 13, z: 5 },
@@ -2125,6 +2204,8 @@ const SCHOOLWAR_MAP_REGION_LAYOUT = [
 ];
 /** 지역 id → 점령전에 등록된 학교 value 목록 */
 const SCHOOLWAR_REGION_SCHOOLS = {
+ulleung: ['기타'],
+dokdo: ['성인(졸업생)'],
 jeonbuk: ['군산기계공업고등학교', '수소에너지고등학교', '이리공업고등학교', '전북기계공업고등학교', '전북자동차고등학교', '전주공업고등학교'],
 daejeon: ['대전도시과학고등학교','충남기계공업고등학교'],
 chungnam: [],
@@ -4642,6 +4723,7 @@ return { uid: uid, c: cnt[uid] };
 }).sort(function (a, b) { return b.c - a.c; });
 if (!arr.length) {
 st.textContent = '아직 점령된 땅이 없습니다.';
+updateSchoolWarLevelUi();
 return;
 }
 const top = arr.slice(0, 12).map(function (r) {
@@ -4650,6 +4732,7 @@ const pct = ((r.c / 2500) * 100).toFixed(2);
 return '<div>' + escapeHtml(name) + ' · <b>' + r.c + '칸</b> (' + pct + '%)</div>';
 });
 st.innerHTML = top.join('');
+updateSchoolWarLevelUi();
 }
 function detachSchoolWarListener() {
 if (schoolWarCellsRef && schoolWarCellsHandler) schoolWarCellsRef.off('value', schoolWarCellsHandler);
@@ -4729,12 +4812,12 @@ return 0;
 function shortSchoolNameForSelect(name) {
 var s = String(name || '').trim();
 if (!s) return s;
-if (s === '기타') return s;
+if (s === '기타' || s === '성인(졸업생)') return s;
 return s.replace(/고등학교$/, '고');
 }
-function formatSchoolWarStatusLine(school, rest) {
-if (String(school || '').trim() === '전북기계공업고등학교') return rest;
-return '선택 학교: ' + school + ' · ' + rest;
+/** 점령전 상태 줄: 학교명은 「학교 선택」버튼에 이미 표시되므로 rest(남은 문제·정오답 등)만 표시 */
+function formatSchoolWarStatusLine(_school, rest) {
+return rest;
 }
 async function refreshSchoolWarSchoolSelectOccupiedCounts() {
 var sel = document.getElementById('schoolwar-school-select');
@@ -4796,6 +4879,7 @@ function syncSchoolWarMapPickerAdminOnlyUi() {
 var admin = typeof isAdmin === 'function' && isAdmin();
 var hintAdmin = document.getElementById('schoolwar-map-hint-admin');
 var dbgWrap = document.getElementById('schoolwar-map-debug-admin-wrap');
+var stage = document.getElementById('schoolwar-map-stage');
 if (hintAdmin) {
 if (admin) hintAdmin.classList.remove('hidden');
 else hintAdmin.classList.add('hidden');
@@ -4803,6 +4887,10 @@ else hintAdmin.classList.add('hidden');
 if (dbgWrap) {
 if (admin) dbgWrap.classList.remove('hidden');
 else dbgWrap.classList.add('hidden');
+}
+if (stage) {
+if (admin) stage.classList.remove('schoolwar-map-hide-hit-feedback');
+else stage.classList.add('schoolwar-map-hide-hit-feedback');
 }
 }
 function syncSchoolWarMapDebugUi() {
