@@ -52,7 +52,7 @@
       "JF"
     ],
     "answer": 3,
-    "explanation": "JF는 줄 다듬질 가공을 나타내는 기호입니다. (FJ: 선반가공, FP: 평삭가공, FF: 브로칭가공 등)",
+    "explanation": "FF는 줄 다듬질 가공을 나타내는 기호입니다.",
     "image_file": null
   },
   {
@@ -80,7 +80,7 @@
       "lathe/23_01/lathe_23_01_06_op4.png"
     ],
     "answer": 3,
-    "explanation": "호의 길이를 표시할 때는 치수 숫자 위에 호(arc) 모양의 기호를 씌워서 표시합니다.",
+    "explanation": "1-변의 길이 치수, 2-현의 길이 치수, 4- 각도 치수",
     "image_file": null
   },
   {
@@ -109,7 +109,7 @@
     ],
     "answer": 4,
     "explanation": "핸들, 벨트 풀리, 기어 등의 바퀴 암, 리브, 훅 등을 90도 회전시켜 단면을 표시하는 방법은 회전도시단면도입니다.",
-    "image_file": lathe/23_01/lathe_23_01_08.png
+    "image_file": "lathe/23_01/lathe_23_01_08.png"
   },
   {
     "id": 9,
