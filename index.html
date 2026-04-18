@@ -6130,7 +6130,8 @@ out[schoolName] = (out[schoolName] || 0) + 1;
 return out;
 }
 async function applySchoolWarCountsToUsers(arr) {
-if (!Array.isArray(arr)) return arr;
+if (!Array.isArray(arr)) return {};
+var totalOccupiedMap = {};
 try {
 const uidSchoolMap = {};
 arr.forEach(function (u) {
@@ -6138,6 +6139,7 @@ uidSchoolMap[String(u.id)] = String(u.school || '').trim();
 });
 const swSnap = await db.ref('schoolWars').once('value');
 const swVal = swSnap.val();
+totalOccupiedMap = buildSchoolWarOccupiedCountMap(swVal);
 const counts = computeSchoolWarCountsFromMap(swVal);
 const schoolOwnedCounts = computeSchoolWarOwnedCountsBySchool(swVal, uidSchoolMap);
 arr.forEach(function (u) {
@@ -6152,7 +6154,7 @@ if (u.__schoolwar_cells == null) u.__schoolwar_cells = 0;
 if (u.__schoolwar_school_owned == null) u.__schoolwar_school_owned = 0;
 });
 }
-return arr;
+return totalOccupiedMap;
 }
 function getMockPointByConvertedScore(score) {
 const s = Math.max(0, Number(score) || 0);
@@ -6210,8 +6212,9 @@ const cnt = Number(user.mock_submit_count) || 0;
 const last = formatScore2(user.mock_last_score || 0);
 el.innerHTML = `<div class="rank-my-box"><b>나의 기록</b> · 누적 <strong>${pts}</strong>점 · 제출 <strong>${cnt}</strong>회 · 최근 환산 <strong>${last}</strong>점${extra}</div>`;
 } else if (rankMode === 'schoolwar') {
-const cnt = Number(user.__schoolwar_cells || 0);
-el.innerHTML = `<div class="rank-my-box"><b>나의 기록</b> · 현재 점령 <strong>${cnt}</strong>칸${extra}</div>`;
+const own = Number(user.__schoolwar_school_owned || 0);
+const tot = Number(user.__schoolwar_board_total != null ? user.__schoolwar_board_total : 0);
+el.innerHTML = `<div class="rank-my-box"><b>나의 기록</b> · 자교 점령 <strong>${own}</strong>칸 / 전체 점령 <strong>${tot}</strong>칸${extra}</div>`;
 } else if (rankMode === 'survival') {
 const sc = user.survival_score != null ? user.survival_score : 0;
 const tm = user.survival_time
@@ -6590,7 +6593,7 @@ return `
                        <div class="rank-info">
                            <b>${escapeHtml(r.school || '학교 정보 없음')}</b><br>
                            <div class="rank-school">학교 점령전</div>
-                           <small style="color:#dc3545; font-weight:bold;">자교 점령 ${Number(r.cells) || 0}칸</small>
+                           <small style="color:#dc3545; font-weight:bold;">자교 점령 ${Number(r.cells) || 0}칸 / 전체 점령 ${Number(r.totalCells) || 0}칸</small>
                        </div>
                    </div>
                    ${dividerAfter ? '<div class="rank-top-divider" role="separator" aria-label="상위 3등 구분선"></div>' : ''}
@@ -6743,17 +6746,33 @@ arr.forEach(function (u) {
 uidSchoolMap[String(u.id)] = String(u.school || '').trim();
 });
 const swSnap = await db.ref('schoolWars').once('value');
-const schoolCounts = computeSchoolWarOwnedCountsBySchool(swSnap.val(), uidSchoolMap);
+const swVal = swSnap.val();
+const schoolCounts = computeSchoolWarOwnedCountsBySchool(swVal, uidSchoolMap);
+const uidOwnedCounts = computeSchoolWarCountsFromMap(swVal);
+const totalOccupiedMap = buildSchoolWarOccupiedCountMap(swVal);
+arr.forEach(function (u) {
+const uid = String(u.id);
+const school = String(u.school || '').trim();
+u.__schoolwar_cells = uidOwnedCounts[uid] || 0;
+u.__schoolwar_school_owned = school ? (Number(schoolCounts[school]) || 0) : 0;
+});
 const schoolRows = Object.keys(schoolCounts).map(function (schoolName) {
-return { school: schoolName, cells: Number(schoolCounts[schoolName]) || 0 };
+return {
+school: schoolName,
+cells: Number(schoolCounts[schoolName]) || 0,
+totalCells: schoolWarOccupiedCountForSchool(totalOccupiedMap, schoolName)
+};
 }).filter(function (r) { return r.cells > 0; });
 schoolRows.sort(function (a, b) { return b.cells - a.cells; });
 let rankInfoSw = null;
 if (user && user.id) {
 const mySchool = String(user.school || '').trim();
 const idxSw = schoolRows.findIndex(function (r) { return r.school === mySchool; });
-const myCells = mySchool ? (Number(schoolCounts[mySchool]) || 0) : 0;
-user.__schoolwar_cells = myCells;
+if (mySchool) {
+user.__schoolwar_board_total = schoolWarOccupiedCountForSchool(totalOccupiedMap, mySchool);
+} else {
+user.__schoolwar_board_total = 0;
+}
 if (idxSw >= 0) {
 rankInfoSw = {
 overallRank: idxSw + 1,
@@ -7210,9 +7229,10 @@ var u = usersById[uid];
 if (!u) return String(uid || '');
 return publicDisplayNameForUser(u);
 }
-function buildSchoolWarTopSchoolRowsFromUsers(arr, limit) {
+function buildSchoolWarTopSchoolRowsFromUsers(arr, limit, totalOccupiedMap) {
 var outMap = {};
 var rows = Array.isArray(arr) ? arr : [];
+var tMap = totalOccupiedMap || {};
 rows.forEach(function (u) {
 var school = String(u && u.school || '').trim();
 if (!school) return;
@@ -7221,7 +7241,11 @@ if (cells <= 0) return;
 if (outMap[school] == null || cells > outMap[school]) outMap[school] = cells;
 });
 var out = Object.keys(outMap).map(function (school) {
-return { school: school, cells: Number(outMap[school]) || 0 };
+return {
+school: school,
+cells: Number(outMap[school]) || 0,
+totalCells: schoolWarOccupiedCountForSchool(tMap, school)
+};
 });
 out.sort(function (a, b) { return b.cells - a.cells; });
 return out.slice(0, Math.max(1, Number(limit) || 3));
@@ -7260,13 +7284,14 @@ return (Number(u[def.field]) || 0) > 0;
 }
 
 /** 로그인·랭킹 화면 TOP3 카드 HTML 목록 (동일 데이터 소스) */
-function buildTop3CardHtmlList(arr) {
+function buildTop3CardHtmlList(arr, schoolWarTotalOccupiedMap) {
+var swTot = schoolWarTotalOccupiedMap || {};
 return LOGIN_TOP3_MODES.map(function (m) {
 if (m.key === 'schoolwar') {
-var schoolTop = buildSchoolWarTopSchoolRowsFromUsers(arr, 3);
+var schoolTop = buildSchoolWarTopSchoolRowsFromUsers(arr, 3, swTot);
 var schoolLines = schoolTop.length
 ? schoolTop.map(function (r, i) {
-return '<div class="login-top3-line"><span class="login-top3-rank" title="' + (i + 1) + '등">' + topRankIcon(i) + '</span>' + escapeHtml(r.school) + ' <span class="login-top3-muted">·</span> ' + escapeHtml(String(r.cells)) + '칸</div>';
+return '<div class="login-top3-line"><span class="login-top3-rank" title="' + (i + 1) + '등">' + topRankIcon(i) + '</span>' + escapeHtml(r.school) + ' <span class="login-top3-muted">·</span> 자교 ' + escapeHtml(String(Number(r.cells) || 0)) + '칸 (전체 ' + escapeHtml(String(Number(r.totalCells) || 0)) + '칸)</div>';
 }).join('')
 : '<div class="login-top3-empty">기록 없음</div>';
 return '<div class="login-top3-card ' + m.cardClass + '" role="region" aria-label="' + escapeHtml(m.label) + ' 순위">' +
@@ -7303,7 +7328,11 @@ var lines = rows.length
 ? rows.map(function (u, i) {
 if (m.key === 'schoolwar') {
 var schoolNm = u && u.school != null && String(u.school).trim() !== '' ? String(u.school) : (u && u.id != null ? String(u.id) : '');
-var cellsTxt = (u && u.cells != null && !isNaN(Number(u.cells))) ? (String(Number(u.cells)) + '칸') : '';
+var ownN = (u && u.cells != null && !isNaN(Number(u.cells))) ? Number(u.cells) : 0;
+var totN = (u && u.totalCells != null && !isNaN(Number(u.totalCells))) ? Number(u.totalCells) : null;
+var cellsTxt = totN != null
+? ('자교 ' + String(ownN) + '칸 (전체 ' + String(totN) + '칸)')
+: (ownN ? (String(ownN) + '칸') : '');
 return '<div class="login-top3-line"><span class="login-top3-rank" title="' + (i + 1) + '등">' + topRankIcon(i) + '</span>' + escapeHtml(schoolNm || '학교 없음') + (cellsTxt ? ' <span class="login-top3-muted">·</span> ' + escapeHtml(cellsTxt) : '') + '</div>';
 }
 var id = u && u.id != null ? String(u.id) : '';
@@ -7511,8 +7540,8 @@ startRankTop3Rotation();
 
 async function updateRankTop3Carousel(arr) {
 var work = Array.isArray(arr) ? arr.map(function (u) { return Object.assign({}, u); }) : [];
-await applySchoolWarCountsToUsers(work);
-rankTop3CardHtmlList = buildTop3CardHtmlList(work);
+var schoolWarTot = await applySchoolWarCountsToUsers(work);
+rankTop3CardHtmlList = buildTop3CardHtmlList(work, schoolWarTot);
 rankTop3ModeIndex = 0;
 paintRankTop3Slide();
 startRankTop3Rotation();
@@ -7729,13 +7758,13 @@ const v = c.val();
 if (!v) return;
 arr.push({ ...v, id: v.id != null ? v.id : c.key });
 });
-await applySchoolWarCountsToUsers(arr);
+var schoolWarTot = await applySchoolWarCountsToUsers(arr);
 var usersById = {};
 arr.forEach(function (u) { usersById[String(u.id)] = u; });
 var currentModes = computeTop3SnapshotModes(arr, LOGIN_TOP3_MODES);
 await syncLoginTop3SnapshotAndEvents(currentModes, usersById);
 var recentEvents = await fetchTop3EventsLast48h();
-loginTop3CardHtmlList = buildTop3CardHtmlList(arr);
+loginTop3CardHtmlList = buildTop3CardHtmlList(arr, schoolWarTot);
 loginTop3ModeIndex = 0;
 var hintRow = buildLoginTop3HintRow(secHint, recentEvents);
 paintLoginTop3Shell(el, hintRow);
